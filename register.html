@@ -233,6 +233,43 @@
     }
     .form-group input::placeholder { color: #c0b09a; }
 
+    /* ── Member type toggle ── */
+    .type-toggle {
+      display: flex;
+      gap: 10px;
+    }
+    .type-toggle input[type="radio"] { display: none; }
+    .type-toggle label {
+      flex: 1;
+      text-align: center;
+      padding: 13px 8px;
+      border: 1.5px solid var(--glass-border);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.75);
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      margin-bottom: 0;
+    }
+    .type-toggle input[type="radio"]:checked + label {
+      border-color: var(--gold);
+      background: rgba(168,135,79,0.12);
+      color: var(--gold-dark);
+      font-weight: 700;
+      box-shadow: 0 0 0 3px rgba(168,135,79,0.15);
+    }
+    .fee-hint {
+      font-size: 15px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 8px;
+      min-height: 22px;
+      transition: color 0.2s;
+    }
+    .fee-hint.guest { color: var(--gold-dark); font-weight: 500; }
+
     .btn-submit {
       width: 100%;
       padding: 15px;
@@ -401,6 +438,16 @@
         <label for="phone">聯絡電話 *</label>
         <input type="tel" id="phone" placeholder="請輸入手機號碼" required autocomplete="tel">
       </div>
+      <div class="form-group">
+        <label>身份 *</label>
+        <div class="type-toggle">
+          <input type="radio" name="memberType" id="type-member" value="會員">
+          <label for="type-member">🏅 會員</label>
+          <input type="radio" name="memberType" id="type-guest" value="來賓">
+          <label for="type-guest">🎟️ 來賓</label>
+        </div>
+        <div class="fee-hint" id="fee-hint"></div>
+      </div>
       <button type="submit" class="btn-submit" id="submit-btn">確認報名</button>
     </form>
   </div>
@@ -544,6 +591,7 @@
       /* Fee */
       const feeBadge = document.getElementById('fee-badge');
       if (d.guestFee) {
+        eventGuestFee = d.guestFee;
         feeBadge.textContent = `來賓費用：${d.guestFee}`;
         feeBadge.style.display = '';
       }
@@ -551,19 +599,43 @@
       document.getElementById('event-content').style.display = 'block';
     }
 
+    /* ── Member type fee hint ── */
+    let eventGuestFee = '';
+    function initTypeToggle() {
+      document.querySelectorAll('input[name="memberType"]').forEach(radio => {
+        radio.addEventListener('change', updateFeeHint);
+      });
+    }
+    function updateFeeHint() {
+      const val = document.querySelector('input[name="memberType"]:checked')?.value;
+      const hint = document.getElementById('fee-hint');
+      if (val === '來賓' && eventGuestFee) {
+        hint.textContent = `費用：${eventGuestFee}`;
+        hint.className = 'fee-hint guest';
+      } else if (val === '會員') {
+        hint.textContent = '費用：會員免費';
+        hint.className = 'fee-hint';
+      } else {
+        hint.textContent = '';
+        hint.className = 'fee-hint';
+      }
+    }
+
     /* ── Register ── */
     function submitReg(e) {
       e.preventDefault();
       const name  = document.getElementById('name').value.trim();
       const phone = document.getElementById('phone').value.trim();
-      if (!name)  return showToast('請填寫姓名', true);
-      if (!phone) return showToast('請填寫聯絡電話', true);
+      const memberType = document.querySelector('input[name="memberType"]:checked')?.value;
+      if (!name)       return showToast('請填寫姓名', true);
+      if (!phone)      return showToast('請填寫聯絡電話', true);
+      if (!memberType) return showToast('請選擇身份（會員或來賓）', true);
 
       const btn = document.getElementById('submit-btn');
       btn.disabled = true;
       btn.textContent = '報名中…';
 
-      const body = new URLSearchParams({ action: 'register', name, phone });
+      const body = new URLSearchParams({ action: 'register', name, phone, memberType });
       fetch(API, { method: 'POST', body, redirect: 'follow' })
         .then(r => r.text())
         .then(text => JSON.parse(text))
@@ -606,6 +678,7 @@
       if (e.target === this) closeOverlay();
     });
 
+    initTypeToggle();
     loadEventInfo();
   </script>
 </body>
