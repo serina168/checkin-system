@@ -117,11 +117,11 @@ function onScan(text){var now=Date.now();if(busy)return;if(text===lastCode&&now-
 async function doCheckIn(id){
   busy=true;
   try{var d=await(await fetch(API+'?action=checkin&id='+encodeURIComponent(id))).json();
-    if(d.ok){buzz([40,60,40]);showPop('ok','✓',d.name,'報到完成　'+d.time,d.memberType,d.fee);}
-    else if(d.dup){buzz([120,80,120]);showPop('dup','!',d.name,d.msg,d.memberType,d.fee);}
-    else{buzz([200]);showPop('no','✕','查無此人','請改用下方搜尋姓名',null,null);}
+    if(d.ok){buzz([40,60,40]);showPop('ok','✓',d.name,'報到完成　'+d.time,d.lunchbox);}
+    else if(d.dup){buzz([120,80,120]);showPop('dup','!',d.name,d.msg,d.lunchbox);}
+    else{buzz([200]);showPop('no','✕','查無此人','請改用下方搜尋姓名',null);}
     if(d.stats)setStats(d.stats);
-  }catch(e){showPop('no','✕','連線失敗','請檢查網路');}
+  }catch(e){showPop('no','✕','連線失敗','請檢查網路',null);}
   busy=false;
 }
 var timer=null;function search(){clearTimeout(timer);timer=setTimeout(run,300);}
@@ -142,15 +142,13 @@ function render(rows){
 async function manual(id){await doCheckIn(id);run();}
 async function refreshStats(){try{setStats(await(await fetch(API+'?action=stats')).json());}catch(e){}}
 function setStats(s){$('s-in').textContent=s.checked;$('s-left').textContent=s.remain;}
-function showPop(cls,ico,nm,msg,memberType,fee){
+function showPop(cls,ico,nm,msg,lunchbox){
   $('popCard').className='pop-card '+cls;
   $('popIco').textContent=ico;
   $('popNm').textContent=nm;
   $('popMsg').textContent=msg;
   var badges='';
-  if(memberType){badges+='<span class="badge badge-type">'+(memberType==='會員'?'🏅 會員':'🎟️ 來賓')+'</span>';}
-  if(memberType==='來賓'&&fee){badges+='<span class="badge badge-fee">💰 收費 '+fee+'</span>';}
-  else if(memberType==='會員'){badges+='<span class="badge badge-free">✓ 免收費</span>';}
+  if(lunchbox&&lunchbox!='0'){badges+='<span class="badge badge-fee">🍱 加購便當 '+lunchbox+' 個</span>';}
   $('popBadges').innerHTML=badges;
   $('pop').classList.add('on');
   if(cls==='ok')setTimeout(closePop,3000);
