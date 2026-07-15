@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>活動報名 — 海德堡讀書會</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#a8874f;--gold-lt:#c9a86a;--cream:#faf6ef;--beige:#f0e6d2;--ink:#3d3226;--muted:#8a7a63;--ok:#4a7c59;--err:#b5544b}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans TC',sans-serif;
+  background:radial-gradient(circle at 15% 0%,#fff8ec 0%,transparent 55%),radial-gradient(circle at 85% 100%,#f3e8d0 0%,transparent 55%),var(--cream);
+  min-height:100vh;color:var(--ink);padding:24px 16px 60px;font-size:19px;line-height:1.75}
+.wrap{max-width:520px;margin:0 auto}
+header{text-align:center;padding:12px 0 24px}
+.brand{font-size:13px;letter-spacing:.4em;color:var(--gold);text-indent:.4em;margin-bottom:10px;font-weight:500}
+h1{font-family:'Noto Serif TC',serif;font-size:26px;font-weight:700;letter-spacing:.05em}
+.card{background:rgba(255,255,255,.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(200,170,110,.32);border-radius:22px;padding:0;overflow:hidden;
+  box-shadow:0 10px 40px rgba(140,110,60,.10);margin-bottom:20px}
+.poster{width:100%;display:block;border-bottom:1px solid var(--beige)}
+.poster[src=""]{display:none}
+.info{padding:24px 22px}
+.info-row{display:flex;gap:10px;margin-bottom:10px;font-size:17px;line-height:1.6}
+.info-label{color:var(--gold);font-weight:700;white-space:nowrap;min-width:70px}
+.info-val{color:var(--ink)}
+.topic{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;margin-bottom:14px;color:var(--ink)}
+.desc{font-size:17px;line-height:1.9;color:var(--ink);white-space:pre-line;margin-top:10px;
+  padding-top:14px;border-top:1px solid rgba(200,170,110,.3)}
+.fee{display:inline-block;margin-top:12px;padding:8px 18px;border-radius:10px;font-size:16px;font-weight:700;
+  background:rgba(168,135,79,.12);color:var(--gold);border:1px solid rgba(168,135,79,.3)}
+
+.form-card{background:rgba(255,255,255,.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(200,170,110,.32);border-radius:22px;padding:28px 22px;
+  box-shadow:0 10px 40px rgba(140,110,60,.10)}
+.field{margin-bottom:22px}
+label{display:block;font-size:19px;font-weight:700;margin-bottom:8px}
+input{width:100%;font-family:inherit;font-size:21px;color:var(--ink);padding:16px;
+  border:1.5px solid rgba(180,150,100,.4);border-radius:14px;background:#fff}
+input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(168,135,79,.16)}
+button{width:100%;font-family:inherit;font-size:21px;font-weight:700;letter-spacing:.12em;
+  text-indent:.12em;color:#fff;padding:18px;border:none;border-radius:14px;cursor:pointer;
+  background:linear-gradient(135deg,var(--gold-lt),var(--gold));box-shadow:0 6px 22px rgba(168,135,79,.34)}
+button:active{transform:translateY(1px)}
+button:disabled{opacity:.5}
+.msg{display:none;margin-top:16px;padding:14px 16px;border-radius:12px;font-size:17px;line-height:1.6;
+  background:rgba(181,84,75,.09);border:1px solid rgba(181,84,75,.3);color:var(--err)}
+.msg.show{display:block}
+#done{display:none;text-align:center}
+#done.show{display:block}
+.tick{width:70px;height:70px;margin:0 auto 20px;border-radius:50%;background:rgba(74,124,89,.12);
+  border:2px solid var(--ok);display:flex;align-items:center;justify-content:center;font-size:36px;color:var(--ok)}
+#done h2{font-family:'Noto Serif TC',serif;font-size:26px;margin-bottom:20px}
+#qrbox{display:inline-block;padding:16px;background:#fff;border:1px solid var(--beige);
+  border-radius:18px;box-shadow:0 6px 24px rgba(140,110,60,.12)}
+#qrbox img{display:block;width:220px;height:220px}
+.big{margin-top:20px;font-size:20px;font-weight:700;line-height:1.7;color:var(--gold)}
+.hint{margin-top:12px;color:var(--muted);font-size:16px;line-height:1.8}
+#loading{text-align:center;padding:60px 20px;color:var(--muted);font-size:17px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">臺中市海德堡讀書會</div>
+    <h1 id="title">活動報名</h1>
+  </header>
+
+  <div id="loading">載入活動資訊中…</div>
+
+  <div class="card" id="infoCard" style="display:none">
+    <img class="poster" id="poster" src="" alt="">
+    <div class="info">
+      <div class="topic" id="topic"></div>
+      <div class="info-row"><span class="info-label">日期</span><span class="info-val" id="date"></span></div>
+      <div class="info-row"><span class="info-label">時間</span><span class="info-val" id="time"></span></div>
+      <div class="info-row"><span class="info-label">地點</span><span class="info-val" id="loc"></span></div>
+      <div class="info-row"><span class="info-label">導讀人</span><span class="info-val" id="speaker"></span></div>
+      <div class="desc" id="desc"></div>
+      <div class="fee" id="fee" style="display:none"></div>
+    </div>
+  </div>
+
+  <div class="form-card" id="formCard" style="display:none">
+    <div id="form">
+      <div class="field">
+        <label for="name">姓名</label>
+        <input id="name" type="text" autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="phone">手機號碼</label>
+        <input id="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="0912345678">
+      </div>
+      <button id="btn" onclick="submit()">送出報名</button>
+      <div id="msg" class="msg"></div>
+    </div>
+    <div id="done">
+      <div class="tick">✓</div>
+      <h2>報名成功</h2>
+      <div id="qrbox"><img id="qr" alt="QR Code"></div>
+      <p class="big">請截圖保存這張 QR Code<br>活動當天掃碼報到</p>
+      <p class="hint">忘記帶也沒關係<br>現場可用姓名查詢報到</p>
+    </div>
+  </div>
+</div>
+<script>
+var API = 'https://script.google.com/macros/s/AKfycbx4dPgEFllbZBjQbhe32vToQBPAb9YSLFzlnUhs-KimiGmWmVXCNU2olH09tnF8X1tCkQ/exec';
+var $ = function(id){ return document.getElementById(id); };
+
+fetch(API+'?action=info').then(function(r){return r.json()}).then(function(d){
+  if(!d.ok) return;
+  $('loading').style.display='none';
+  $('title').textContent = d.eventName + ' 報名';
+  document.title = d.eventName + ' — 海德堡讀書會';
+  if(d.topic) $('topic').textContent = d.topic;
+  if(d.eventDate) $('date').textContent = d.eventDate;
+  if(d.eventTime) $('time').textContent = d.eventTime;
+  if(d.location) $('loc').textContent = d.location;
+  if(d.speaker) $('speaker').textContent = d.speaker;
+  if(d.desc) $('desc').textContent = d.desc;
+  if(d.poster) {
+    var url = d.poster;
+    if(url.indexOf('drive.google.com') > -1) {
+      var m = url.match(/\/d\/([^\/]+)/);
+      if(m) url = 'https://lh3.googleusercontent.com/d/' + m[1];
+    }
+    $('poster').src = url;
+  }
+  if(d.guestFee) { $('fee').textContent = '來賓費用：' + d.guestFee; $('fee').style.display='inline-block'; }
+  $('infoCard').style.display='block';
+  $('formCard').style.display='block';
+}).catch(function(){ $('loading').textContent='載入失敗，請重新整理'; });
+
+function err(t){ var m=$('msg'); m.textContent=t; m.classList.add('show'); }
+async function submit(){
+  var name=$('name').value.trim(), phone=$('phone').value.trim().replace(/[-\s]/g,'');
+  $('msg').classList.remove('show');
+  if(!name) return err('請填寫姓名');
+  if(!phone) return err('請填寫手機號碼');
+  if(!/^09\d{8}$/.test(phone)) return err('手機號碼要 09 開頭、共 10 個數字');
+  var btn=$('btn'); btn.disabled=true; btn.textContent='送出中…';
+  try{
+    var res = await fetch(API,{method:'POST',body:JSON.stringify({name:name,phone:phone})});
+    var d = await res.json();
+    if(!d.ok){ err(d.msg||'報名失敗'); btn.disabled=false; btn.textContent='送出報名'; return; }
+    $('qr').src='https://api.qrserver.com/v1/create-qr-code/?size=440x440&margin=10&data='+encodeURIComponent(d.id);
+    $('form').style.display='none';
+    $('done').classList.add('show');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){ err('連線失敗'); btn.disabled=false; btn.textContent='送出報名'; }
+}
+</script>
+</body>
+</html>

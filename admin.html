@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>管理後台 — 海德堡讀書會</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#a8874f;--gold-lt:#c9a86a;--cream:#faf6ef;--beige:#f0e6d2;--ink:#3d3226;--muted:#8a7a63;--ok:#4a7c59;--err:#b5544b}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--ink);font-size:18px;line-height:1.7;padding:20px 14px 60px;min-height:100vh}
+.wrap{max-width:600px;margin:0 auto}
+header{text-align:center;padding:12px 0 24px}
+.brand{font-size:13px;letter-spacing:.4em;color:var(--gold);text-indent:.4em;margin-bottom:8px;font-weight:500}
+h1{font-family:'Noto Serif TC',serif;font-size:24px;font-weight:700}
+.card{background:rgba(255,255,255,.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(200,170,110,.32);border-radius:18px;padding:24px 20px;
+  box-shadow:0 8px 30px rgba(140,110,60,.10);margin-bottom:18px}
+.card h2{font-family:'Noto Serif TC',serif;font-size:19px;font-weight:700;margin-bottom:14px;
+  color:var(--gold);display:flex;align-items:center;gap:8px}
+.card h2::before{content:'';width:16px;height:2px;background:var(--gold-lt);border-radius:2px}
+label{display:block;font-size:16px;font-weight:700;margin-bottom:6px;margin-top:12px}
+label:first-child{margin-top:0}
+input,textarea,select{width:100%;font-family:inherit;font-size:17px;color:var(--ink);padding:12px 14px;
+  border:1.5px solid rgba(180,150,100,.4);border-radius:12px;background:#fff}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(168,135,79,.16)}
+textarea{resize:vertical;min-height:90px}
+.btn{width:100%;font-family:inherit;font-size:18px;font-weight:700;letter-spacing:.08em;
+  color:#fff;padding:15px;border:none;border-radius:12px;cursor:pointer;margin-top:16px;
+  background:linear-gradient(135deg,var(--gold-lt),var(--gold));box-shadow:0 4px 14px rgba(168,135,79,.3)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.5}
+.btn-outline{background:none;color:var(--gold);border:1.5px solid var(--gold);box-shadow:none}
+.msg{margin-top:12px;padding:12px 14px;border-radius:10px;font-size:16px;line-height:1.5;display:none}
+.msg.show{display:block}
+.msg.ok{background:rgba(74,124,89,.1);border:1px solid rgba(74,124,89,.3);color:var(--ok)}
+.msg.err{background:rgba(181,84,75,.09);border:1px solid rgba(181,84,75,.3);color:var(--err)}
+.current{background:rgba(168,135,79,.1);border:1px solid rgba(168,135,79,.3);
+  border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.current b{color:var(--gold);font-size:19px}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stats-box{text-align:center;padding:14px 8px;background:rgba(255,255,255,.6);border:1px solid rgba(200,170,110,.3);border-radius:12px}
+.stats-box .num{font-family:'Noto Serif TC',serif;font-size:28px;font-weight:700;line-height:1.2}
+.stats-box .lbl{font-size:13px;color:var(--muted)}
+.stats-box.a .num{color:var(--gold)}
+.stats-box.b .num{color:var(--ok)}
+.stats-box.c .num{color:var(--err)}
+table{width:100%;border-collapse:collapse;font-size:15px;margin-top:10px}
+th{text-align:left;padding:10px 8px;background:rgba(168,135,79,.12);color:var(--gold);font-weight:700;
+  border-bottom:2px solid rgba(168,135,79,.3);white-space:nowrap}
+td{padding:9px 8px;border-bottom:1px solid rgba(200,170,110,.2)}
+tr:hover td{background:rgba(255,255,255,.5)}
+.chk{color:var(--ok);font-weight:700}
+.unchk{color:var(--muted)}
+.h-row{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px;background:rgba(255,255,255,.6);border:1px solid rgba(200,170,110,.25);
+  border-radius:11px;margin-bottom:8px;cursor:pointer}
+.h-row:hover{background:rgba(255,255,255,.85)}
+.h-row .h-name{font-weight:700;font-size:17px}
+.h-row .h-count{font-size:14px;color:var(--muted)}
+.h-row.active{background:rgba(74,124,89,.08);border-color:rgba(74,124,89,.3)}
+.h-row.active .h-name{color:var(--ok)}
+.h-row.active .h-name::after{content:' ✓ 使用中';font-size:13px;font-weight:400}
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tab{padding:9px 18px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;
+  background:rgba(255,255,255,.5);border:1px solid rgba(200,170,110,.3);color:var(--muted)}
+.tab.on{background:linear-gradient(135deg,var(--gold-lt),var(--gold));color:#fff;border-color:transparent}
+#login{text-align:center}
+#main{display:none}
+#main.show{display:block}
+.panel{display:none}
+.panel.on{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">臺中市海德堡讀書會</div>
+    <h1>管理後台</h1>
+  </header>
+
+  <div class="card" id="login">
+    <label for="pass">請輸入管理密碼</label>
+    <input id="pass" type="password" placeholder="密碼" onkeydown="if(event.key==='Enter')login()">
+    <button class="btn" onclick="login()">登入</button>
+    <div id="loginMsg" class="msg err"></div>
+  </div>
+
+  <div id="main">
+    <div class="card">
+      <div class="current">目前活動：<b id="curName">—</b></div>
+      <div class="tabs">
+        <div class="tab on" onclick="showTab(0)">報名名單</div>
+        <div class="tab" onclick="showTab(1)">建立新活動</div>
+        <div class="tab" onclick="showTab(2)">歷史活動</div>
+      </div>
+    </div>
+
+    <div class="panel on" id="panel0">
+      <div class="card">
+        <h2>報到統計</h2>
+        <div class="stats-grid">
+          <div class="stats-box a"><div class="num" id="st-total">0</div><div class="lbl">報名人數</div></div>
+          <div class="stats-box b"><div class="num" id="st-in">0</div><div class="lbl">已報到</div></div>
+          <div class="stats-box c"><div class="num" id="st-left">0</div><div class="lbl">未到</div></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+          <div style="flex:1;height:8px;background:rgba(200,170,110,.2);border-radius:4px;overflow:hidden">
+            <div id="bar" style="height:100%;background:var(--ok);border-radius:4px;width:0%;transition:width .4s"></div>
+          </div>
+          <span style="font-size:14px;color:var(--muted)" id="pct">0%</span>
+        </div>
+      </div>
+      <div class="card">
+        <h2>報名名單</h2>
+        <button class="btn btn-outline" onclick="exportCSV()" style="margin-top:0;margin-bottom:12px">📥 匯出 Excel</button>
+        <div style="overflow-x:auto" id="guestTable">
+          <div style="text-align:center;color:var(--muted);padding:20px">載入中…</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel1">
+      <div class="card">
+        <h2>建立新活動</h2>
+        <p style="font-size:15px;color:var(--muted);margin-bottom:10px">建立後會自動建新分頁，舊資料保留。</p>
+        <label>活動名稱</label>
+        <input id="f-name" placeholder="例如：八月份例會">
+        <label>活動日期</label>
+        <input id="f-date" placeholder="例如：115年8月24日（一）">
+        <label>活動時間</label>
+        <input id="f-time" placeholder="例如：09:00 - 12:00">
+        <label>地點</label>
+        <input id="f-loc" placeholder="例如：愛心家園 B1 研習教室5">
+        <label>主題 / 書名</label>
+        <input id="f-topic" placeholder="例如：曼陀羅心靈彩繪鑰匙圈">
+        <label>導讀人 / 主講人</label>
+        <input id="f-speaker" placeholder="例如：黃彥蓁老師">
+        <label>內容簡介</label>
+        <textarea id="f-desc" placeholder="活動介紹、流程等…"></textarea>
+        <label>海報圖片連結（Google 雲端硬碟）</label>
+        <input id="f-poster" placeholder="貼上 Google Drive 分享連結">
+        <label>來賓費用</label>
+        <input id="f-fee" placeholder="例如：500 元（含便當）">
+        <button class="btn" id="createBtn" onclick="createEvt()">建立活動</button>
+        <div id="createMsg" class="msg"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel2">
+      <div class="card">
+        <h2>歷史活動</h2>
+        <p style="font-size:15px;color:var(--muted);margin-bottom:12px">點擊可切換到該活動查看名單</p>
+        <div id="history">
+          <div style="text-align:center;color:var(--muted);padding:20px">載入中…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var API='https://script.google.com/macros/s/AKfycbz6p38L0yjj1x2Qs_SsCWvHwUxpsYXtpQYYUa5N0_1uDMZLfWR2rIkBHUNbVX7Vu15udg/exec';
+var $=function(id){return document.getElementById(id)};
+var pass='',guestData=[];
+
+function callAPI(url){
+  return fetch(url,{redirect:'follow',headers:{'Accept':'application/json'}}).then(function(r){return r.json()});
+}
+function postAPI(data){
+  return fetch(API,{method:'POST',redirect:'follow',headers:{'Accept':'application/json'},body:JSON.stringify(data)}).then(function(r){return r.json()});
+}
+
+async function login(){
+  pass=$('pass').value.trim();
+  if(!pass){showMsg('loginMsg','err','請輸入密碼');return;}
+  var btn=document.querySelector('#login .btn');
+  btn.disabled=true;btn.textContent='登入中…';
+  try{
+    var d=await callAPI(API+'?action=admin_login&pass='+encodeURIComponent(pass));
+    if(!d.ok){showMsg('loginMsg','err',d.msg||'密碼錯誤');btn.disabled=false;btn.textContent='登入';return;}
+    $('login').style.display='none';
+    $('main').classList.add('show');
+    loadData();
+  }catch(e){
+    console.error('Login error:',e);
+    showMsg('loginMsg','err','連線失敗，請稍後再試');
+    btn.disabled=false;btn.textContent='登入';
+  }
+}
+
+async function loadData(){
+  try{
+    var d=await callAPI(API+'?action=admin_list&pass='+encodeURIComponent(pass));
+    if(!d.ok) return;
+    $('curName').textContent=d.current;
+    renderHistory(d.list);
+  }catch(e){console.error('loadData error:',e);}
+  loadGuests();
+}
+
+async function loadGuests(){
+  try{
+    var d=await callAPI(API+'?action=admin_guests&pass='+encodeURIComponent(pass));
+    if(!d.ok) return;
+    guestData=d.list;
+    renderGuests(d.list);
+    if(d.stats) renderStats(d.stats);
+  }catch(e){$('guestTable').innerHTML='<div style="text-align:center;color:var(--muted)">載入失敗</div>';}
+}
+
+function renderStats(s){
+  $('st-total').textContent=s.total;
+  $('st-in').textContent=s.checked;
+  $('st-left').textContent=s.remain;
+  var pct=s.total?Math.round(s.checked/s.total*100):0;
+  $('bar').style.width=pct+'%';
+  $('pct').textContent=pct+'%';
+}
+
+function renderGuests(list){
+  if(!list.length){$('guestTable').innerHTML='<div style="text-align:center;color:var(--muted);padding:20px">尚無報名</div>';return;}
+  var html='<table><tr><th>#</th><th>姓名</th><th>電話</th><th>報名時間</th><th>報到</th></tr>';
+  for(var i=0;i<list.length;i++){
+    var g=list[i];
+    var status=g.checkedIn?'<span class="chk">✓ '+g.checkinTime+'</span>':'<span class="unchk">—</span>';
+    html+='<tr><td>'+(i+1)+'</td><td>'+esc(g.name)+'</td><td>'+g.phone+'</td><td>'+g.time+'</td><td>'+status+'</td></tr>';
+  }
+  html+='</table>';
+  $('guestTable').innerHTML=html;
+}
+
+function renderHistory(list){
+  if(!list.length){$('history').innerHTML='<div style="text-align:center;color:var(--muted)">尚無資料</div>';return;}
+  $('history').innerHTML=list.map(function(item){
+    return '<div class="h-row'+(item.active?' active':'')+'" onclick="switchTo(\''+esc(item.name).replace(/'/g,"\\'")+'\')">'+
+      '<div class="h-name">'+esc(item.name)+'</div>'+
+      '<div class="h-count">'+item.rows+' 人報名</div></div>';
+  }).join('');
+}
+
+async function switchTo(name){
+  try{
+    var d=await callAPI(API+'?action=admin_switch&pass='+encodeURIComponent(pass)+'&name='+encodeURIComponent(name));
+    if(d.ok){$('curName').textContent=d.eventName;loadData();showTab(0);}
+  }catch(e){}
+}
+
+async function createEvt(){
+  var data={
+    action:'admin_create',pass:pass,
+    eventName:$('f-name').value.trim(),
+    eventDate:$('f-date').value.trim(),
+    eventTime:$('f-time').value.trim(),
+    location:$('f-loc').value.trim(),
+    topic:$('f-topic').value.trim(),
+    speaker:$('f-speaker').value.trim(),
+    desc:$('f-desc').value.trim(),
+    poster:$('f-poster').value.trim(),
+    guestFee:$('f-fee').value.trim()
+  };
+  if(!data.eventName){showMsg('createMsg','err','請輸入活動名稱');return;}
+  var btn=$('createBtn');btn.disabled=true;btn.textContent='建立中…';
+  try{
+    var d=await postAPI(data);
+    if(d.ok){
+      showMsg('createMsg','ok','已建立「'+d.eventName+'」！報名頁和報到頁已自動更新。');
+      $('curName').textContent=d.eventName;
+      $('f-name').value='';$('f-date').value='';$('f-time').value='';$('f-loc').value='';
+      $('f-topic').value='';$('f-speaker').value='';$('f-desc').value='';$('f-poster').value='';$('f-fee').value='';
+      loadData();
+    }else{showMsg('createMsg','err',d.msg||'建立失敗');}
+  }catch(e){showMsg('createMsg','err','連線失敗');}
+  btn.disabled=false;btn.textContent='建立活動';
+}
+
+function exportCSV(){
+  if(!guestData.length){alert('沒有資料可匯出');return;}
+  var bom='\uFEFF';
+  var csv=bom+'編號,姓名,電話,報名時間,報到狀態,報到時間\n';
+  for(var i=0;i<guestData.length;i++){
+    var g=guestData[i];
+    csv+=(i+1)+',"'+g.name+'","'+g.phone+'","'+g.time+'",'+(g.checkedIn?'已報到':'未到')+',"'+(g.checkinTime||'')+'"'+'\n';
+  }
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download=$('curName').textContent+'_報名名單.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function showTab(n){
+  var tabs=document.querySelectorAll('.tab');
+  var panels=document.querySelectorAll('.panel');
+  for(var i=0;i<tabs.length;i++){tabs[i].classList.toggle('on',i===n);panels[i].classList.toggle('on',i===n);}
+}
+
+function showMsg(id,cls,t){var m=$(id);m.textContent=t;m.className='msg show '+cls;}
+function esc(s){return String(s).replace(/[<>&"']/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":"&#39;"}[c]});}
+</script>
+</body>
+</html>
