@@ -280,7 +280,7 @@ function exportCSV(){
   var csv=bom+'編號,姓名,電話,出生年月日,身份,出席狀況,用餐,加購便當,備註,報名時間,報到狀態,報到時間\n';
   for(var i=0;i<guestData.length;i++){
     var g=guestData[i];
-    csv+=(i+1)+',"'+g.name+'","'+g.phone+'","'+(g.birthday||'')+'","'+(g.memberType||'')+'","'+(g.attendance||'')+'","'+(g.meal||'')+'","'+(g.lunchbox||'0')+'","'+(g.note||'')+'","'+g.time+'",'+(g.checkedIn?'已報到':'未到')+',"'+(g.checkinTime||'')+'"'+'\n';
+    csv+=(i+1)+',"'+g.name+'",="'+g.phone+'","'+(g.birthday||'')+'","'+(g.memberType||'')+'","'+(g.attendance||'')+'","'+(g.meal||'')+'","'+(g.lunchbox||'0')+'","'+(g.note||'')+'","'+g.time+'",'+(g.checkedIn?'已報到':'未到')+',"'+(g.checkinTime||'')+'"'+'\n';
   }
   var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   var url=URL.createObjectURL(blob);
