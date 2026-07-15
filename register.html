@@ -456,6 +456,31 @@
         </div>
         <div class="fee-hint" id="fee-hint"></div>
       </div>
+      <div class="form-group">
+        <label>用餐 *</label>
+        <div class="type-toggle">
+          <input type="radio" name="meal" id="meal-yes" value="用餐">
+          <label for="meal-yes">🍱 用餐</label>
+          <input type="radio" name="meal" id="meal-no" value="不用餐">
+          <label for="meal-no">✗ 不用餐</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="extraMeal">加購餐數量（0 表示不加購）</label>
+        <input type="number" id="extraMeal" placeholder="0" min="0" max="10" value="0">
+      </div>
+      <div class="form-group">
+        <label>生日（選填）🎂</label>
+        <div style="display:flex;gap:10px;">
+          <input type="number" id="birthYear" placeholder="西元年（如 1958）" min="1930" max="2010" style="flex:2">
+          <input type="number" id="birthMonth" placeholder="月（1–12）" min="1" max="12" style="flex:1">
+        </div>
+        <div style="font-size:14px;color:var(--text-muted);margin-top:6px;">填寫後活動當月會自動標記壽星 🎂</div>
+      </div>
+      <div class="form-group">
+        <label for="remark">備註</label>
+        <input type="text" id="remark" placeholder="有什麼要告訴我們的嗎？（可空白）">
+      </div>
       <button type="submit" class="btn-submit" id="submit-btn">確認報名</button>
     </form>
   </div>
@@ -640,18 +665,24 @@
     /* ── Register ── */
     function submitReg(e) {
       e.preventDefault();
-      const name  = document.getElementById('name').value.trim();
-      const phone = document.getElementById('phone').value.trim();
+      const name       = document.getElementById('name').value.trim();
+      const phone      = document.getElementById('phone').value.trim();
       const memberType = document.querySelector('input[name="memberType"]:checked')?.value;
+      const meal       = document.querySelector('input[name="meal"]:checked')?.value;
+      const extraMeal  = document.getElementById('extraMeal').value || '0';
+      const birthYear  = document.getElementById('birthYear').value.trim();
+      const birthMonth = document.getElementById('birthMonth').value.trim();
+      const remark     = document.getElementById('remark').value.trim();
       if (!name)       return showToast('請填寫姓名', true);
       if (!phone)      return showToast('請填寫聯絡電話', true);
       if (!memberType) return showToast('請選擇身份（會員或來賓）', true);
+      if (!meal)       return showToast('請選擇是否用餐', true);
 
       const btn = document.getElementById('submit-btn');
       btn.disabled = true;
       btn.textContent = '報名中…';
 
-      const params = new URLSearchParams({ action: 'register', name, phone, memberType });
+      const params = new URLSearchParams({ action: 'register', name, phone, memberType, meal, extraMeal, birthYear, birthMonth, remark });
       fetchWithFallback(API + '?' + params.toString())
         .then(data => {
           if (!data.ok) throw new Error(data.error || '報名失敗');
