@@ -482,14 +482,6 @@
         </div>
       </div>
       <div class="form-group">
-        <label>生日（選填）🎂</label>
-        <div style="display:flex;gap:10px;">
-          <input type="number" id="birthYear" placeholder="西元年（如 1958）" min="1930" max="2010" style="flex:2">
-          <input type="number" id="birthMonth" placeholder="月（1–12）" min="1" max="12" style="flex:1">
-        </div>
-        <div style="font-size:14px;color:var(--text-muted);margin-top:6px;">填寫後活動當月會自動標記壽星 🎂</div>
-      </div>
-      <div class="form-group">
         <label for="remark">備註</label>
         <input type="text" id="remark" placeholder="有什麼要告訴我們的嗎？（可空白）">
       </div>
@@ -683,8 +675,6 @@
       const attendance = document.querySelector('input[name="attendance"]:checked')?.value;
       const meal       = document.querySelector('input[name="meal"]:checked')?.value;
       const extraMeal  = document.getElementById('extraMeal').value || '0';
-      const birthYear  = document.getElementById('birthYear').value.trim();
-      const birthMonth = document.getElementById('birthMonth').value.trim();
       const remark     = document.getElementById('remark').value.trim();
       if (!name)        return showToast('請填寫姓名', true);
       if (!phone)       return showToast('請填寫聯絡電話', true);
@@ -696,7 +686,7 @@
       btn.disabled = true;
       btn.textContent = '報名中…';
 
-      const params = new URLSearchParams({ action: 'register', name, phone, memberType, attendance, meal: meal||'', extraMeal, birthYear, birthMonth, remark });
+      const params = new URLSearchParams({ action: 'register', name, phone, memberType, attendance, meal: meal||'', extraMeal, remark });
       fetchWithFallback(API + '?' + params.toString())
         .then(data => {
           if (!data.ok) throw new Error(data.error || '報名失敗');
