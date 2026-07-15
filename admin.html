@@ -220,11 +220,11 @@ function renderStats(s){
 
 function renderGuests(list){
   if(!list.length){$('guestTable').innerHTML='<div style="text-align:center;color:var(--muted);padding:20px">尚無報名</div>';return;}
-  var html='<table><tr><th>#</th><th>姓名</th><th>電話</th><th>報名時間</th><th>報到</th></tr>';
+  var html='<table><tr><th>#</th><th>姓名</th><th>電話</th><th>出生年月日</th><th>加購便當</th><th>備註</th><th>報名時間</th><th>報到</th></tr>';
   for(var i=0;i<list.length;i++){
     var g=list[i];
     var status=g.checkedIn?'<span class="chk">✓ '+g.checkinTime+'</span>':'<span class="unchk">—</span>';
-    html+='<tr><td>'+(i+1)+'</td><td>'+esc(g.name)+'</td><td>'+g.phone+'</td><td>'+g.time+'</td><td>'+status+'</td></tr>';
+    html+='<tr><td>'+(i+1)+'</td><td>'+esc(g.name)+'</td><td>'+g.phone+'</td><td>'+(g.birthday||'')+'</td><td>'+(g.lunchbox||'0')+'</td><td>'+esc(g.note||'')+'</td><td>'+g.time+'</td><td>'+status+'</td></tr>';
   }
   html+='</table>';
   $('guestTable').innerHTML=html;
@@ -280,7 +280,7 @@ function exportCSV(){
   var csv=bom+'編號,姓名,電話,報名時間,報到狀態,報到時間\n';
   for(var i=0;i<guestData.length;i++){
     var g=guestData[i];
-    csv+=(i+1)+',"'+g.name+'","'+g.phone+'","'+g.time+'",'+(g.checkedIn?'已報到':'未到')+',"'+(g.checkinTime||'')+'"'+'\n';
+    csv+=(i+1)+',"'+g.name+'","'+g.phone+'","'+(g.birthday||'')+'","'+(g.lunchbox||'0')+'","'+(g.note||'')+'","'+g.time+'",'+(g.checkedIn?'已報到':'未到')+',"'+(g.checkinTime||'')+'"'+'\n';
   }
   var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   var url=URL.createObjectURL(blob);

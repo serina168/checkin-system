@@ -491,14 +491,21 @@
           </div>
         </div>
         <div class="form-group">
-          <label for="extraMeal">加購便當數量</label>
-          <input type="number" id="extraMeal" placeholder="0" min="0" max="10" value="0">
-          <div style="font-size:14px;color:var(--text-muted);margin-top:6px;">🍱 愛心家園便當 140 元／份 ・ 請自備餐盒</div>
+          <label for="lunchbox">加購便當</label>
+          <select id="lunchbox" style="width:100%;padding:13px 16px;font-family:inherit;font-size:18px;background:rgba(255,255,255,0.75);border:1.5px solid var(--glass-border);border-radius:12px;color:var(--text);outline:none;">
+            <option value="0">0 個（不加購）</option>
+            <option value="1">1 個</option>
+            <option value="2">2 個</option>
+            <option value="3">3 個</option>
+            <option value="4">4 個</option>
+            <option value="5">5 個</option>
+          </select>
+          <div style="font-size:14px;color:var(--text-muted);margin-top:6px;">🍱 愛心家園便當 ・ 請自備餐盒</div>
         </div>
       </div>
       <div class="form-group">
-        <label for="remark">備註</label>
-        <input type="text" id="remark" placeholder="有什麼要告訴我們的嗎？（可空白）">
+        <label for="note">備註</label>
+        <input type="text" id="note" placeholder="如有特殊需求請填寫">
       </div>
       <button type="submit" class="btn-submit" id="submit-btn">確認報名</button>
     </form>
@@ -689,13 +696,12 @@
       const memberType = document.querySelector('input[name="memberType"]:checked')?.value;
       const attendance = document.querySelector('input[name="attendance"]:checked')?.value;
       const meal       = document.querySelector('input[name="meal"]:checked')?.value;
-      const extraMeal  = document.getElementById('extraMeal').value || '0';
+      const lunchbox   = document.getElementById('lunchbox').value || '0';
       const byVal = document.getElementById('birthYear').value;
       const bmVal = document.getElementById('birthMonth').value;
       const bdVal = document.getElementById('birthDay').value;
       const birthday = (byVal && bmVal && bdVal) ? '民國' + byVal + '年' + bmVal + '月' + bdVal + '日' : '';
-      const remarkRaw = document.getElementById('remark').value.trim();
-      const remark = birthday ? (remarkRaw ? birthday + '；' + remarkRaw : birthday) : remarkRaw;
+      const note = document.getElementById('note').value.trim();
       if (!name)        return showToast('請填寫姓名', true);
       if (!phone)       return showToast('請填寫聯絡電話', true);
       if (!memberType)  return showToast('請選擇身份（會員或來賓）', true);
@@ -706,7 +712,7 @@
       btn.disabled = true;
       btn.textContent = '報名中…';
 
-      const params = new URLSearchParams({ action: 'register', name, phone, memberType, attendance, meal: meal||'', extraMeal, remark });
+      const params = new URLSearchParams({ action: 'register', name, phone, birthday, lunchbox, note });
       fetchWithFallback(API + '?' + params.toString())
         .then(data => {
           if (!data.ok) throw new Error(data.error || '報名失敗');
