@@ -643,8 +643,16 @@
       btn.disabled = true;
       btn.textContent = '報名中…';
 
-      const body = new URLSearchParams({ action: 'register', name, phone, memberType });
-      fetch(API, { method: 'POST', body, redirect: 'follow' })
+      /*
+       * 送 JSON body + Content-Type:text/plain → 屬於 simple request，
+       * 不觸發 CORS preflight，GAS doPost 可正常接收。
+       */
+      fetch(API, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'register', name, phone, memberType }),
+        headers: { 'Content-Type': 'text/plain' },
+        redirect: 'follow'
+      })
         .then(r => r.text())
         .then(text => JSON.parse(text))
         .then(data => {
