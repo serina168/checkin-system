@@ -447,6 +447,21 @@
         <input type="tel" id="phone" placeholder="請輸入手機號碼" required autocomplete="tel">
       </div>
       <div class="form-group">
+        <label>出生年月日</label>
+        <div style="display:flex;gap:8px;">
+          <select id="birthYear" style="flex:2;padding:13px 10px;font-family:inherit;font-size:17px;background:rgba(255,255,255,0.75);border:1.5px solid var(--glass-border);border-radius:12px;color:var(--text);outline:none;">
+            <option value="">年</option>
+          </select>
+          <select id="birthMonth" style="flex:1;padding:13px 10px;font-family:inherit;font-size:17px;background:rgba(255,255,255,0.75);border:1.5px solid var(--glass-border);border-radius:12px;color:var(--text);outline:none;">
+            <option value="">月</option>
+          </select>
+          <select id="birthDay" style="flex:1;padding:13px 10px;font-family:inherit;font-size:17px;background:rgba(255,255,255,0.75);border:1.5px solid var(--glass-border);border-radius:12px;color:var(--text);outline:none;">
+            <option value="">日</option>
+          </select>
+        </div>
+        <div style="font-size:15px;color:#8a7a63;margin-top:6px;">為製作會員名冊所需，之後無須再填</div>
+      </div>
+      <div class="form-group">
         <label>身份 *</label>
         <div class="type-toggle">
           <input type="radio" name="memberType" id="type-member" value="會員">
@@ -675,7 +690,12 @@
       const attendance = document.querySelector('input[name="attendance"]:checked')?.value;
       const meal       = document.querySelector('input[name="meal"]:checked')?.value;
       const extraMeal  = document.getElementById('extraMeal').value || '0';
-      const remark     = document.getElementById('remark').value.trim();
+      const byVal = document.getElementById('birthYear').value;
+      const bmVal = document.getElementById('birthMonth').value;
+      const bdVal = document.getElementById('birthDay').value;
+      const birthday = (byVal && bmVal && bdVal) ? '民國' + byVal + '年' + bmVal + '月' + bdVal + '日' : '';
+      const remarkRaw = document.getElementById('remark').value.trim();
+      const remark = birthday ? (remarkRaw ? birthday + '；' + remarkRaw : birthday) : remarkRaw;
       if (!name)        return showToast('請填寫姓名', true);
       if (!phone)       return showToast('請填寫聯絡電話', true);
       if (!memberType)  return showToast('請選擇身份（會員或來賓）', true);
@@ -739,6 +759,31 @@
         }
       });
     });
+
+    // 填充出生年月日下拉選單
+    (function() {
+      var yearSel = document.getElementById('birthYear');
+      for (var y = 115; y >= 30; y--) {
+        var opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = '民國 ' + y + ' 年';
+        yearSel.appendChild(opt);
+      }
+      var monthSel = document.getElementById('birthMonth');
+      for (var m = 1; m <= 12; m++) {
+        var opt2 = document.createElement('option');
+        opt2.value = m;
+        opt2.textContent = m + ' 月';
+        monthSel.appendChild(opt2);
+      }
+      var daySel = document.getElementById('birthDay');
+      for (var d = 1; d <= 31; d++) {
+        var opt3 = document.createElement('option');
+        opt3.value = d;
+        opt3.textContent = d + ' 日';
+        daySel.appendChild(opt3);
+      }
+    })();
 
     initTypeToggle();
     loadEventInfo();
