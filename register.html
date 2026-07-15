@@ -510,7 +510,11 @@
         });
     }
 
-    /* 通用 fetch：10 秒超時，失敗自動改用 JSONP script tag */
+    /*
+     * fetchWithFallback：
+     * - 10 秒超時，純網路錯誤才改用 JSONP
+     * - GAS 回傳 ok:false 直接丟錯誤，不走 JSONP（避免顯示誤導訊息）
+     */
     function fetchWithFallback(url) {
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 10000);
@@ -518,19 +522,21 @@
         .then(res => res.text())
         .then(text => {
           clearTimeout(timer);
-          const data = JSON.parse(text);
-          if (!data.ok) throw new Error(data.error || 'API 回應錯誤');
-          return data;
+          return JSON.parse(text); // 讓呼叫端自行判斷 ok
         })
         .catch(primaryErr => {
           clearTimeout(timer);
-          console.warn('fetch 失敗，改用 JSONP：', primaryErr.message);
+          // 只有真正網路失敗才用 JSONP
+          console.warn('網路失敗，改用 JSONP：', primaryErr.message);
           return fetchViaScriptTag(url);
         });
     }
 
     function fetchInfo() {
-      return fetchWithFallback(API + '?action=info');
+      return fetchWithFallback(API + '?action=info').then(data => {
+        if (!data.ok) throw new Error(data.msg || data.error || 'API 錯誤');
+        return data;
+      });
     }
 
     function fetchViaScriptTag(url) {
