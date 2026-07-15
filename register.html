@@ -712,7 +712,7 @@
       btn.disabled = true;
       btn.textContent = '報名中…';
 
-      const params = new URLSearchParams({ action: 'register', name, phone, birthday, lunchbox, note });
+      const params = new URLSearchParams({ action: 'register', name, phone, birthday, memberType: memberType||'', attendance: attendance||'', meal: (attendance==='出席'?meal:'')  ||'', lunchbox, note });
       fetchWithFallback(API + '?' + params.toString())
         .then(data => {
           if (!data.ok) throw new Error(data.error || '報名失敗');
