@@ -60,7 +60,12 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
 .ok .pop-ico{background:rgba(74,124,89,.14);color:var(--ok);border:2px solid var(--ok)}
 .dup .pop-ico{background:rgba(192,138,62,.14);color:var(--warn);border:2px solid var(--warn)}
 .no .pop-ico{background:rgba(181,84,75,.12);color:var(--err);border:2px solid var(--err)}
-.pop-nm{font-family:'Noto Serif TC',serif;font-size:34px;font-weight:700;margin-bottom:14px}
+.pop-nm{font-family:'Noto Serif TC',serif;font-size:34px;font-weight:700;margin-bottom:10px}
+.pop-badges{display:flex;justify-content:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.badge{display:inline-block;padding:5px 16px;border-radius:20px;font-size:16px;font-weight:700}
+.badge-type{background:rgba(168,135,79,.15);color:var(--gold);border:1px solid rgba(168,135,79,.4)}
+.badge-fee{background:rgba(181,84,75,.12);color:#b04030;border:1px solid rgba(181,84,75,.35);font-size:18px}
+.badge-free{background:rgba(74,124,89,.12);color:var(--ok);border:1px solid rgba(74,124,89,.35);font-size:18px}
 .pop-msg{font-size:19px;line-height:1.7}
 .ok .pop-msg{color:var(--ok);font-weight:700}
 .dup .pop-msg{color:var(--warn)}
@@ -90,12 +95,13 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
   <div class="pop-card" id="popCard" onclick="event.stopPropagation()">
     <div class="pop-ico" id="popIco"></div>
     <div class="pop-nm" id="popNm"></div>
+    <div class="pop-badges" id="popBadges"></div>
     <div class="pop-msg" id="popMsg"></div>
     <button onclick="closePop()">繼續報到</button>
   </div>
 </div>
 <script>
-var API='https://script.google.com/macros/s/AKfycbx4dPgEFllbZBjQbhe32vToQBPAb9YSLFzlnUhs-KimiGmWmVXCNU2olH09tnF8X1tCkQ/exec';
+var API='https://script.google.com/macros/s/AKfycbz6p38L0yjj1x2Qs_SsCWvHwUxpsYXtpQYYUa5N0_1uDMZLfWR2rIkBHUNbVX7Vu15udg/exec';
 var $=function(id){return document.getElementById(id)};
 var scanner=null,busy=false,lastCode='',lastAt=0;
 fetch(API+'?action=info').then(function(r){return r.json()}).then(function(d){
@@ -111,9 +117,9 @@ function onScan(text){var now=Date.now();if(busy)return;if(text===lastCode&&now-
 async function doCheckIn(id){
   busy=true;
   try{var d=await(await fetch(API+'?action=checkin&id='+encodeURIComponent(id))).json();
-    if(d.ok){buzz([40,60,40]);showPop('ok','✓',d.name,'報到完成　'+d.time);}
-    else if(d.dup){buzz([120,80,120]);showPop('dup','!',d.name,d.msg);}
-    else{buzz([200]);showPop('no','✕','查無此人','請改用下方搜尋姓名');}
+    if(d.ok){buzz([40,60,40]);showPop('ok','✓',d.name,'報到完成　'+d.time,d.memberType,d.fee);}
+    else if(d.dup){buzz([120,80,120]);showPop('dup','!',d.name,d.msg,d.memberType,d.fee);}
+    else{buzz([200]);showPop('no','✕','查無此人','請改用下方搜尋姓名',null,null);}
     if(d.stats)setStats(d.stats);
   }catch(e){showPop('no','✕','連線失敗','請檢查網路');}
   busy=false;
@@ -136,7 +142,19 @@ function render(rows){
 async function manual(id){await doCheckIn(id);run();}
 async function refreshStats(){try{setStats(await(await fetch(API+'?action=stats')).json());}catch(e){}}
 function setStats(s){$('s-in').textContent=s.checked;$('s-left').textContent=s.remain;}
-function showPop(cls,ico,nm,msg){$('popCard').className='pop-card '+cls;$('popIco').textContent=ico;$('popNm').textContent=nm;$('popMsg').textContent=msg;$('pop').classList.add('on');if(cls==='ok')setTimeout(closePop,1800);}
+function showPop(cls,ico,nm,msg,memberType,fee){
+  $('popCard').className='pop-card '+cls;
+  $('popIco').textContent=ico;
+  $('popNm').textContent=nm;
+  $('popMsg').textContent=msg;
+  var badges='';
+  if(memberType){badges+='<span class="badge badge-type">'+(memberType==='會員'?'🏅 會員':'🎟️ 來賓')+'</span>';}
+  if(memberType==='來賓'&&fee){badges+='<span class="badge badge-fee">💰 收費 '+fee+'</span>';}
+  else if(memberType==='會員'){badges+='<span class="badge badge-free">✓ 免收費</span>';}
+  $('popBadges').innerHTML=badges;
+  $('pop').classList.add('on');
+  if(cls==='ok')setTimeout(closePop,3000);
+}
 function closePop(){$('pop').classList.remove('on');}
 function buzz(p){if(navigator.vibrate)navigator.vibrate(p);}
 function esc(s){return String(s).replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]});}
