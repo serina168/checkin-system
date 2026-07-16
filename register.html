@@ -43,7 +43,7 @@ textarea{resize:vertical;min-height:78px}
 .member-welcome{background:rgba(74,124,89,.08);border:1px solid rgba(74,124,89,.3);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
 .member-avatar{width:44px;height:44px;background:linear-gradient(135deg,var(--gold-lt),var(--gold));border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;flex-shrink:0}
 .mname{font-weight:700;font-size:17px}
-.mid{font-size:13px;color:var(--muted);margin-top:2px}
+.msub{font-size:13px;color:var(--muted);margin-top:2px}
 .divider{text-align:center;color:var(--muted);font-size:14px;margin:4px 0 16px;position:relative}
 .divider::before,.divider::after{content:'';position:absolute;top:50%;width:calc(50% - 50px);height:1px;background:var(--border)}
 .divider::before{left:0}.divider::after{right:0}
@@ -53,14 +53,19 @@ textarea{resize:vertical;min-height:78px}
 .success-icon{font-size:54px;margin-bottom:10px}
 .success-title{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;margin-bottom:4px}
 .success-sub{color:var(--muted);font-size:15px;margin-bottom:20px}
-.qr-wrap{background:#fff;border-radius:20px;padding:24px 22px 20px;display:inline-block;box-shadow:0 6px 28px rgba(140,110,60,.15);margin-bottom:14px;border:1.5px solid rgba(200,170,110,.25)}
+/* QR Card */
+.qr-wrap{background:#fff;border-radius:20px;padding:26px 24px 20px;display:inline-block;box-shadow:0 6px 28px rgba(140,110,60,.15);margin-bottom:14px;border:1.5px solid rgba(200,170,110,.25)}
 #qrcode,#qrcode-lookup{margin:0 auto}
 .qr-name{font-family:'Noto Serif TC',serif;font-size:26px;font-weight:700;color:var(--ink);margin-bottom:14px;letter-spacing:.05em}
-.qr-id{font-family:monospace;font-size:16px;font-weight:700;color:var(--muted);margin-top:12px;letter-spacing:.12em}
-.qr-org{font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:.3em}
+.qr-phone{font-size:17px;color:var(--muted);margin-top:10px;letter-spacing:.08em}
+.qr-org{font-size:11px;color:rgba(140,120,90,.5);margin-top:6px;letter-spacing:.35em}
 .qr-hint{background:rgba(168,135,79,.08);border:1px solid rgba(168,135,79,.25);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:16px;text-align:left}
 .qr-hint strong{color:var(--ink)}
 .hidden{display:none!important}
+/* mode tabs */
+.mode-tabs{display:flex;gap:8px;margin-bottom:16px}
+.mode-tab{flex:1;font-family:inherit;font-size:16px;font-weight:700;padding:12px;border-radius:12px;border:1.5px solid var(--border);cursor:pointer;transition:all .2s;background:rgba(255,255,255,.5);color:var(--muted)}
+.mode-tab.active{background:linear-gradient(135deg,var(--gold-lt),var(--gold));color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(168,135,79,.3)}
 </style>
 </head>
 <body>
@@ -70,17 +75,16 @@ textarea{resize:vertical;min-height:78px}
     <h1 id="page-title">活動報名</h1>
   </header>
 
-  <!-- Mode tabs -->
-  <div style="display:flex;gap:8px;margin-bottom:16px">
-    <button id="tab-reg" class="btn" style="flex:1;margin-top:0;padding:12px" onclick="switchMode('reg')">📝 活動報名</button>
-    <button id="tab-qr" class="btn btn-ghost" style="flex:1;margin-top:0;padding:12px" onclick="switchMode('qr')">🔖 取得我的 QR Code</button>
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tab-reg" onclick="switchMode('reg')">📝 活動報名</button>
+    <button class="mode-tab" id="tab-qr" onclick="switchMode('qr')">🔖 取得我的 QR Code</button>
   </div>
 
   <!-- ===== QR Lookup mode ===== -->
   <div id="mode-qr" class="hidden">
     <div class="card">
-      <div class="card-title">查詢我的永久 QR Code</div>
-      <p style="font-size:14px;color:var(--muted);margin-bottom:16px">輸入您報名時的電話號碼，即可取得您的永久會員 QR Code，下次活動直接出示掃描即可。</p>
+      <div class="card-title">查詢我的 QR Code</div>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:16px">輸入您的手機號碼，即可取得您的專屬 QR Code，截圖保存後下次活動直接掃描報到。</p>
       <div class="form-group">
         <label>電話號碼</label>
         <div class="lookup-row">
@@ -92,12 +96,12 @@ textarea{resize:vertical;min-height:78px}
         <div class="qr-wrap">
           <div class="qr-name" id="qr-lookup-name"></div>
           <div id="qrcode-lookup"></div>
-          <div class="qr-id" id="qr-lookup-id"></div>
+          <div class="qr-phone" id="qr-lookup-phone"></div>
           <div class="qr-org">臺中市海德堡讀書會</div>
         </div>
         <div class="qr-hint">
           <strong>📌 請截圖保存這張 QR Code</strong><br>
-          這是您的<strong>永久會員 QR Code</strong>，下次活動直接出示掃描即可報到，無需重新填寫資料。
+          下次活動直接出示掃描即可報到，無需重新填寫資料。
         </div>
       </div>
     </div>
@@ -116,12 +120,12 @@ textarea{resize:vertical;min-height:78px}
     <div class="qr-wrap">
       <div class="qr-name" id="qr-name-text"></div>
       <div id="qrcode"></div>
-      <div class="qr-id" id="qr-id-text"></div>
+      <div class="qr-phone" id="qr-phone-text"></div>
       <div class="qr-org">臺中市海德堡讀書會</div>
     </div>
     <div class="qr-hint">
       <strong>📌 請截圖保存這張 QR Code</strong><br>
-      這是您的<strong>永久會員 QR Code</strong>，下次活動直接出示掃描即可報到，無需重新填寫資料。
+      下次活動直接出示掃描即可報到，無需重新填寫資料。
     </div>
     <button class="btn" onclick="location.reload()">繼續報名（其他人）</button>
   </div>
@@ -146,7 +150,7 @@ textarea{resize:vertical;min-height:78px}
       <div class="member-avatar">👤</div>
       <div>
         <div class="mname" id="welcome-name"></div>
-        <div class="mid" id="welcome-id"></div>
+        <div class="msub" id="welcome-sub"></div>
       </div>
     </div>
     <div class="card-title">本次活動選擇</div>
@@ -257,17 +261,14 @@ textarea{resize:vertical;min-height:78px}
 
 <script>
 var API='https://script.google.com/macros/s/AKfycbyo57_hMEvdUP5vNLMUKSiD6jgFjct95cNY_nskRHxVxr6-LhId7UKJ--iVs_50b_3sJQ/exec';
-var curId='',curName='';
+var curPhone='',curName='';
 
 function switchMode(mode){
   var isReg=mode==='reg';
   document.getElementById('mode-reg').classList.toggle('hidden',!isReg);
   document.getElementById('mode-qr').classList.toggle('hidden',isReg);
-  document.getElementById('tab-reg').className='btn'+(isReg?'':' btn-ghost')+' '+(isReg?'':'');
-  document.getElementById('tab-qr').className='btn'+(isReg?' btn-ghost':'');
-  // fix inline styles
-  document.getElementById('tab-reg').style.cssText='flex:1;margin-top:0;padding:12px'+(isReg?';background:linear-gradient(135deg,var(--gold-lt),var(--gold));color:#fff':';background:none;color:var(--muted);border:1px solid var(--border);box-shadow:none');
-  document.getElementById('tab-qr').style.cssText='flex:1;margin-top:0;padding:12px'+(isReg?';background:none;color:var(--muted);border:1px solid var(--border);box-shadow:none':';background:linear-gradient(135deg,var(--gold-lt),var(--gold));color:#fff');
+  document.getElementById('tab-reg').classList.toggle('active',isReg);
+  document.getElementById('tab-qr').classList.toggle('active',!isReg);
   document.getElementById('page-title').textContent=isReg?'活動報名':'取得我的 QR Code';
 }
 
@@ -279,9 +280,9 @@ function lookupQR(){
     .then(function(d){
       if(!d.ok){toast(d.msg||'查無此電話，請先完成活動報名',true);return;}
       document.getElementById('qr-lookup-name').textContent=d.name;
-      document.getElementById('qr-lookup-id').textContent=d.memberId;
+      document.getElementById('qr-lookup-phone').textContent=d.phone;
       var el=document.getElementById('qrcode-lookup');el.innerHTML='';
-      new QRCode(el,{text:d.memberId,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff'});
+      new QRCode(el,{text:d.phone,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff'});
       document.getElementById('qr-result').classList.remove('hidden');
       toast('找到了！請截圖保存');
     })
@@ -344,9 +345,9 @@ function lookupMember(){
         toast('找不到此電話，請填寫完整資料');
         return;
       }
-      curId=d.member.memberId;curName=d.member.name;
+      curPhone=d.member.phone;curName=d.member.name;
       document.getElementById('welcome-name').textContent=d.member.name;
-      document.getElementById('welcome-id').textContent=d.member.memberId+(d.member.memberType?' ・ '+d.member.memberType:'');
+      document.getElementById('welcome-sub').textContent=d.member.phone+(d.member.memberType?' ・ '+d.member.memberType:'');
       show('step-existing');
       if(d.alreadyRegistered)toast('您已完成報名，可修改用餐選擇');
     })
@@ -354,7 +355,7 @@ function lookupMember(){
 }
 
 function showNewForm(){show('step-new');}
-function goBack(){show('step1');curId='';curName='';}
+function goBack(){show('step1');curPhone='';curName='';}
 function show(id){
   ['step1','step-existing','step-new'].forEach(function(s){
     document.getElementById(s).classList.toggle('hidden',s!==id);
@@ -370,10 +371,10 @@ function submitExisting(){
   var note=document.getElementById('ex-note').value.trim();
   var btn=document.getElementById('ex-btn');
   btn.disabled=true;btn.textContent='送出中…';
-  var p=new URLSearchParams({action:'event_register',memberId:curId,attendance:att.value,meal:att.value==='出席'?(meal?meal.value:''):'',lunchbox:lunchbox,note:note});
+  var p=new URLSearchParams({action:'event_register',phone:curPhone,attendance:att.value,meal:att.value==='出席'?(meal?meal.value:''):'',lunchbox:lunchbox,note:note});
   apiFetch(API+'?'+p).then(function(d){
     if(!d.ok)throw new Error(d.msg||'報名失敗');
-    showSuccess(d.memberId,d.name);
+    showSuccess(d.name,d.phone);
   }).catch(function(e){toast(e.message||'報名失敗',true);})
   .finally(function(){btn.disabled=false;btn.textContent='確認報名';});
 }
@@ -398,18 +399,18 @@ function submitNew(){
   var p=new URLSearchParams({action:'event_register',name:name,phone:phone,birthday:birthday,memberType:typeEl.value,attendance:attEl.value,meal:attEl.value==='出席'?(mealEl?mealEl.value:''):'',lunchbox:lunchbox,note:note});
   apiFetch(API+'?'+p).then(function(d){
     if(!d.ok)throw new Error(d.msg||'報名失敗');
-    showSuccess(d.memberId,d.name);
+    showSuccess(d.name,d.phone);
   }).catch(function(e){toast(e.message||'報名失敗',true);})
   .finally(function(){btn.disabled=false;btn.textContent='確認報名';});
 }
 
-function showSuccess(memberId,name){
+function showSuccess(name,phone){
   ['step1','step-existing','step-new'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
   document.getElementById('success-msg').textContent=(name||'')+'，報名完成！';
   document.getElementById('qr-name-text').textContent=name||'';
-  document.getElementById('qr-id-text').textContent=memberId;
+  document.getElementById('qr-phone-text').textContent=phone||'';
   var el=document.getElementById('qrcode');el.innerHTML='';
-  new QRCode(el,{text:memberId,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff'});
+  new QRCode(el,{text:phone,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff'});
   document.getElementById('success-section').style.display='';
   window.scrollTo({top:0,behavior:'smooth'});
 }

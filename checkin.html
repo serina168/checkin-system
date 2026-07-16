@@ -114,7 +114,7 @@ function onScan(text){
 
 function doCheckIn(id){
   busy=true;
-  fetch(API+'?action=event_checkin&id='+encodeURIComponent(id))
+  fetch(API+'?action=event_checkin&phone='+encodeURIComponent(id))
     .then(function(r){return r.json();})
     .then(function(d){
       if(d.ok){
@@ -156,7 +156,7 @@ function renderList(rows){
     if(r.checkedIn){
       return '<div class="row done"><div class="info"><div class="nm">'+esc(r.name)+'</div><div class="meta">'+mask(r.phone)+(meta?' ・ '+meta:'')+'</div></div><div class="tag">✓ 已報到</div></div>';
     }
-    return '<div class="row"><div class="info"><div class="nm">'+esc(r.name)+'</div><div class="meta">'+mask(r.phone)+(meta?' ・ '+meta:'')+'</div></div><button onclick="manualCheckin(\''+r.memberId+'\')">報到</button></div>';
+    return '<div class="row"><div class="info"><div class="nm">'+esc(r.name)+'</div><div class="meta">'+mask(r.phone)+(meta?' ・ '+meta:'')+'</div></div><button onclick="manualCheckin(\''+r.phone+'\')">報到</button></div>';
   }).join('');
 }
 

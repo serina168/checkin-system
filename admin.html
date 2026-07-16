@@ -121,7 +121,7 @@ tr:hover td{background:rgba(168,135,79,.04)}
         </div>
         <div class="tbl-wrap">
           <table id="members-table">
-            <tr><th>編號</th><th>姓名</th><th>電話</th><th>出生年月日</th><th>身份</th><th>加入日期</th></tr>
+            <tr><th>姓名</th><th>電話</th><th>出生年月日</th><th>身份</th><th>加入日期</th></tr>
           </table>
         </div>
       </div>
@@ -258,17 +258,17 @@ function loadMembers(){
 }
 
 function renderMembersTable(members){
-  var rows=members.map(function(m,i){
-    return '<tr><td>'+esc(m.memberId)+'</td><td>'+esc(m.name)+'</td><td>'+esc(m.phone)+'</td><td>'+(m.birthday||'')+'</td><td>'+(m.memberType||'')+'</td><td>'+(m.joinDate||'')+'</td></tr>';
+  var rows=members.map(function(m){
+    return '<tr><td>'+esc(m.name)+'</td><td>'+esc(m.phone)+'</td><td>'+(m.birthday||'')+'</td><td>'+(m.memberType||'')+'</td><td>'+(m.joinDate||'')+'</td></tr>';
   }).join('');
-  document.getElementById('members-table').innerHTML='<tr><th>編號</th><th>姓名</th><th>電話</th><th>出生年月日</th><th>身份</th><th>加入日期</th></tr>'+(rows||'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">尚無資料</td></tr>');
+  document.getElementById('members-table').innerHTML='<tr><th>姓名</th><th>電話</th><th>出生年月日</th><th>身份</th><th>加入日期</th></tr>'+(rows||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">尚無資料</td></tr>');
 }
 
 function exportMembersCSV(){
   if(!_members.length){alert('尚無資料');return;}
-  var rows=[['會員編號','姓名','電話','出生年月日','身份','加入日期','備註']];
+  var rows=[['姓名','電話','出生年月日','身份','加入日期','備註']];
   _members.forEach(function(m){
-    rows.push([m.memberId,m.name,'="'+m.phone+'"',m.birthday||'',m.memberType||'',m.joinDate||'',m.note||'']);
+    rows.push([m.name,'="'+m.phone+'"',m.birthday||'',m.memberType||'',m.joinDate||'',m.note||'']);
   });
   dlCSV(rows,'會員名冊.csv');
 }
