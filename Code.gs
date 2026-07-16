@@ -75,6 +75,10 @@ function findMemberByPhone(phone) {
 // Detect if event sheet is old Google Form format (col A = timestamp)
 function isOldFormat(sh) {
   if (sh.getLastRow() < 2) return false;
+  // Check header row first (most reliable)
+  var h0 = String(sh.getRange(1, 1).getValue());
+  if (h0.indexOf('時間') >= 0 || h0.toLowerCase().indexOf('timestamp') >= 0) return true;
+  // Fallback: check if A2 is an ISO timestamp string
   var a1 = String(sh.getRange(2, 1).getValue());
   return a1.match(/^\d{4}-\d{2}-\d{2}T/) !== null;
 }
@@ -95,11 +99,12 @@ function convertOldFormatSheet(sh) {
 function findInEventSheet(sh, phone) {
   if (!sh || sh.getLastRow() < 2) return null;
   var norm = normalizePhone(phone);
-  var cols = isOldFormat(sh) ? 8 : 7;
-  var phoneCol = isOldFormat(sh) ? 2 : 1; // old=C(idx2), new=B(idx1)
+  var old = isOldFormat(sh);
+  var cols = old ? 9 : 7; // old: A~I(9cols), new: A~G(7cols)
+  var phoneCol = old ? 2 : 1; // old=C(idx2), new=B(idx1)
   var data = sh.getRange(2, 1, sh.getLastRow() - 1, cols).getValues();
   for (var i = 0; i < data.length; i++) {
-    if (normalizePhone(data[i][phoneCol]) === norm) return {row: i+2, data: data[i], old: isOldFormat(sh)};
+    if (normalizePhone(data[i][phoneCol]) === norm) return {row: i+2, data: data[i], old: old};
   }
   return null;
 }
@@ -183,9 +188,10 @@ function eventCheckin(phone) {
 
     var d = row.data;
     if (old) {
-      if (d[7]) return {ok: false, msg: d[1] + ' 已於 ' + d[7] + ' 報到', dup: true};
-      evSh.getRange(row.row, 8).setValue(now);
-      return {ok: true, name: d[1], meal: '', lunchbox: '0'};
+      // old: A=timestamp B=姓名 C=電話 D=生日 E=? F=身份 G=出席/請假 H=用餐 I=報到時間
+      if (d[8]) return {ok: false, msg: d[1] + ' 已於 ' + d[8] + ' 報到', dup: true};
+      evSh.getRange(row.row, 9).setValue(now);
+      return {ok: true, name: d[1], meal: String(d[7]||''), lunchbox: '0'};
     } else {
       if (d[6]) return {ok: false, msg: d[0] + ' 已於 ' + d[6] + ' 報到', dup: true};
       evSh.getRange(row.row, 7).setValue(now);
@@ -200,7 +206,7 @@ function eventSearch(q) {
   if (!evSh || evSh.getLastRow() < 2) return {ok: true, results: []};
   var old = isOldFormat(evSh);
   var norm = normalizePhone(q);
-  var cols = old ? 8 : 7;
+  var cols = old ? 9 : 7;
   var data = evSh.getRange(2, 1, evSh.getLastRow() - 1, cols).getValues();
   var results = data
     .filter(function(r) {
@@ -208,7 +214,7 @@ function eventSearch(q) {
                  : (String(r[0]).indexOf(q)>=0 || normalizePhone(r[1]).indexOf(norm)>=0);
     })
     .map(function(r) {
-      return old ? {name:r[1], phone:r[2], meal:'', lunchbox:'0', checkedIn:!!r[7]}
+      return old ? {name:r[1], phone:r[2], meal:String(r[7]||''), lunchbox:'0', checkedIn:!!r[8]}
                  : {name:r[0], phone:r[1], meal:r[3], lunchbox:String(r[4]||'0'), checkedIn:!!r[6]};
     });
   return {ok: true, results: results};
@@ -218,9 +224,9 @@ function eventStats() {
   var evSh = getEventSheet();
   if (!evSh || evSh.getLastRow() < 2) return {ok:true, total:0, checked:0, unchecked:0};
   var old = isOldFormat(evSh);
-  var cols = old ? 8 : 7;
+  var cols = old ? 9 : 7;
   var data = evSh.getRange(2, 1, evSh.getLastRow()-1, cols).getValues();
-  var checkedCol = old ? 7 : 6; // old=col H(idx7), new=col G(idx6)
+  var checkedCol = old ? 8 : 6; // old=col I(idx8), new=col G(idx6)
   var checked = data.filter(function(r){return !!r[checkedCol];}).length;
   return {ok:true, total:data.length, checked:checked, unchecked:data.length-checked};
 }
@@ -235,12 +241,12 @@ function adminEventGuests(pass) {
   var evSh = getEventSheet();
   if (!evSh || evSh.getLastRow() < 2) return {ok:true, guests:[]};
   var old = isOldFormat(evSh);
-  var cols = old ? 8 : 7;
+  var cols = old ? 9 : 7;
   var data = evSh.getRange(2, 1, evSh.getLastRow()-1, cols).getValues();
   var guests = data.map(function(r) {
     if (old) {
-      // A=timestamp B=姓名 C=電話 D=生日 E=? F=身份 G=出席狀況 H=報到時間(新增)
-      return {name:r[1], phone:r[2], attendance:r[6]||'出席', meal:'', lunchbox:'0', note:r[5]||'', checkinTime:r[7]?String(r[7]):'', checkedIn:!!r[7]};
+      // A=timestamp B=姓名 C=電話 D=生日 E=? F=身份 G=出席/請假 H=用餐 I=報到時間(新增)
+      return {name:r[1], phone:r[2], attendance:r[6]||'出席', meal:r[7]||'', lunchbox:'0', note:r[5]||'', checkinTime:r[8]?String(r[8]):'', checkedIn:!!r[8]};
     }
     return {name:r[0], phone:r[1], attendance:r[2], meal:r[3], lunchbox:String(r[4]||'0'), note:r[5], checkinTime:r[6]?String(r[6]):'', checkedIn:!!r[6]};
   });
@@ -298,6 +304,7 @@ function adminMigrate(pass, sheetName) {
     var nameCol=0, phoneCol=1;
     // Google Form sheet: A=Timestamp, B=姓名, C=電話
     if(String(header[0]).toLowerCase().indexOf('timestamp')>=0
+       || String(header[0]).indexOf('時間')>=0
        || String(header[0]).match(/^\d{4}-\d{2}-\d{2}T/)
        || String(header[0]).indexOf('編號')>=0
        || String(header[0]).match(/^M\d/)){nameCol=1;phoneCol=2;}

@@ -188,10 +188,12 @@ function switchTab(name){
 }
 
 function fixOldFormatGuests(guests){
-  // Old GAS (Google Form sheet): col A=timestamp, B=姓名, C=電話, F=身份, G=出席狀況
-  // Old GAS mapped those as: name=A phone=B attendance=C note=F checkinTime=G
-  // Detect: if name looks like ISO timestamp, remap everything
-  if(!guests.length||!/^\d{4}-\d{2}-\d{2}T/.test(String(guests[0].name)))return guests;
+  // Fallback for old server code that returned timestamp as 'name'.
+  // Detect: name is ISO timestamp OR JS Date.toString() format ("Thu Jul 16 2026...")
+  if(!guests.length) return guests;
+  var n=String(guests[0].name);
+  var isStamp=/^\d{4}-\d{2}-\d{2}T/.test(n)||/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s/.test(n);
+  if(!isStamp) return guests;
   return guests.map(function(g){
     var realTime=/^\d{2}:\d{2}/.test(String(g.checkinTime))?String(g.checkinTime):'';
     return{name:String(g.phone||''),phone:String(g.attendance||''),
