@@ -365,13 +365,11 @@ function apiFetch(url){
 
 function driveUrl(url){
   if(!url)return'';
-  // https://drive.google.com/file/d/FILE_ID/view  →  直接顯示格式
+  var id='';
   var m=url.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
-  if(m)return'https://drive.google.com/uc?export=view&id='+m[1];
-  // https://drive.google.com/open?id=FILE_ID
-  var m2=url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
-  if(m2)return'https://drive.google.com/uc?export=view&id='+m2[1];
-  return url;
+  if(m)id=m[1];
+  else{var m2=url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);if(m2)id=m2[1];}
+  return id?'https://lh3.googleusercontent.com/d/'+id:url;
 }
 
 function formatDate(s){
