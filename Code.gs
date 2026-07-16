@@ -245,8 +245,8 @@ function adminEventGuests(pass) {
   var data = evSh.getRange(2, 1, evSh.getLastRow()-1, cols).getValues();
   var guests = data.map(function(r) {
     if (old) {
-      // A=timestamp B=姓名 C=電話 D=生日 E=? F=身份 G=出席/請假 H=用餐 I=報到時間(新增)
-      return {name:r[1], phone:r[2], attendance:r[6]||'出席', meal:r[7]||'', lunchbox:'0', note:r[5]||'', checkinTime:r[8]?String(r[8]):'', checkedIn:!!r[8]};
+      // A=timestamp B=姓名 C=電話 D=生日 E=加購便當 F=身份 G=出席/請假 H=用餐 I=報到時間(新增)
+      return {name:r[1], phone:r[2], attendance:r[6]||'出席', meal:r[7]||'', lunchbox:String(r[4]||'0'), note:String(r[5]||''), checkinTime:r[8]?String(r[8]):'', checkedIn:!!r[8]};
     }
     return {name:r[0], phone:r[1], attendance:r[2], meal:r[3], lunchbox:String(r[4]||'0'), note:r[5], checkinTime:r[6]?String(r[6]):'', checkedIn:!!r[6]};
   });
@@ -299,13 +299,15 @@ function adminMigrate(pass, sheetName) {
       mSh.appendRow(['姓名','電話','出生年月日','身份','加入日期','備註']);
       mSh.setFrozenRows(1);
     }
-    // Use isOldFormat to detect Google Form sheet (A=timestamp, B=姓名, C=電話, D=生日)
+    // Use isOldFormat to detect Google Form sheet
+    // Old format: A=timestamp B=姓名 C=電話 D=生日 E=加購便當 F=身份 G=出席 H=用餐
     var old = isOldFormat(srcSh);
-    var nameCol     = old ? 1 : 0;
-    var phoneCol    = old ? 2 : 1;
-    var birthdayCol = old ? 3 : -1;
+    var nameCol       = old ? 1 : 0;
+    var phoneCol      = old ? 2 : 1;
+    var birthdayCol   = old ? 3 : -1;
+    var memberTypeCol = old ? 5 : -1;
 
-    var srcData = srcSh.getRange(2, 1, srcSh.getLastRow()-1, 4).getValues();
+    var srcData = srcSh.getRange(2, 1, srcSh.getLastRow()-1, old ? 6 : 2).getValues();
     var today = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy/MM/dd');
     var added=0, skipped=0;
     srcData.forEach(function(row) {
@@ -313,8 +315,9 @@ function adminMigrate(pass, sheetName) {
       var phone = String(row[phoneCol]||'').trim();
       if (!name || !phone) return;
       if (findMemberByPhone(phone)) { skipped++; return; }
-      var birthday = birthdayCol >= 0 ? String(row[birthdayCol]||'').trim() : '';
-      mSh.appendRow([name, phone, birthday, '會員', today, '已從'+sheetName+'匯入']);
+      var birthday   = birthdayCol   >= 0 ? String(row[birthdayCol]||'').trim()   : '';
+      var memberType = memberTypeCol >= 0 ? String(row[memberTypeCol]||'').trim() || '會員' : '會員';
+      mSh.appendRow([name, phone, birthday, memberType, today, '已從'+sheetName+'匯入']);
       added++;
     });
     return {ok:true, added:added, skipped:skipped};
