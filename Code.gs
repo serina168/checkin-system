@@ -296,6 +296,11 @@ function adminMigrate(pass, sheetName) {
     var mSh = getMemberSheet();
     if (!mSh) {
       mSh = ss.insertSheet(MEMBER_SHEET);
+    }
+    // Always verify and fix the header row
+    var hdr = mSh.getLastRow() > 0 ? String(mSh.getRange(1,1).getValue()) : '';
+    if (hdr !== '姓名') {
+      mSh.clearContents();
       mSh.appendRow(['姓名','電話','出生年月日','身份','加入日期','備註']);
       mSh.setFrozenRows(1);
     }

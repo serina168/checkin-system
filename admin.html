@@ -236,7 +236,10 @@ function loadMembers(){
     .then(function(d){
       if(!d.ok){alert(d.msg||'載入失敗');return;}
       _members=d.members||[];
-      var rows=_members.map(function(m){return '<tr><td>'+esc(m.name)+'</td><td>'+esc(m.phone)+'</td><td>'+(m.birthday||'')+'</td><td>'+(m.memberType||'')+'</td><td>'+(m.joinDate||'')+'</td></tr>';}).join('');
+      var rows=_members.map(function(m){
+        var jd=m.joinDate?String(m.joinDate).replace(/T.*/,'').replace(/-/g,'/'):'';
+        return '<tr><td>'+esc(m.name)+'</td><td>'+esc(m.phone)+'</td><td>'+(m.birthday||'')+'</td><td>'+(m.memberType||'')+'</td><td>'+jd+'</td></tr>';
+      }).join('');
       document.getElementById('members-table').innerHTML='<tr><th>姓名</th><th>電話</th><th>出生年月日</th><th>身份</th><th>加入日期</th></tr>'+(rows||'<tr><td colspan="5" style="text-align:center;padding:20px;color:#8a7a63">尚無資料</td></tr>');
     }).catch(function(){alert('連線失敗');});
 }
