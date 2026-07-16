@@ -160,7 +160,16 @@ function eventRegister(p) {
     var existing = findInEventSheet(evSh, p.phone);
     var updated = false;
     if (existing) {
-      evSh.getRange(existing.row, 3, 1, 4).setValues([[attendance, meal, lunchbox, note]]);
+      if (existing.old) {
+        // old format: G=col7=出席, H=col8=用餐, E=col5=加購便當, I=col9=備註
+        evSh.getRange(existing.row, 7).setValue(attendance);
+        evSh.getRange(existing.row, 8).setValue(meal);
+        evSh.getRange(existing.row, 5).setValue(lunchbox);
+        evSh.getRange(existing.row, 9).setValue(note);
+      } else {
+        // new format: C=col3=出席, D=col4=用餐, E=col5=加購便當, F=col6=備註
+        evSh.getRange(existing.row, 3, 1, 4).setValues([[attendance, meal, lunchbox, note]]);
+      }
       updated = true;
     } else {
       evSh.appendRow([member.name, member.phone, attendance, meal, lunchbox, note, '']);
