@@ -14,8 +14,15 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--i
 header{text-align:center;padding:16px 0 20px}
 .brand{font-size:12px;letter-spacing:.5em;color:var(--gold);text-indent:.5em;margin-bottom:6px;font-weight:500}
 h1{font-family:'Noto Serif TC',serif;font-size:24px;font-weight:700}
-.event-info{background:rgba(168,135,79,.08);border:1px solid rgba(168,135,79,.25);border-radius:14px;padding:14px 16px;margin-bottom:18px;font-size:15px;color:var(--muted);text-align:center;line-height:1.9}
-.event-info strong{color:var(--ink);font-size:16px;display:block;margin-bottom:2px}
+.event-detail-card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:20px 18px;margin-bottom:18px;box-shadow:0 6px 24px rgba(140,110,60,.09)}
+.ev-title{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--ink);margin-bottom:14px;line-height:1.4;text-align:center}
+.ev-rows{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.ev-row{display:flex;align-items:flex-start;gap:10px;font-size:15px;line-height:1.6}
+.ev-row-icon{flex-shrink:0;width:22px;text-align:center;margin-top:1px}
+.ev-row-label{color:var(--muted);white-space:nowrap;flex-shrink:0;min-width:42px}
+.ev-row-val{color:var(--ink);font-weight:500}
+.ev-section-label{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.08em;margin-bottom:6px;margin-top:4px}
+.ev-desc-text{font-size:15px;color:var(--ink);line-height:1.8;white-space:pre-wrap}
 .card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:24px 20px;box-shadow:0 8px 30px rgba(140,110,60,.10);margin-bottom:16px}
 .card-title{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--gold);margin-bottom:18px;display:flex;align-items:center;gap:8px}
 .card-title::before{content:'';width:14px;height:2px;background:var(--gold-lt);border-radius:2px;flex-shrink:0}
@@ -110,7 +117,20 @@ textarea{resize:vertical;min-height:78px}
   <!-- ===== Registration mode ===== -->
   <div id="mode-reg">
 
-  <div id="event-info-card" class="event-info hidden"></div>
+  <!-- Event Info Banner -->
+  <div id="event-banner" class="hidden">
+    <div id="event-poster-wrap" class="hidden">
+      <img id="event-poster-img" src="" alt="活動海報" style="width:100%;border-radius:16px;display:block;margin-bottom:16px;box-shadow:0 6px 24px rgba(140,110,60,.18)">
+    </div>
+    <div class="event-detail-card">
+      <div id="ev-name" class="ev-title hidden"></div>
+      <div class="ev-rows" id="ev-rows"></div>
+      <div id="ev-desc-wrap" class="hidden">
+        <div class="ev-section-label">活動簡介</div>
+        <div id="ev-desc" class="ev-desc-text"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Success -->
   <div id="success-section" class="card">
@@ -319,18 +339,58 @@ function apiFetch(url){
 
 apiFetch(API+'?action=info').then(function(d){
   if(!d.ok||!d.config)return;
-  var c=d.config,parts=[];
-  if(c.eventName)parts.push('<strong>'+c.eventName+'</strong>');
-  if(c.eventDate)parts.push(c.eventDate);
-  if(c.eventTime)parts.push(c.eventTime);
-  if(c.location)parts.push('📍 '+c.location);
-  if(c.topic)parts.push('📖 '+c.topic);
-  if(parts.length){
-    var el=document.getElementById('event-info-card');
-    el.innerHTML=parts.join('&emsp;');
-    el.classList.remove('hidden');
+  var c=d.config;
+  var banner=document.getElementById('event-banner');
+  var hasContent=false;
+
+  // Poster image
+  if(c.posterUrl){
+    document.getElementById('event-poster-img').src=c.posterUrl;
+    document.getElementById('event-poster-wrap').classList.remove('hidden');
+    hasContent=true;
   }
+
+  // Event title
+  if(c.eventName){
+    var el=document.getElementById('ev-name');
+    el.textContent=c.eventName;
+    el.classList.remove('hidden');
+    hasContent=true;
+  }
+
+  // Info rows
+  var rows=[];
+  if(c.eventDate||c.eventTime){
+    var dt=(c.eventDate?formatDate(c.eventDate):'')+(c.eventTime?' '+c.eventTime:'');
+    rows.push({icon:'📅',label:'時間',val:dt.trim()});
+    hasContent=true;
+  }
+  if(c.location){rows.push({icon:'📍',label:'地點',val:c.location});hasContent=true;}
+  if(c.speaker){rows.push({icon:'🎤',label:'主講者',val:c.speaker});hasContent=true;}
+  if(c.topic){rows.push({icon:'📖',label:'主題',val:c.topic});hasContent=true;}
+  if(c.guestFee){rows.push({icon:'💰',label:'費用',val:c.guestFee});hasContent=true;}
+
+  var rowsEl=document.getElementById('ev-rows');
+  rows.forEach(function(r){
+    rowsEl.innerHTML+='<div class="ev-row"><span class="ev-row-icon">'+r.icon+'</span><span class="ev-row-label">'+r.label+'</span><span class="ev-row-val">'+r.val+'</span></div>';
+  });
+
+  // Description
+  if(c.desc){
+    document.getElementById('ev-desc').textContent=c.desc;
+    document.getElementById('ev-desc-wrap').classList.remove('hidden');
+    hasContent=true;
+  }
+
+  if(hasContent)banner.classList.remove('hidden');
 }).catch(function(){});
+
+function formatDate(s){
+  if(!s)return'';
+  var m=String(s).match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  if(m)return m[1]+'年'+parseInt(m[2])+'月'+parseInt(m[3])+'日';
+  return s;
+}
 
 function lookupMember(){
   var phone=document.getElementById('lookup-phone').value.trim();
