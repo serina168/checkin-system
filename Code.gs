@@ -72,12 +72,34 @@ function findMemberByPhone(phone) {
   return null;
 }
 
+// Detect if event sheet is old Google Form format (col A = timestamp)
+function isOldFormat(sh) {
+  if (sh.getLastRow() < 2) return false;
+  var a1 = String(sh.getRange(2, 1).getValue());
+  return a1.match(/^\d{4}-\d{2}-\d{2}T/) !== null;
+}
+
+// Convert old format sheet to new format in place
+function convertOldFormatSheet(sh) {
+  if (!isOldFormat(sh)) return;
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 8).getValues();
+  sh.clear();
+  sh.appendRow(['姓名','電話','出席狀況','用餐','加購便當','備註','報到時間']);
+  data.forEach(function(r) {
+    // old: A=timestamp B=姓名 C=電話 D=生日 E=? F=身份 G=出席狀況
+    sh.appendRow([r[1], r[2], r[6]||'出席', '', '0', r[5]||'', '']);
+  });
+  sh.setFrozenRows(1);
+}
+
 function findInEventSheet(sh, phone) {
   if (!sh || sh.getLastRow() < 2) return null;
   var norm = normalizePhone(phone);
-  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 7).getValues();
+  var cols = isOldFormat(sh) ? 8 : 7;
+  var phoneCol = isOldFormat(sh) ? 2 : 1; // old=C(idx2), new=B(idx1)
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, cols).getValues();
   for (var i = 0; i < data.length; i++) {
-    if (normalizePhone(data[i][1]) === norm) return {row: i+2, data: data[i]};
+    if (normalizePhone(data[i][phoneCol]) === norm) return {row: i+2, data: data[i], old: isOldFormat(sh)};
   }
   return null;
 }
@@ -148,6 +170,7 @@ function eventCheckin(phone) {
   try {
     var evSh = getEventSheet();
     if (!evSh) return {ok: false, msg: '目前沒有進行中的活動'};
+    var old = isOldFormat(evSh);
 
     var row = findInEventSheet(evSh, phone);
     if (!row) {
@@ -159,10 +182,18 @@ function eventCheckin(phone) {
     }
 
     var d = row.data;
-    if (d[6]) return {ok: false, msg: d[0] + ' 已於 ' + d[6] + ' 報到', dup: true};
-    var now = Utilities.formatDate(new Date(), 'Asia/Taipei', 'HH:mm:ss');
-    evSh.getRange(row.row, 7).setValue(now);
-    return {ok: true, name: d[0], meal: d[3]||'', lunchbox: String(d[4]||'0')};
+    if (old) {
+      // old format: name=d[1], phone=d[2], checkinTime=d[7] (col H)
+      if (d[7]) return {ok: false, msg: d[1] + ' 已於 ' + d[7] + ' 報到', dup: true};
+      var now = Utilities.formatDate(new Date(), 'Asia/Taipei', 'HH:mm:ss');
+      evSh.getRange(row.row, 8).setValue(now); // write to col H
+      return {ok: true, name: d[1], meal: '', lunchbox: '0'};
+    } else {
+      if (d[6]) return {ok: false, msg: d[0] + ' 已於 ' + d[6] + ' 報到', dup: true};
+      var now = Utilities.formatDate(new Date(), 'Asia/Taipei', 'HH:mm:ss');
+      evSh.getRange(row.row, 7).setValue(now);
+      return {ok: true, name: d[0], meal: d[3]||'', lunchbox: String(d[4]||'0')};
+    }
   } finally { lock.releaseLock(); }
 }
 
@@ -170,19 +201,30 @@ function eventSearch(q) {
   if (!q) return {ok: true, results: []};
   var evSh = getEventSheet();
   if (!evSh || evSh.getLastRow() < 2) return {ok: true, results: []};
+  var old = isOldFormat(evSh);
   var norm = normalizePhone(q);
-  var data = evSh.getRange(2, 1, evSh.getLastRow() - 1, 7).getValues();
+  var cols = old ? 8 : 7;
+  var data = evSh.getRange(2, 1, evSh.getLastRow() - 1, cols).getValues();
   var results = data
-    .filter(function(r) { return String(r[0]).indexOf(q)>=0 || normalizePhone(r[1]).indexOf(norm)>=0; })
-    .map(function(r) { return {name:r[0], phone:r[1], meal:r[3], lunchbox:String(r[4]||'0'), checkedIn:!!r[6]}; });
+    .filter(function(r) {
+      return old ? (String(r[1]).indexOf(q)>=0 || normalizePhone(r[2]).indexOf(norm)>=0)
+                 : (String(r[0]).indexOf(q)>=0 || normalizePhone(r[1]).indexOf(norm)>=0);
+    })
+    .map(function(r) {
+      return old ? {name:r[1], phone:r[2], meal:'', lunchbox:'0', checkedIn:!!r[7]}
+                 : {name:r[0], phone:r[1], meal:r[3], lunchbox:String(r[4]||'0'), checkedIn:!!r[6]};
+    });
   return {ok: true, results: results};
 }
 
 function eventStats() {
   var evSh = getEventSheet();
   if (!evSh || evSh.getLastRow() < 2) return {ok:true, total:0, checked:0, unchecked:0};
-  var data = evSh.getRange(2, 1, evSh.getLastRow()-1, 7).getValues();
-  var checked = data.filter(function(r){return !!r[6];}).length;
+  var old = isOldFormat(evSh);
+  var cols = old ? 8 : 7;
+  var data = evSh.getRange(2, 1, evSh.getLastRow()-1, cols).getValues();
+  var checkedCol = old ? 7 : 6; // old=col H(idx7), new=col G(idx6)
+  var checked = data.filter(function(r){return !!r[checkedCol];}).length;
   return {ok:true, total:data.length, checked:checked, unchecked:data.length-checked};
 }
 
@@ -195,8 +237,14 @@ function adminEventGuests(pass) {
   if (!checkAuth(pass)) return {ok:false, msg:'密碼錯誤'};
   var evSh = getEventSheet();
   if (!evSh || evSh.getLastRow() < 2) return {ok:true, guests:[]};
-  var data = evSh.getRange(2, 1, evSh.getLastRow()-1, 7).getValues();
+  var old = isOldFormat(evSh);
+  var cols = old ? 8 : 7;
+  var data = evSh.getRange(2, 1, evSh.getLastRow()-1, cols).getValues();
   var guests = data.map(function(r) {
+    if (old) {
+      // A=timestamp B=姓名 C=電話 D=生日 E=? F=身份 G=出席狀況 H=報到時間(新增)
+      return {name:r[1], phone:r[2], attendance:r[6]||'出席', meal:'', lunchbox:'0', note:r[5]||'', checkinTime:r[7]?String(r[7]):'', checkedIn:!!r[7]};
+    }
     return {name:r[0], phone:r[1], attendance:r[2], meal:r[3], lunchbox:String(r[4]||'0'), note:r[5], checkinTime:r[6]?String(r[6]):'', checkedIn:!!r[6]};
   });
   return {ok:true, guests:guests};
