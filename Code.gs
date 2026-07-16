@@ -299,22 +299,15 @@ function adminMigrate(pass, sheetName) {
       mSh.appendRow(['姓名','電話','出生年月日','身份','加入日期','備註']);
       mSh.setFrozenRows(1);
     }
-    // Detect column layout: new format A=姓名 B=電話, old format A=會員編號 B=姓名 C=電話
-    var header = srcSh.getRange(1,1,1,4).getValues()[0];
-    var nameCol=0, phoneCol=1;
-    // Google Form sheet: A=Timestamp, B=姓名, C=電話
-    if(String(header[0]).toLowerCase().indexOf('timestamp')>=0
-       || String(header[0]).indexOf('時間')>=0
-       || String(header[0]).match(/^\d{4}-\d{2}-\d{2}T/)
-       || String(header[0]).indexOf('編號')>=0
-       || String(header[0]).match(/^M\d/)){nameCol=1;phoneCol=2;}
+    // Use isOldFormat to detect Google Form sheet (A=timestamp, B=姓名, C=電話, D=生日)
+    var old = isOldFormat(srcSh);
+    var nameCol     = old ? 1 : 0;
+    var phoneCol    = old ? 2 : 1;
+    var birthdayCol = old ? 3 : -1;
 
     var srcData = srcSh.getRange(2, 1, srcSh.getLastRow()-1, 4).getValues();
     var today = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy/MM/dd');
     var added=0, skipped=0;
-
-    // For old format: birthdayCol = D (index 3); for new format no birthday col
-    var birthdayCol = (nameCol === 1) ? 3 : -1;
     srcData.forEach(function(row) {
       var name  = String(row[nameCol]||'').trim();
       var phone = String(row[phoneCol]||'').trim();
