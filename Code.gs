@@ -171,26 +171,23 @@ function eventCheckin(phone) {
     var evSh = getEventSheet();
     if (!evSh) return {ok: false, msg: '目前沒有進行中的活動'};
     var old = isOldFormat(evSh);
+    var now = Utilities.formatDate(new Date(), 'Asia/Taipei', 'HH:mm:ss');
 
     var row = findInEventSheet(evSh, phone);
     if (!row) {
       var member = findMemberByPhone(phone);
       if (!member) return {ok: false, msg: '查無此 QR Code，請改用姓名搜尋'};
-      var now = Utilities.formatDate(new Date(), 'Asia/Taipei', 'HH:mm:ss');
       evSh.appendRow([member.name, member.phone, '出席', '', '0', '現場報到', now]);
       return {ok: true, name: member.name, meal: '', lunchbox: '0'};
     }
 
     var d = row.data;
     if (old) {
-      // old format: name=d[1], phone=d[2], checkinTime=d[7] (col H)
       if (d[7]) return {ok: false, msg: d[1] + ' 已於 ' + d[7] + ' 報到', dup: true};
-      var now = Utilities.formatDate(new Date(), 'Asia/Taipei', 'HH:mm:ss');
-      evSh.getRange(row.row, 8).setValue(now); // write to col H
+      evSh.getRange(row.row, 8).setValue(now);
       return {ok: true, name: d[1], meal: '', lunchbox: '0'};
     } else {
       if (d[6]) return {ok: false, msg: d[0] + ' 已於 ' + d[6] + ' 報到', dup: true};
-      var now = Utilities.formatDate(new Date(), 'Asia/Taipei', 'HH:mm:ss');
       evSh.getRange(row.row, 7).setValue(now);
       return {ok: true, name: d[0], meal: d[3]||'', lunchbox: String(d[4]||'0')};
     }
