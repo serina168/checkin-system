@@ -124,7 +124,7 @@ td{padding:8px;border-bottom:1px solid #e8ddd0}
         <textarea id="ev-desc" style="min-height:60px"></textarea>
         <label>來賓費用</label>
         <input type="text" id="ev-fee" placeholder="例：200元">
-        <button class="btn" onclick="createEvent()">建立 / 更新活動</button>
+        <button class="btn" onclick="doSaveEvent()">建立 / 更新活動</button>
         <div class="msg" id="setup-msg"></div>
       </div>
     </div>
@@ -244,7 +244,7 @@ function doMigrate(){
     }).catch(function(){showMsg('migrate-msg','連線失敗',false);});
 }
 
-function createEvent(){
+function doSaveEvent(){
   var name=document.getElementById('ev-name').value.trim();
   if(!name){showMsg('setup-msg','請填寫活動名稱',false);return;}
   var p=new URLSearchParams({action:'admin_create_event',pass:PASS,eventName:name,
