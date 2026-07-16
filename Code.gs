@@ -100,7 +100,7 @@ function findInEventSheet(sh, phone) {
   if (!sh || sh.getLastRow() < 2) return null;
   var norm = normalizePhone(phone);
   var old = isOldFormat(sh);
-  var cols = old ? 9 : 7; // old: A~I(9cols), new: A~G(7cols)
+  var cols = old ? 10 : 7; // old: A~J(10cols), new: A~G(7cols)
   var phoneCol = old ? 2 : 1; // old=C(idx2), new=B(idx1)
   var data = sh.getRange(2, 1, sh.getLastRow() - 1, cols).getValues();
   for (var i = 0; i < data.length; i++) {
@@ -188,10 +188,10 @@ function eventCheckin(phone) {
 
     var d = row.data;
     if (old) {
-      // old: A=timestamp B=姓名 C=電話 D=生日 E=? F=身份 G=出席/請假 H=用餐 I=報到時間
-      if (d[8]) return {ok: false, msg: d[1] + ' 已於 ' + d[8] + ' 報到', dup: true};
-      evSh.getRange(row.row, 9).setValue(now);
-      return {ok: true, name: d[1], meal: String(d[7]||''), lunchbox: '0'};
+      // old: A=timestamp B=姓名 C=電話 D=生日 E=加購便當 F=身份 G=出席/請假 H=用餐 I=備註 J=報到時間
+      if (d[9]) return {ok: false, msg: d[1] + ' 已於 ' + d[9] + ' 報到', dup: true};
+      evSh.getRange(row.row, 10).setValue(now);
+      return {ok: true, name: d[1], meal: String(d[7]||''), lunchbox: String(d[4]||'0')};
     } else {
       if (d[6]) return {ok: false, msg: d[0] + ' 已於 ' + d[6] + ' 報到', dup: true};
       evSh.getRange(row.row, 7).setValue(now);
@@ -206,7 +206,7 @@ function eventSearch(q) {
   if (!evSh || evSh.getLastRow() < 2) return {ok: true, results: []};
   var old = isOldFormat(evSh);
   var norm = normalizePhone(q);
-  var cols = old ? 9 : 7;
+  var cols = old ? 10 : 7;
   var data = evSh.getRange(2, 1, evSh.getLastRow() - 1, cols).getValues();
   var results = data
     .filter(function(r) {
@@ -214,7 +214,7 @@ function eventSearch(q) {
                  : (String(r[0]).indexOf(q)>=0 || normalizePhone(r[1]).indexOf(norm)>=0);
     })
     .map(function(r) {
-      return old ? {name:r[1], phone:r[2], meal:String(r[7]||''), lunchbox:'0', checkedIn:!!r[8]}
+      return old ? {name:r[1], phone:r[2], meal:String(r[7]||''), lunchbox:String(r[4]||'0'), checkedIn:!!r[9]}
                  : {name:r[0], phone:r[1], meal:r[3], lunchbox:String(r[4]||'0'), checkedIn:!!r[6]};
     });
   return {ok: true, results: results};
@@ -224,9 +224,9 @@ function eventStats() {
   var evSh = getEventSheet();
   if (!evSh || evSh.getLastRow() < 2) return {ok:true, total:0, checked:0, unchecked:0};
   var old = isOldFormat(evSh);
-  var cols = old ? 9 : 7;
+  var cols = old ? 10 : 7;
   var data = evSh.getRange(2, 1, evSh.getLastRow()-1, cols).getValues();
-  var checkedCol = old ? 8 : 6; // old=col I(idx8), new=col G(idx6)
+  var checkedCol = old ? 9 : 6; // old=col J(idx9), new=col G(idx6)
   var checked = data.filter(function(r){return !!r[checkedCol];}).length;
   return {ok:true, total:data.length, checked:checked, unchecked:data.length-checked};
 }
@@ -241,12 +241,12 @@ function adminEventGuests(pass) {
   var evSh = getEventSheet();
   if (!evSh || evSh.getLastRow() < 2) return {ok:true, guests:[]};
   var old = isOldFormat(evSh);
-  var cols = old ? 9 : 7;
+  var cols = old ? 10 : 7;
   var data = evSh.getRange(2, 1, evSh.getLastRow()-1, cols).getValues();
   var guests = data.map(function(r) {
     if (old) {
-      // A=timestamp B=姓名 C=電話 D=生日 E=加購便當 F=身份 G=出席/請假 H=用餐 I=報到時間(新增)
-      return {name:r[1], phone:r[2], attendance:r[6]||'出席', meal:r[7]||'', lunchbox:String(r[4]||'0'), note:String(r[5]||''), checkinTime:r[8]?String(r[8]):'', checkedIn:!!r[8]};
+      // A=timestamp B=姓名 C=電話 D=生日 E=加購便當 F=身份 G=出席/請假 H=用餐 I=備註 J=報到時間
+      return {name:r[1], phone:r[2], attendance:r[6]||'出席', meal:r[7]||'', lunchbox:String(r[4]||'0'), note:String(r[8]||''), checkinTime:r[9]?String(r[9]):'', checkedIn:!!r[9]};
     }
     return {name:r[0], phone:r[1], attendance:r[2], meal:r[3], lunchbox:String(r[4]||'0'), note:r[5], checkinTime:r[6]?String(r[6]):'', checkedIn:!!r[6]};
   });
