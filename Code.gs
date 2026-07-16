@@ -313,12 +313,15 @@ function adminMigrate(pass, sheetName) {
     var today = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy/MM/dd');
     var added=0, skipped=0;
 
+    // For old format: birthdayCol = D (index 3); for new format no birthday col
+    var birthdayCol = (nameCol === 1) ? 3 : -1;
     srcData.forEach(function(row) {
       var name  = String(row[nameCol]||'').trim();
       var phone = String(row[phoneCol]||'').trim();
       if (!name || !phone) return;
       if (findMemberByPhone(phone)) { skipped++; return; }
-      mSh.appendRow([name, phone, '', '會員', today, '已從'+sheetName+'匯入']);
+      var birthday = birthdayCol >= 0 ? String(row[birthdayCol]||'').trim() : '';
+      mSh.appendRow([name, phone, birthday, '會員', today, '已從'+sheetName+'匯入']);
       added++;
     });
     return {ok:true, added:added, skipped:skipped};
