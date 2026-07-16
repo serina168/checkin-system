@@ -33,7 +33,11 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--i
 .ev-desc-box{border-left:4px solid var(--gold-lt);background:rgba(168,135,79,.07);border-radius:0 12px 12px 0;padding:14px 16px;margin-bottom:14px}
 .ev-desc-box p{font-size:15px;color:var(--ink);line-height:1.9;margin-bottom:8px}
 .ev-desc-box p:last-child{margin-bottom:0}
-.ev-fee-banner{background:linear-gradient(135deg,var(--gold-dk),var(--gold));color:#fff;border-radius:50px;padding:14px 24px;text-align:center;font-size:17px;font-weight:700;letter-spacing:.04em;margin-bottom:22px;box-shadow:0 4px 16px rgba(168,135,79,.35)}
+.ev-fee-banner{background:linear-gradient(135deg,var(--gold-dk),var(--gold));color:#fff;border-radius:50px;padding:14px 24px;text-align:center;font-size:17px;font-weight:700;letter-spacing:.04em;margin-bottom:22px;box-shadow:0 4px 16px rgba(168,135,79,.35);display:flex;align-items:center;justify-content:center;gap:4px}
+.fee-item{display:flex;flex-direction:column;align-items:center;gap:1px}
+.fee-label{font-size:12px;font-weight:500;opacity:.85;letter-spacing:.08em}
+.fee-val{font-size:18px;font-weight:800}
+.fee-sep{opacity:.6;font-size:20px}
 
 /* ── Form section divider ── */
 .form-section-title{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--ink);margin-bottom:18px;display:flex;align-items:center;gap:10px}
@@ -406,9 +410,10 @@ apiFetch(API+'?action=info').then(function(d){
     hasContent=true;
   }
 
-  if(c.guestFee){
+  if(c.guestFee||c.memberFee!==undefined){
     var fee=document.getElementById('ev-fee-banner');
-    fee.textContent='來賓費用：'+c.guestFee;
+    var mf=c.memberFee||'免費';
+    fee.innerHTML='<span class="fee-item"><span class="fee-label">會員</span><span class="fee-val">'+mf+'</span></span><span class="fee-sep">　|　</span><span class="fee-item"><span class="fee-label">來賓</span><span class="fee-val">'+(c.guestFee||'')+'</span></span>';
     fee.classList.remove('hidden');
     hasContent=true;
   }
