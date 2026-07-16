@@ -244,8 +244,25 @@ textarea{resize:vertical;min-height:78px}
         <input type="text" id="new-name" placeholder="請輸入姓名">
       </div>
       <div class="form-group">
-        <label>聯絡電話 *</label>
+        <label>手機號碼 *</label>
         <input type="tel" id="new-phone" placeholder="請輸入手機號碼" inputmode="tel">
+      </div>
+      <div class="form-group">
+        <label>生日（選填）🎂</label>
+        <div class="bday-row">
+          <select id="new-by"><option value="">年</option></select>
+          <select id="new-bm"><option value="">月</option></select>
+          <select id="new-bd"><option value="">日</option></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>加購便當數量</label>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:8px">🍱 愛心家園便當 140 元／份・請自備餐盒</p>
+        <select id="new-lunchbox">
+          <option value="0">不加購</option>
+          <option value="1">1 個</option><option value="2">2 個</option>
+          <option value="3">3 個</option><option value="4">4 個</option><option value="5">5 個</option>
+        </select>
       </div>
       <div class="form-group">
         <label>身份 *</label>
@@ -257,7 +274,7 @@ textarea{resize:vertical;min-height:78px}
         </div>
       </div>
       <div class="form-group">
-        <label>出席狀況 *</label>
+        <label>出席或請假 *</label>
         <div class="toggle-row">
           <input type="radio" name="new-att" id="new-att-yes" value="出席">
           <label for="new-att-yes">✅ 出席</label>
@@ -267,29 +284,13 @@ textarea{resize:vertical;min-height:78px}
       </div>
       <div id="new-meal-wrap" class="hidden">
         <div class="form-group">
-          <label>用餐 *</label>
+          <label>是否用餐 *</label>
           <div class="toggle-row">
             <input type="radio" name="new-meal" id="new-meal-yes" value="用餐">
             <label for="new-meal-yes">🍱 用餐</label>
             <input type="radio" name="new-meal" id="new-meal-no" value="不用餐">
             <label for="new-meal-no">✕ 不用餐</label>
           </div>
-        </div>
-        <div class="form-group">
-          <label>加購便當數量</label>
-          <select id="new-lunchbox">
-            <option value="0">不加購</option>
-            <option value="1">1 個</option><option value="2">2 個</option>
-            <option value="3">3 個</option><option value="4">4 個</option><option value="5">5 個</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>出生年月日（選填）🎂</label>
-        <div class="bday-row">
-          <select id="new-by"><option value="">年</option></select>
-          <select id="new-bm"><option value="">月</option></select>
-          <select id="new-bd"><option value="">日</option></select>
         </div>
       </div>
       <div class="form-group">
