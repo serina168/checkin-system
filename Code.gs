@@ -75,12 +75,15 @@ function findMemberByPhone(phone) {
 // Detect if event sheet is old Google Form format (col A = timestamp)
 function isOldFormat(sh) {
   if (sh.getLastRow() < 2) return false;
-  // Check header row first (most reliable)
-  var h0 = String(sh.getRange(1, 1).getValue());
+  var a1val = sh.getRange(1, 1).getValue();
+  // A1 is a Date object (no header row, first cell is a timestamp)
+  if (a1val instanceof Date) return true;
+  var h0 = String(a1val);
   if (h0.indexOf('時間') >= 0 || h0.toLowerCase().indexOf('timestamp') >= 0) return true;
-  // Fallback: check if A2 is an ISO timestamp string
-  var a1 = String(sh.getRange(2, 1).getValue());
-  return a1.match(/^\d{4}-\d{2}-\d{2}T/) !== null;
+  // Fallback: check if A2 is a Date object or ISO timestamp string
+  var a2val = sh.getRange(2, 1).getValue();
+  if (a2val instanceof Date) return true;
+  return String(a2val).match(/^\d{4}-\d{2}-\d{2}T/) !== null;
 }
 
 // Convert old format sheet to new format in place

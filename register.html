@@ -92,7 +92,7 @@ textarea{resize:vertical;min-height:78px}
 #toast.ok{background:var(--ok)}#toast.err{background:var(--err)}
 
 /* ── Success ── */
-#success-section{display:none;text-align:center}
+#success-section{text-align:center}
 .success-icon{font-size:54px;margin-bottom:10px}
 .success-title{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;margin-bottom:4px}
 .success-sub{color:var(--muted);font-size:15px;margin-bottom:20px}
@@ -126,8 +126,14 @@ textarea{resize:vertical;min-height:78px}
       <div id="ev-fee-banner" class="ev-fee-banner hidden"></div>
     </div>
 
-    <!-- ── Success screen ── -->
-    <div id="success-section" class="card">
+    <!-- ── Mode tabs ── -->
+    <div class="mode-tabs" id="mode-tabs">
+      <button class="mode-tab active" id="tab-reg" onclick="switchMode('reg')">📝 活動報名</button>
+      <button class="mode-tab" id="tab-qr" onclick="switchMode('qr')">🔖 取得 QR Code</button>
+    </div>
+
+    <!-- ── Success screen (below tabs so tabs always visible) ── -->
+    <div id="success-section" class="card hidden">
       <div class="success-icon" id="success-icon">🎉</div>
       <div class="success-title" id="success-title">報名成功！</div>
       <div class="success-sub" id="success-msg"></div>
@@ -141,13 +147,9 @@ textarea{resize:vertical;min-height:78px}
         <strong>📌 請截圖保存這張 QR Code</strong><br>
         下次活動直接出示掃描即可報到，無需重新填寫資料。
       </div>
-      <button class="btn" onclick="location.reload()">繼續報名（其他人）</button>
-    </div>
-
-    <!-- ── Mode tabs ── -->
-    <div class="mode-tabs" id="mode-tabs">
-      <button class="mode-tab active" id="tab-reg" onclick="switchMode('reg')">📝 活動報名</button>
-      <button class="mode-tab" id="tab-qr" onclick="switchMode('qr')">🔖 取得 QR Code</button>
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button class="btn" style="flex:1;background:rgba(168,135,79,.15);color:var(--gold);border:1.5px solid var(--border)" onclick="resetForm()">繼續報名（其他人）</button>
+      </div>
     </div>
 
     <!-- ── QR Lookup panel (shown when tab-qr active) ── -->
@@ -547,8 +549,16 @@ function showSuccess(name,phone,updated){
   document.getElementById('qr-phone-text').textContent=phone||'';
   var el=document.getElementById('qrcode');el.innerHTML='';
   new QRCode(el,{text:phone,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff'});
-  document.getElementById('success-section').style.display='';
-  scrollTop();
+  document.getElementById('success-section').classList.remove('hidden');
+}
+
+function resetForm(){
+  document.getElementById('success-section').classList.add('hidden');
+  document.getElementById('form-section-hd').classList.remove('hidden');
+  ['step-existing','step-new'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
+  document.getElementById('step1').classList.remove('hidden');
+  document.getElementById('phone').value='';
+  document.getElementById('tab-reg').click();
 }
 </script>
 </body>
