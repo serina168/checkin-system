@@ -1,798 +1,346 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>活動報名 - 海德堡讀書會</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --gold: #a8874f;
-      --gold-light: #c9a96e;
-      --gold-dark: #7a6035;
-      --beige: #faf6ef;
-      --beige-dark: #f0e8d8;
-      --text: #3a2e1e;
-      --text-muted: #7a6a50;
-      --glass: rgba(255,255,255,0.55);
-      --glass-border: rgba(168,135,79,0.25);
-      --shadow: 0 8px 32px rgba(120,90,40,0.12);
-    }
-
-    body {
-      font-family: 'Noto Sans TC', sans-serif;
-      font-size: 18px;
-      min-height: 100vh;
-      background-color: #fdf8f0;
-      background-image:
-        /* 花卉 SVG pattern */
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cg opacity='0.13'%3E%3C!-- 花朵 A (左上) --%3E%3Cg transform='translate(52,52)'%3E%3Ccircle cx='0' cy='0' r='6' fill='%23c9a96e'/%3E%3Cellipse cx='0' cy='-18' rx='7' ry='12' fill='%23d4b88a' transform='rotate(0)'/%3E%3Cellipse cx='0' cy='-18' rx='7' ry='12' fill='%23c9a96e' transform='rotate(60)'/%3E%3Cellipse cx='0' cy='-18' rx='7' ry='12' fill='%23d4b88a' transform='rotate(120)'/%3E%3Cellipse cx='0' cy='-18' rx='7' ry='12' fill='%23c9a96e' transform='rotate(180)'/%3E%3Cellipse cx='0' cy='-18' rx='7' ry='12' fill='%23d4b88a' transform='rotate(240)'/%3E%3Cellipse cx='0' cy='-18' rx='7' ry='12' fill='%23c9a96e' transform='rotate(300)'/%3E%3C/g%3E%3C!-- 葉片 A --%3E%3Cellipse cx='78' cy='36' rx='5' ry='14' fill='%23a8874f' transform='rotate(-40 78 36)' opacity='0.5'/%3E%3Cellipse cx='30' cy='74' rx='5' ry='14' fill='%23a8874f' transform='rotate(50 30 74)' opacity='0.5'/%3E%3C!-- 花朵 B (右下) --%3E%3Cg transform='translate(200,200)'%3E%3Ccircle cx='0' cy='0' r='5' fill='%23c9a96e'/%3E%3Cellipse cx='0' cy='-16' rx='6' ry='11' fill='%23d4b88a' transform='rotate(0)'/%3E%3Cellipse cx='0' cy='-16' rx='6' ry='11' fill='%23c9a96e' transform='rotate(72)'/%3E%3Cellipse cx='0' cy='-16' rx='6' ry='11' fill='%23d4b88a' transform='rotate(144)'/%3E%3Cellipse cx='0' cy='-16' rx='6' ry='11' fill='%23c9a96e' transform='rotate(216)'/%3E%3Cellipse cx='0' cy='-16' rx='6' ry='11' fill='%23d4b88a' transform='rotate(288)'/%3E%3C/g%3E%3C!-- 葉片 B --%3E%3Cellipse cx='224' cy='182' rx='4' ry='12' fill='%23a8874f' transform='rotate(-50 224 182)' opacity='0.5'/%3E%3Cellipse cx='178' cy='222' rx='4' ry='12' fill='%23a8874f' transform='rotate(40 178 222)' opacity='0.5'/%3E%3C!-- 小花點綴 --%3E%3Cg transform='translate(200,55)'%3E%3Ccircle cx='0' cy='0' r='3.5' fill='%23c9a96e'/%3E%3Cellipse cx='0' cy='-11' rx='4' ry='7' fill='%23d4b88a' transform='rotate(0)'/%3E%3Cellipse cx='0' cy='-11' rx='4' ry='7' fill='%23c9a96e' transform='rotate(90)'/%3E%3Cellipse cx='0' cy='-11' rx='4' ry='7' fill='%23d4b88a' transform='rotate(180)'/%3E%3Cellipse cx='0' cy='-11' rx='4' ry='7' fill='%23c9a96e' transform='rotate(270)'/%3E%3C/g%3E%3Cg transform='translate(55,200)'%3E%3Ccircle cx='0' cy='0' r='3.5' fill='%23c9a96e'/%3E%3Cellipse cx='0' cy='-11' rx='4' ry='7' fill='%23d4b88a' transform='rotate(0)'/%3E%3Cellipse cx='0' cy='-11' rx='4' ry='7' fill='%23c9a96e' transform='rotate(90)'/%3E%3Cellipse cx='0' cy='-11' rx='4' ry='7' fill='%23d4b88a' transform='rotate(180)'/%3E%3Cellipse cx='0' cy='-11' rx='4' ry='7' fill='%23c9a96e' transform='rotate(270)'/%3E%3C/g%3E%3C!-- 細枝 --%3E%3Cpath d='M52,90 Q80,130 110,110' stroke='%23a8874f' stroke-width='1.5' fill='none' opacity='0.4'/%3E%3Cpath d='M170,200 Q200,165 220,185' stroke='%23a8874f' stroke-width='1.5' fill='none' opacity='0.4'/%3E%3Cpath d='M185,52 Q210,80 195,105' stroke='%23a8874f' stroke-width='1.2' fill='none' opacity='0.35'/%3E%3C/g%3E%3C/svg%3E"),
-        linear-gradient(135deg, #fdf8f0 0%, #f7edd9 45%, #eeddc4 100%);
-      background-size: 260px 260px, cover;
-      color: var(--text);
-      padding: 20px 16px 60px;
-    }
-
-    /* ── Header ── */
-    .site-header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    .site-header h1 {
-      font-family: 'Noto Sans TC', sans-serif;
-      font-size: clamp(24px, 5.5vw, 34px);
-      font-weight: 900;
-      color: #1a3068;
-      letter-spacing: 3px;
-    }
-    .site-header .subtitle {
-      font-family: 'Noto Serif TC', serif;
-      font-size: 24px;
-      color: #d4621a;
-      margin-top: 8px;
-      letter-spacing: 4px;
-      font-weight: 700;
-    }
-
-    /* ── Glass card ── */
-    .card {
-      background: var(--glass);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      padding: 28px 24px;
-      max-width: 680px;
-      margin: 0 auto 24px;
-    }
-
-    /* ── Loading ── */
-    .loading-wrap {
-      text-align: center;
-      padding: 48px 0;
-    }
-    .spinner {
-      display: inline-block;
-      width: 44px; height: 44px;
-      border: 3px solid var(--beige-dark);
-      border-top-color: var(--gold);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-bottom: 14px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-wrap p { color: var(--text-muted); font-size: 16px; }
-
-    /* ── Error ── */
-    .error-box {
-      background: rgba(200,80,60,0.08);
-      border: 1px solid rgba(200,80,60,0.3);
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-      color: #b04030;
-      display: none;
-    }
-    .error-box button {
-      margin-top: 12px;
-      padding: 8px 20px;
-      background: #b04030;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      font-family: 'Noto Sans TC', sans-serif;
-    }
-
-    /* ── Poster ── */
-    .poster-wrap {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    .poster-wrap img {
-      max-width: 100%;
-      max-height: 420px;
-      border-radius: 14px;
-      box-shadow: 0 4px 20px rgba(120,90,40,0.18);
-      object-fit: cover;
-    }
-
-    /* ── Event info ── */
-    .event-title {
-      font-family: 'Noto Serif TC', serif;
-      font-size: clamp(20px, 4vw, 26px);
-      font-weight: 700;
-      color: var(--text);
-      text-align: center;
-      margin-bottom: 22px;
-      line-height: 1.4;
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 12px 16px;
-      margin-bottom: 20px;
-    }
-    .info-label {
-      font-size: 15px;
-      color: var(--gold-dark);
-      font-weight: 500;
-      white-space: nowrap;
-      padding: 2px 0;
-    }
-    .info-label::before {
-      content: '';
-      display: inline-block;
-      width: 6px; height: 6px;
-      background: var(--gold);
-      border-radius: 50%;
-      margin-right: 8px;
-      vertical-align: middle;
-      margin-top: -2px;
-    }
-    .info-value {
-      font-size: 18px;
-      color: var(--text);
-      line-height: 1.5;
-    }
-
-    .divider {
-      border: none;
-      border-top: 1px solid var(--glass-border);
-      margin: 20px 0;
-    }
-
-    .desc-box {
-      background: rgba(168,135,79,0.07);
-      border-left: 3px solid var(--gold);
-      border-radius: 0 10px 10px 0;
-      padding: 14px 16px;
-      font-size: 17px;
-      line-height: 1.9;
-      color: var(--text);
-      white-space: pre-line;
-    }
-
-    .fee-row {
-      text-align: center;
-      margin-top: 18px;
-    }
-    .fee-badge {
-      display: inline-block;
-      background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light));
-      color: #fff;
-      font-family: 'Noto Serif TC', serif;
-      font-size: 17px;
-      font-weight: 500;
-      padding: 7px 22px;
-      border-radius: 20px;
-      letter-spacing: 1px;
-    }
-
-    /* ── Form ── */
-    .section-title {
-      font-family: 'Noto Serif TC', serif;
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .section-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--glass-border);
-    }
-
-    .form-group { margin-bottom: 18px; }
-    .form-group label {
-      display: block;
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--gold-dark);
-      margin-bottom: 8px;
-    }
-    .form-group input {
-      width: 100%;
-      padding: 13px 16px;
-      font-family: 'Noto Sans TC', sans-serif;
-      font-size: 18px;
-      background: rgba(255,255,255,0.75);
-      border: 1.5px solid var(--glass-border);
-      border-radius: 12px;
-      color: var(--text);
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .form-group input:focus {
-      border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(168,135,79,0.15);
-    }
-    .form-group input::placeholder { color: #c0b09a; }
-
-    /* ── Member type toggle ── */
-    .type-toggle {
-      display: flex;
-      gap: 10px;
-    }
-    .type-toggle input[type="radio"] { display: none; }
-    .type-toggle label {
-      flex: 1;
-      text-align: center;
-      padding: 13px 8px;
-      border: 1.5px solid var(--glass-border);
-      border-radius: 12px;
-      background: rgba(255,255,255,0.75);
-      cursor: pointer;
-      font-size: 18px;
-      font-weight: 500;
-      color: var(--text-muted);
-      transition: all 0.2s;
-      margin-bottom: 0;
-    }
-    .type-toggle input[type="radio"]:checked + label {
-      border-color: var(--gold);
-      background: rgba(168,135,79,0.12);
-      color: var(--gold-dark);
-      font-weight: 700;
-      box-shadow: 0 0 0 3px rgba(168,135,79,0.15);
-    }
-    .fee-hint {
-      font-size: 15px;
-      color: var(--text-muted);
-      text-align: center;
-      margin-top: 8px;
-      min-height: 22px;
-      transition: color 0.2s;
-    }
-    .fee-hint.guest { color: var(--gold-dark); font-weight: 500; }
-
-    .btn-submit {
-      width: 100%;
-      padding: 15px;
-      background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 55%, var(--gold-light) 100%);
-      color: #fff;
-      font-family: 'Noto Serif TC', serif;
-      font-size: 19px;
-      font-weight: 700;
-      border: none;
-      border-radius: 14px;
-      cursor: pointer;
-      letter-spacing: 3px;
-      box-shadow: 0 4px 18px rgba(168,135,79,0.35);
-      transition: opacity 0.2s, transform 0.15s;
-      margin-top: 8px;
-    }
-    .btn-submit:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
-    .btn-submit:active:not(:disabled) { transform: translateY(0); }
-    .btn-submit:disabled { opacity: 0.55; cursor: not-allowed; }
-
-    /* ── Success overlay ── */
-    .overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(30,20,10,0.62);
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .overlay.show { display: flex; }
-
-    .success-card {
-      background: var(--beige);
-      border-radius: 24px;
-      padding: 36px 28px;
-      max-width: 400px;
-      width: 100%;
-      text-align: center;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.28);
-      animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
-    }
-    @keyframes popIn {
-      from { transform: scale(0.72); opacity: 0; }
-      to   { transform: scale(1);    opacity: 1; }
-    }
-    .success-icon {
-      width: 64px; height: 64px;
-      background: linear-gradient(135deg, var(--gold-dark), var(--gold-light));
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 16px;
-      font-size: 30px;
-      color: #fff;
-    }
-    .success-card h2 {
-      font-family: 'Noto Serif TC', serif;
-      font-size: 22px;
-      color: var(--text);
-      margin-bottom: 6px;
-    }
-    .reg-id-label { font-size: 15px; color: var(--text-muted); margin-bottom: 4px; }
-    .reg-id {
-      font-size: 30px;
-      font-weight: 700;
-      color: var(--gold);
-      font-family: 'Noto Serif TC', serif;
-      margin-bottom: 4px;
-    }
-    .qr-hint {
-      font-size: 15px;
-      color: var(--text-muted);
-      margin-bottom: 20px;
-      line-height: 1.5;
-    }
-    #qrcode {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 22px;
-    }
-    #qrcode canvas, #qrcode img {
-      border-radius: 10px;
-      border: 6px solid #fff;
-      box-shadow: 0 4px 16px rgba(120,90,40,0.15);
-    }
-    .btn-close {
-      padding: 12px 36px;
-      background: var(--gold);
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      font-size: 17px;
-      cursor: pointer;
-      font-family: 'Noto Sans TC', sans-serif;
-      transition: background 0.2s;
-    }
-    .btn-close:hover { background: var(--gold-dark); }
-
-    /* ── Toast ── */
-    .toast {
-      position: fixed;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%) translateY(90px);
-      background: rgba(40,30,15,0.92);
-      color: #fff;
-      padding: 12px 26px;
-      border-radius: 30px;
-      font-size: 16px;
-      z-index: 200;
-      transition: transform 0.3s ease;
-      white-space: nowrap;
-      pointer-events: none;
-    }
-    .toast.show { transform: translateX(-50%) translateY(0); }
-    .toast.error { background: rgba(160,50,40,0.94); }
-
-    @media (max-width: 420px) {
-      .card { padding: 20px 16px; }
-      .info-grid { gap: 10px 12px; }
-      .success-card { padding: 28px 20px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>活動報名 — 海德堡讀書會</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+:root{--gold:#a8874f;--gold-lt:#c9a86a;--gold-dk:#8a6c38;--cream:#faf6ef;--ink:#3d3226;--muted:#8a7a63;--ok:#4a7c59;--err:#b5544b;--border:rgba(200,170,110,.32)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--ink);font-size:17px;line-height:1.7;min-height:100vh;padding:20px 16px 60px}
+.wrap{max-width:540px;margin:0 auto}
+header{text-align:center;padding:16px 0 20px}
+.brand{font-size:12px;letter-spacing:.5em;color:var(--gold);text-indent:.5em;margin-bottom:6px;font-weight:500}
+h1{font-family:'Noto Serif TC',serif;font-size:24px;font-weight:700}
+.event-info{background:rgba(168,135,79,.08);border:1px solid rgba(168,135,79,.25);border-radius:14px;padding:14px 16px;margin-bottom:18px;font-size:15px;color:var(--muted);text-align:center;line-height:1.9}
+.event-info strong{color:var(--ink);font-size:16px;display:block;margin-bottom:2px}
+.card{background:rgba(255,255,255,.68);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:18px;padding:24px 20px;box-shadow:0 8px 30px rgba(140,110,60,.10);margin-bottom:16px}
+.card-title{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--gold);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:14px;height:2px;background:var(--gold-lt);border-radius:2px;flex-shrink:0}
+.form-group{margin-bottom:16px}
+label{display:block;font-size:15px;font-weight:600;color:var(--gold-dk);margin-bottom:7px}
+input,select,textarea{width:100%;font-family:inherit;font-size:17px;color:var(--ink);padding:12px 14px;border:1.5px solid rgba(180,150,100,.4);border-radius:12px;background:#fff;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(168,135,79,.14)}
+input::placeholder{color:#c0b09a}
+textarea{resize:vertical;min-height:78px}
+.bday-row{display:flex;gap:8px}
+.bday-row select{flex:1}
+.toggle-row{display:flex;gap:10px}
+.toggle-row input[type="radio"]{display:none}
+.toggle-row label{flex:1;text-align:center;padding:12px 6px;border:1.5px solid rgba(180,150,100,.4);border-radius:12px;background:#fff;cursor:pointer;font-size:17px;font-weight:500;color:var(--muted);transition:all .2s;margin-bottom:0}
+.toggle-row input[type="radio"]:checked+label{border-color:var(--gold);background:rgba(168,135,79,.12);color:var(--gold-dk);font-weight:700;box-shadow:0 0 0 3px rgba(168,135,79,.14)}
+.lookup-row{display:flex;gap:10px}
+.lookup-row input{flex:1}
+.btn-lookup{padding:12px 20px;background:var(--gold);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.btn-lookup:active{opacity:.8}
+.btn{width:100%;font-family:inherit;font-size:18px;font-weight:700;letter-spacing:.06em;color:#fff;padding:15px;border:none;border-radius:12px;cursor:pointer;margin-top:8px;background:linear-gradient(135deg,var(--gold-lt),var(--gold));box-shadow:0 4px 14px rgba(168,135,79,.3);transition:opacity .2s,transform .15s}
+.btn:hover:not(:disabled){opacity:.88;transform:translateY(-1px)}
+.btn:active:not(:disabled){transform:translateY(0)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:none;color:var(--muted);box-shadow:none;border:1px solid var(--border)}
+.member-welcome{background:rgba(74,124,89,.08);border:1px solid rgba(74,124,89,.3);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.member-avatar{width:44px;height:44px;background:linear-gradient(135deg,var(--gold-lt),var(--gold));border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;flex-shrink:0}
+.mname{font-weight:700;font-size:17px}
+.mid{font-size:13px;color:var(--muted);margin-top:2px}
+.divider{text-align:center;color:var(--muted);font-size:14px;margin:4px 0 16px;position:relative}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:calc(50% - 50px);height:1px;background:var(--border)}
+.divider::before{left:0}.divider::after{right:0}
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:12px 22px;border-radius:12px;font-size:15px;font-weight:500;color:#fff;z-index:999;display:none;max-width:calc(100% - 40px);text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+#toast.ok{background:var(--ok)}#toast.err{background:var(--err)}
+#success-section{display:none;text-align:center}
+.success-icon{font-size:54px;margin-bottom:10px}
+.success-title{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;margin-bottom:4px}
+.success-sub{color:var(--muted);font-size:15px;margin-bottom:20px}
+.qr-wrap{background:#fff;border-radius:16px;padding:22px;display:inline-block;box-shadow:0 4px 20px rgba(140,110,60,.12);margin-bottom:14px}
+#qrcode{margin:0 auto}
+.qr-id{font-family:monospace;font-size:22px;font-weight:700;color:var(--gold);margin-top:12px;letter-spacing:.1em}
+.qr-hint{background:rgba(168,135,79,.08);border:1px solid rgba(168,135,79,.25);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:16px;text-align:left}
+.qr-hint strong{color:var(--ink)}
+.hidden{display:none!important}
+</style>
 </head>
 <body>
-
-  <header class="site-header">
-    <h1>臺中市海德堡讀書會</h1>
-    <p class="subtitle">活動報名系統</p>
+<div class="wrap">
+  <header>
+    <div class="brand">臺中市海德堡讀書會</div>
+    <h1>活動報名</h1>
   </header>
 
-  <!-- Event Info Card -->
-  <div class="card" id="event-card">
-    <div class="loading-wrap" id="loading">
-      <div class="spinner"></div>
-      <p>載入活動資訊中…</p>
-    </div>
-    <div class="error-box" id="error-box">
-      <p>⚠️ 無法載入活動資訊</p>
-      <button onclick="loadEventInfo()">重新載入</button>
-    </div>
-    <div id="event-content" style="display:none">
-      <div class="poster-wrap" id="poster-wrap"></div>
-      <h2 class="event-title" id="event-title"></h2>
-      <div class="info-grid" id="info-grid"></div>
-      <hr class="divider">
-      <div class="desc-box" id="desc-box"></div>
-      <div class="fee-row">
-        <span class="fee-badge" id="fee-badge" style="display:none"></span>
-      </div>
-    </div>
-  </div>
+  <div id="event-info-card" class="event-info hidden"></div>
 
-  <!-- Register Form Card -->
-  <div class="card">
-    <div class="section-title">填寫報名資料</div>
-    <form id="reg-form" onsubmit="submitReg(event)" novalidate>
-      <div class="form-group">
-        <label for="name">姓名 *</label>
-        <input type="text" id="name" placeholder="請輸入姓名" required autocomplete="name">
-      </div>
-      <div class="form-group">
-        <label for="phone">聯絡電話 *</label>
-        <input type="tel" id="phone" placeholder="請輸入手機號碼" required autocomplete="tel">
-      </div>
-      <div class="form-group">
-        <label>出生年月日</label>
-        <div style="display:flex;gap:8px;">
-          <select id="birthYear" style="flex:2;padding:13px 10px;font-family:inherit;font-size:17px;background:rgba(255,255,255,0.75);border:1.5px solid var(--glass-border);border-radius:12px;color:var(--text);outline:none;">
-            <option value="">年</option>
-          </select>
-          <select id="birthMonth" style="flex:1;padding:13px 10px;font-family:inherit;font-size:17px;background:rgba(255,255,255,0.75);border:1.5px solid var(--glass-border);border-radius:12px;color:var(--text);outline:none;">
-            <option value="">月</option>
-          </select>
-          <select id="birthDay" style="flex:1;padding:13px 10px;font-family:inherit;font-size:17px;background:rgba(255,255,255,0.75);border:1.5px solid var(--glass-border);border-radius:12px;color:var(--text);outline:none;">
-            <option value="">日</option>
-          </select>
-        </div>
-        <div style="font-size:15px;color:#8a7a63;margin-top:6px;">為製作會員名冊所需，之後無須再填</div>
-      </div>
-      <div class="form-group">
-        <label>身份 *</label>
-        <div class="type-toggle">
-          <input type="radio" name="memberType" id="type-member" value="會員">
-          <label for="type-member">🏅 會員</label>
-          <input type="radio" name="memberType" id="type-guest" value="來賓">
-          <label for="type-guest">🎟️ 來賓</label>
-        </div>
-        <div class="fee-hint" id="fee-hint"></div>
-      </div>
-      <div class="form-group">
-        <label>出席狀況 *</label>
-        <div class="type-toggle">
-          <input type="radio" name="attendance" id="att-yes" value="出席">
-          <label for="att-yes">✅ 出席</label>
-          <input type="radio" name="attendance" id="att-no" value="請假">
-          <label for="att-no">🙏 請假</label>
-        </div>
-      </div>
-      <div id="meal-section">
-        <div class="form-group">
-          <label>用餐 *</label>
-          <div class="type-toggle">
-            <input type="radio" name="meal" id="meal-yes" value="用餐">
-            <label for="meal-yes">🍱 用餐</label>
-            <input type="radio" name="meal" id="meal-no" value="不用餐">
-            <label for="meal-no">✗ 不用餐</label>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="lunchbox">加購便當</label>
-          <select id="lunchbox" style="width:100%;padding:13px 16px;font-family:inherit;font-size:18px;background:rgba(255,255,255,0.75);border:1.5px solid var(--glass-border);border-radius:12px;color:var(--text);outline:none;">
-            <option value="0">0 個（不加購）</option>
-            <option value="1">1 個</option>
-            <option value="2">2 個</option>
-            <option value="3">3 個</option>
-            <option value="4">4 個</option>
-            <option value="5">5 個</option>
-          </select>
-          <div style="font-size:14px;color:var(--text-muted);margin-top:6px;">🍱 愛心家園便當 ・ 請自備餐盒</div>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="note">備註</label>
-        <input type="text" id="note" placeholder="如有特殊需求請填寫">
-      </div>
-      <button type="submit" class="btn-submit" id="submit-btn">確認報名</button>
-    </form>
-  </div>
-
-  <!-- Success Overlay -->
-  <div class="overlay" id="overlay">
-    <div class="success-card">
-      <div class="success-icon">✓</div>
-      <h2>報名成功！</h2>
-      <p class="reg-id-label">您的報名編號</p>
-      <div class="reg-id" id="reg-id-display"></div>
-      <p class="qr-hint">請截圖保存 QR Code<br>現場報到時出示</p>
+  <!-- Success -->
+  <div id="success-section" class="card">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">報名成功！</div>
+    <div class="success-sub" id="success-msg"></div>
+    <div class="qr-wrap">
       <div id="qrcode"></div>
-      <button class="btn-close" onclick="closeOverlay()">完成</button>
+      <div class="qr-id" id="qr-id-text"></div>
     </div>
+    <div class="qr-hint">
+      <strong>📌 請截圖保存這張 QR Code</strong><br>
+      這是您的<strong>永久會員 QR Code</strong>，下次活動直接出示掃描即可報到，無需重新填寫資料。
+    </div>
+    <button class="btn" onclick="location.reload()">繼續報名（其他人）</button>
   </div>
 
-  <!-- Toast -->
-  <div class="toast" id="toast"></div>
+  <!-- Step 1: Phone lookup -->
+  <div id="step1" class="card">
+    <div class="card-title">查詢會員資料</div>
+    <div class="form-group">
+      <label>電話號碼</label>
+      <div class="lookup-row">
+        <input type="tel" id="lookup-phone" placeholder="請輸入手機號碼" inputmode="tel" onkeydown="if(event.key==='Enter')lookupMember()">
+        <button class="btn-lookup" onclick="lookupMember()">查詢</button>
+      </div>
+    </div>
+    <div class="divider">首次報名請填寫下方表單</div>
+    <button class="btn btn-ghost" onclick="showNewForm()">首次使用 / 新會員</button>
+  </div>
 
-  <script>
-    const API = 'https://script.google.com/macros/s/AKfycbyo57_hMEvdUP5vNLMUKSiD6jgFjct95cNY_nskRHxVxr6-LhId7UKJ--iVs_50b_3sJQ/exec';
+  <!-- Step 2a: Existing member -->
+  <div id="step-existing" class="card hidden">
+    <div class="member-welcome">
+      <div class="member-avatar">👤</div>
+      <div>
+        <div class="mname" id="welcome-name"></div>
+        <div class="mid" id="welcome-id"></div>
+      </div>
+    </div>
+    <div class="card-title">本次活動選擇</div>
+    <div class="form-group">
+      <label>出席狀況 *</label>
+      <div class="toggle-row">
+        <input type="radio" name="ex-att" id="ex-att-yes" value="出席">
+        <label for="ex-att-yes">出席</label>
+        <input type="radio" name="ex-att" id="ex-att-no" value="請假">
+        <label for="ex-att-no">請假</label>
+      </div>
+    </div>
+    <div id="ex-meal-wrap" class="hidden">
+      <div class="form-group">
+        <label>用餐 *</label>
+        <div class="toggle-row">
+          <input type="radio" name="ex-meal" id="ex-meal-yes" value="用餐">
+          <label for="ex-meal-yes">用餐</label>
+          <input type="radio" name="ex-meal" id="ex-meal-no" value="不用餐">
+          <label for="ex-meal-no">不用餐</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>加購便當（0–5 個）</label>
+        <select id="ex-lunchbox">
+          <option value="0">不加購</option>
+          <option value="1">1 個</option><option value="2">2 個</option>
+          <option value="3">3 個</option><option value="4">4 個</option><option value="5">5 個</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>備註（選填）</label>
+      <textarea id="ex-note" placeholder="如有特殊需求請填寫"></textarea>
+    </div>
+    <button class="btn" id="ex-btn" onclick="submitExisting()">確認報名</button>
+    <button class="btn btn-ghost" onclick="goBack()">← 返回</button>
+  </div>
 
-    /* ── Utils ── */
-    function driveToImg(url) {
-      if (!url) return '';
-      const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-      return m ? `https://lh3.googleusercontent.com/d/${m[1]}` : url;
-    }
+  <!-- Step 2b: New member -->
+  <div id="step-new" class="card hidden">
+    <div class="card-title">新會員報名</div>
+    <div class="form-group">
+      <label>姓名 *</label>
+      <input type="text" id="new-name" placeholder="請填寫真實姓名">
+    </div>
+    <div class="form-group">
+      <label>電話 *</label>
+      <input type="tel" id="new-phone" placeholder="手機號碼" inputmode="tel">
+    </div>
+    <div class="form-group">
+      <label>出生年月日（選填，用於壽星統計 🎂）</label>
+      <div class="bday-row">
+        <select id="new-by"><option value="">年</option></select>
+        <select id="new-bm"><option value="">月</option></select>
+        <select id="new-bd"><option value="">日</option></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>身份 *</label>
+      <div class="toggle-row">
+        <input type="radio" name="new-type" id="new-type-m" value="會員">
+        <label for="new-type-m">會員</label>
+        <input type="radio" name="new-type" id="new-type-g" value="來賓">
+        <label for="new-type-g">來賓</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>出席狀況 *</label>
+      <div class="toggle-row">
+        <input type="radio" name="new-att" id="new-att-yes" value="出席">
+        <label for="new-att-yes">出席</label>
+        <input type="radio" name="new-att" id="new-att-no" value="請假">
+        <label for="new-att-no">請假</label>
+      </div>
+    </div>
+    <div id="new-meal-wrap" class="hidden">
+      <div class="form-group">
+        <label>用餐 *</label>
+        <div class="toggle-row">
+          <input type="radio" name="new-meal" id="new-meal-yes" value="用餐">
+          <label for="new-meal-yes">用餐</label>
+          <input type="radio" name="new-meal" id="new-meal-no" value="不用餐">
+          <label for="new-meal-no">不用餐</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>加購便當（0–5 個）</label>
+        <select id="new-lunchbox">
+          <option value="0">不加購</option>
+          <option value="1">1 個</option><option value="2">2 個</option>
+          <option value="3">3 個</option><option value="4">4 個</option><option value="5">5 個</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>備註（選填）</label>
+      <textarea id="new-note" placeholder="如有特殊需求請填寫"></textarea>
+    </div>
+    <button class="btn" id="new-btn" onclick="submitNew()">確認報名</button>
+    <button class="btn btn-ghost" onclick="goBack()">← 返回</button>
+  </div>
+</div>
 
-    let toastTimer;
-    function showToast(msg, isErr = false) {
-      const el = document.getElementById('toast');
-      el.textContent = msg;
-      el.className = 'toast show' + (isErr ? ' error' : '');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => { el.className = 'toast'; }, 3500);
-    }
+<div id="toast"></div>
 
-    /* ── Load event info ── */
-    function loadEventInfo() {
-      document.getElementById('loading').style.display = 'block';
-      document.getElementById('error-box').style.display = 'none';
-      document.getElementById('event-content').style.display = 'none';
+<script>
+var API='https://script.google.com/macros/s/AKfycbyo57_hMEvdUP5vNLMUKSiD6jgFjct95cNY_nskRHxVxr6-LhId7UKJ--iVs_50b_3sJQ/exec';
+var curId='',curName='';
 
-      fetchInfo()
-        .then(renderEvent)
-        .catch(err => {
-          console.error('loadEventInfo failed:', err);
-          document.getElementById('loading').style.display = 'none';
-          document.getElementById('error-box').style.display = 'block';
-        });
-    }
+(function(){
+  var by=document.getElementById('new-by'),bm=document.getElementById('new-bm'),bd=document.getElementById('new-bd');
+  for(var y=80;y>=30;y--)by.add(new Option('民國'+y+'年',y));
+  for(var m=1;m<=12;m++)bm.add(new Option(m+'月',m));
+  for(var d=1;d<=31;d++)bd.add(new Option(d+'日',d));
+})();
 
-    /*
-     * fetchWithFallback：
-     * - 10 秒超時，純網路錯誤才改用 JSONP
-     * - GAS 回傳 ok:false 直接丟錯誤，不走 JSONP（避免顯示誤導訊息）
-     */
-    function fetchWithFallback(url) {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 10000);
-      return fetch(url, { redirect: 'follow', signal: ctrl.signal })
-        .then(res => res.text())
-        .then(text => {
-          clearTimeout(timer);
-          return JSON.parse(text); // 讓呼叫端自行判斷 ok
-        })
-        .catch(primaryErr => {
-          clearTimeout(timer);
-          // 只有真正網路失敗才用 JSONP
-          console.warn('網路失敗，改用 JSONP：', primaryErr.message);
-          return fetchViaScriptTag(url);
-        });
-    }
-
-    function fetchInfo() {
-      return fetchWithFallback(API + '?action=info').then(data => {
-        if (!data.ok) throw new Error(data.msg || data.error || 'API 錯誤');
-        return data;
-      });
-    }
-
-    function fetchViaScriptTag(url) {
-      return new Promise((resolve, reject) => {
-        const cbName = '__regCb_' + Date.now();
-        const timer = setTimeout(() => {
-          cleanup();
-          reject(new Error('JSONP timeout'));
-        }, 12000);
-
-        window[cbName] = function(data) {
-          clearTimeout(timer);
-          cleanup();
-          if (data && data.ok) resolve(data);
-          else reject(new Error('JSONP: ok=false'));
-        };
-
-        const script = document.createElement('script');
-        script.src = url + '&callback=' + cbName;
-        script.onerror = () => {
-          clearTimeout(timer);
-          cleanup();
-          reject(new Error('Script tag load error'));
-        };
-        document.head.appendChild(script);
-
-        function cleanup() {
-          delete window[cbName];
-          if (script.parentNode) script.parentNode.removeChild(script);
-        }
-      });
-    }
-
-    function renderEvent(d) {
-      document.getElementById('loading').style.display = 'none';
-
-      /* Poster */
-      const posterWrap = document.getElementById('poster-wrap');
-      const imgUrl = driveToImg(d.poster);
-      if (imgUrl) {
-        const img = document.createElement('img');
-        img.alt = '活動海報';
-        img.onerror = () => { posterWrap.innerHTML = ''; };
-        img.src = imgUrl;
-        posterWrap.appendChild(img);
-      }
-
-      /* Title */
-      document.getElementById('event-title').textContent = d.eventName || '本期例會';
-
-      /* Info rows */
-      const rows = [
-        ['日期', d.eventDate],
-        ['時間', d.eventTime],
-        ['地點', d.location],
-        ['主題', d.topic],
-        ['主講者', d.speaker],
-      ];
-      document.getElementById('info-grid').innerHTML = rows
-        .filter(([, v]) => v)
-        .map(([k, v]) =>
-          `<span class="info-label">${k}</span><span class="info-value">${v}</span>`
-        ).join('');
-
-      /* Description */
-      if (d.desc) document.getElementById('desc-box').textContent = d.desc;
-
-      /* Fee */
-      const feeBadge = document.getElementById('fee-badge');
-      if (d.guestFee) {
-        eventGuestFee = d.guestFee;
-        feeBadge.textContent = `來賓費用：${d.guestFee}`;
-        feeBadge.style.display = '';
-      }
-
-      document.getElementById('event-content').style.display = 'block';
-    }
-
-    /* ── Member type fee hint ── */
-    let eventGuestFee = '';
-    function initTypeToggle() {
-      document.querySelectorAll('input[name="memberType"]').forEach(radio => {
-        radio.addEventListener('change', updateFeeHint);
-      });
-    }
-    function updateFeeHint() {
-      const val = document.querySelector('input[name="memberType"]:checked')?.value;
-      const hint = document.getElementById('fee-hint');
-      if (val === '來賓' && eventGuestFee) {
-        hint.textContent = `費用：${eventGuestFee}`;
-        hint.className = 'fee-hint guest';
-      } else if (val === '會員') {
-        hint.textContent = '費用：會員免費';
-        hint.className = 'fee-hint';
-      } else {
-        hint.textContent = '';
-        hint.className = 'fee-hint';
-      }
-    }
-
-    /* ── Register ── */
-    function submitReg(e) {
-      e.preventDefault();
-      const name       = document.getElementById('name').value.trim();
-      const phone      = document.getElementById('phone').value.trim();
-      const memberType = document.querySelector('input[name="memberType"]:checked')?.value;
-      const attendance = document.querySelector('input[name="attendance"]:checked')?.value;
-      const meal       = document.querySelector('input[name="meal"]:checked')?.value;
-      const lunchbox   = document.getElementById('lunchbox').value || '0';
-      const byVal = document.getElementById('birthYear').value;
-      const bmVal = document.getElementById('birthMonth').value;
-      const bdVal = document.getElementById('birthDay').value;
-      const birthday = (byVal && bmVal && bdVal) ? '民國' + byVal + '年' + bmVal + '月' + bdVal + '日' : '';
-      const note = document.getElementById('note').value.trim();
-      if (!name)        return showToast('請填寫姓名', true);
-      if (!phone)       return showToast('請填寫聯絡電話', true);
-      if (!memberType)  return showToast('請選擇身份（會員或來賓）', true);
-      if (!attendance)  return showToast('請選擇出席或請假', true);
-      if (attendance === '出席' && !meal) return showToast('請選擇是否用餐', true);
-
-      const btn = document.getElementById('submit-btn');
-      btn.disabled = true;
-      btn.textContent = '報名中…';
-
-      const params = new URLSearchParams({ action: 'register', name, phone, birthday, memberType: memberType||'', attendance: attendance||'', meal: (attendance==='出席'?meal:'')  ||'', lunchbox, note });
-      fetchWithFallback(API + '?' + params.toString())
-        .then(data => {
-          if (!data.ok) throw new Error(data.error || '報名失敗');
-          const id = data.id || data.regId || data.registrationId || 'R?';
-          showSuccess(id);
-          document.getElementById('reg-form').reset();
-        })
-        .catch(err => {
-          console.error(err);
-          showToast(err.message || '報名失敗，請重試', true);
-        })
-        .finally(() => {
-          btn.disabled = false;
-          btn.textContent = '確認報名';
-        });
-    }
-
-    function showSuccess(id) {
-      document.getElementById('reg-id-display').textContent = id;
-      const qrcodeEl = document.getElementById('qrcode');
-      qrcodeEl.innerHTML = '';
-      new QRCode(qrcodeEl, {
-        text: id,
-        width: 200,
-        height: 200,
-        colorDark: '#3a2e1e',
-        colorLight: '#faf6ef',
-        correctLevel: QRCode.CorrectLevel.H
-      });
-      document.getElementById('overlay').classList.add('show');
-    }
-
-    function closeOverlay() {
-      document.getElementById('overlay').classList.remove('show');
-    }
-
-    document.getElementById('overlay').addEventListener('click', function(e) {
-      if (e.target === this) closeOverlay();
+['ex','new'].forEach(function(p){
+  document.querySelectorAll('input[name="'+p+'-att"]').forEach(function(r){
+    r.addEventListener('change',function(){
+      document.getElementById(p+'-meal-wrap').classList.toggle('hidden',this.value!=='出席');
     });
+  });
+});
 
-    // 出席/請假切換隱藏用餐區塊
-    document.querySelectorAll('input[name="attendance"]').forEach(r => {
-      r.addEventListener('change', function() {
-        const mealSection = document.getElementById('meal-section');
-        if (this.value === '請假') {
-          mealSection.style.display = 'none';
-          document.querySelectorAll('input[name="meal"]').forEach(m => m.checked = false);
-        } else {
-          mealSection.style.display = 'block';
-        }
-      });
-    });
+var _tt;
+function toast(msg,err){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.className=err?'err':'ok';t.style.display='block';
+  clearTimeout(_tt);_tt=setTimeout(function(){t.style.display='none';},3000);
+}
 
-    // 填充出生年月日下拉選單
-    (function() {
-      var yearSel = document.getElementById('birthYear');
-      for (var y = 80; y >= 30; y--) {
-        var opt = document.createElement('option');
-        opt.value = y;
-        opt.textContent = '民國 ' + y + ' 年';
-        yearSel.appendChild(opt);
-      }
-      var monthSel = document.getElementById('birthMonth');
-      for (var m = 1; m <= 12; m++) {
-        var opt2 = document.createElement('option');
-        opt2.value = m;
-        opt2.textContent = m + ' 月';
-        monthSel.appendChild(opt2);
-      }
-      var daySel = document.getElementById('birthDay');
-      for (var d = 1; d <= 31; d++) {
-        var opt3 = document.createElement('option');
-        opt3.value = d;
-        opt3.textContent = d + ' 日';
-        daySel.appendChild(opt3);
-      }
-    })();
+function apiFetch(url){
+  var ctrl=new AbortController();
+  setTimeout(function(){ctrl.abort();},12000);
+  return fetch(url,{redirect:'follow',signal:ctrl.signal}).then(function(r){return r.json();});
+}
 
-    initTypeToggle();
-    loadEventInfo();
-  </script>
+apiFetch(API+'?action=info').then(function(d){
+  if(!d.ok||!d.config)return;
+  var c=d.config,parts=[];
+  if(c.eventName)parts.push('<strong>'+c.eventName+'</strong>');
+  if(c.eventDate)parts.push(c.eventDate);
+  if(c.eventTime)parts.push(c.eventTime);
+  if(c.location)parts.push('📍 '+c.location);
+  if(c.topic)parts.push('📖 '+c.topic);
+  if(parts.length){
+    var el=document.getElementById('event-info-card');
+    el.innerHTML=parts.join('&emsp;');
+    el.classList.remove('hidden');
+  }
+}).catch(function(){});
+
+function lookupMember(){
+  var phone=document.getElementById('lookup-phone').value.trim();
+  if(!phone){toast('請輸入電話號碼',true);return;}
+  toast('查詢中…');
+  apiFetch(API+'?action=member_lookup&phone='+encodeURIComponent(phone))
+    .then(function(d){
+      if(!d.ok){toast(d.msg||'查詢失敗',true);return;}
+      if(!d.found){
+        document.getElementById('new-phone').value=phone;
+        showNewForm();
+        toast('找不到此電話，請填寫完整資料');
+        return;
+      }
+      curId=d.member.memberId;curName=d.member.name;
+      document.getElementById('welcome-name').textContent=d.member.name;
+      document.getElementById('welcome-id').textContent=d.member.memberId+(d.member.memberType?' ・ '+d.member.memberType:'');
+      show('step-existing');
+      if(d.alreadyRegistered)toast('您已完成報名，可修改用餐選擇');
+    })
+    .catch(function(){toast('網路錯誤，請重試',true);});
+}
+
+function showNewForm(){show('step-new');}
+function goBack(){show('step1');curId='';curName='';}
+function show(id){
+  ['step1','step-existing','step-new'].forEach(function(s){
+    document.getElementById(s).classList.toggle('hidden',s!==id);
+  });
+}
+
+function submitExisting(){
+  var att=document.querySelector('input[name="ex-att"]:checked');
+  var meal=document.querySelector('input[name="ex-meal"]:checked');
+  if(!att)return toast('請選擇出席或請假',true);
+  if(att.value==='出席'&&!meal)return toast('請選擇用餐方式',true);
+  var lunchbox=document.getElementById('ex-lunchbox').value||'0';
+  var note=document.getElementById('ex-note').value.trim();
+  var btn=document.getElementById('ex-btn');
+  btn.disabled=true;btn.textContent='送出中…';
+  var p=new URLSearchParams({action:'event_register',memberId:curId,attendance:att.value,meal:att.value==='出席'?(meal?meal.value:''):'',lunchbox:lunchbox,note:note});
+  apiFetch(API+'?'+p).then(function(d){
+    if(!d.ok)throw new Error(d.msg||'報名失敗');
+    showSuccess(d.memberId,d.name);
+  }).catch(function(e){toast(e.message||'報名失敗',true);})
+  .finally(function(){btn.disabled=false;btn.textContent='確認報名';});
+}
+
+function submitNew(){
+  var name=document.getElementById('new-name').value.trim();
+  var phone=document.getElementById('new-phone').value.trim();
+  var typeEl=document.querySelector('input[name="new-type"]:checked');
+  var attEl=document.querySelector('input[name="new-att"]:checked');
+  var mealEl=document.querySelector('input[name="new-meal"]:checked');
+  var lunchbox=document.getElementById('new-lunchbox').value||'0';
+  var note=document.getElementById('new-note').value.trim();
+  var by=document.getElementById('new-by').value,bm=document.getElementById('new-bm').value,bd=document.getElementById('new-bd').value;
+  var birthday=(by&&bm&&bd)?'民國'+by+'年'+bm+'月'+bd+'日':'';
+  if(!name)return toast('請填寫姓名',true);
+  if(!phone)return toast('請填寫電話',true);
+  if(!typeEl)return toast('請選擇身份',true);
+  if(!attEl)return toast('請選擇出席狀況',true);
+  if(attEl.value==='出席'&&!mealEl)return toast('請選擇用餐方式',true);
+  var btn=document.getElementById('new-btn');
+  btn.disabled=true;btn.textContent='送出中…';
+  var p=new URLSearchParams({action:'event_register',name:name,phone:phone,birthday:birthday,memberType:typeEl.value,attendance:attEl.value,meal:attEl.value==='出席'?(mealEl?mealEl.value:''):'',lunchbox:lunchbox,note:note});
+  apiFetch(API+'?'+p).then(function(d){
+    if(!d.ok)throw new Error(d.msg||'報名失敗');
+    showSuccess(d.memberId,d.name);
+  }).catch(function(e){toast(e.message||'報名失敗',true);})
+  .finally(function(){btn.disabled=false;btn.textContent='確認報名';});
+}
+
+function showSuccess(memberId,name){
+  ['step1','step-existing','step-new'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
+  document.getElementById('success-msg').textContent=(name||'')+'，報名完成！';
+  document.getElementById('qr-id-text').textContent=memberId;
+  var el=document.getElementById('qrcode');el.innerHTML='';
+  new QRCode(el,{text:memberId,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff'});
+  document.getElementById('success-section').style.display='';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
 </body>
 </html>

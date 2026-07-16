@@ -8,71 +8,55 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
-:root{--gold:#a8874f;--gold-lt:#c9a86a;--cream:#faf6ef;--beige:#f0e6d2;
-  --ink:#3d3226;--muted:#8a7a63;--ok:#4a7c59;--warn:#c08a3e;--err:#b5544b}
+:root{--gold:#a8874f;--gold-lt:#c9a86a;--cream:#faf6ef;--ink:#3d3226;--muted:#8a7a63;--ok:#4a7c59;--warn:#c08a3e;--err:#b5544b}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);
-  color:var(--ink);font-size:20px;line-height:1.7;padding:14px 14px 40px;min-height:100vh}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--ink);font-size:20px;line-height:1.7;padding:14px 14px 40px;min-height:100vh}
 .wrap{max-width:520px;margin:0 auto}
 .top{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 14px;gap:12px}
 .top-title{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700}
 .stats{display:flex;gap:8px}
-.stat{background:rgba(255,255,255,.7);border:1px solid rgba(200,170,110,.3);
-  border-radius:10px;padding:7px 15px;text-align:center;min-width:70px}
+.stat{background:rgba(255,255,255,.7);border:1px solid rgba(200,170,110,.3);border-radius:10px;padding:7px 15px;text-align:center;min-width:70px}
 .stat .n{font-family:'Noto Serif TC',serif;font-size:26px;font-weight:700;line-height:1.15}
 .stat .l{font-size:12px;color:var(--muted)}
 .stat.in .n{color:var(--ok)}
 .stat.left .n{color:var(--gold)}
-.sec-label{font-size:16px;font-weight:700;color:var(--gold);margin:6px 2px 10px;
-  display:flex;align-items:center;gap:8px}
+.sec-label{font-size:16px;font-weight:700;color:var(--gold);margin:6px 2px 10px;display:flex;align-items:center;gap:8px}
 .sec-label::before{content:'';width:20px;height:2px;background:var(--gold-lt);border-radius:2px}
-#reader{border-radius:18px;overflow:hidden;border:1px solid rgba(200,170,110,.35);
-  background:#000;box-shadow:0 8px 30px rgba(140,110,60,.14);min-height:300px}
+#reader{border-radius:18px;overflow:hidden;border:1px solid rgba(200,170,110,.35);background:#000;box-shadow:0 8px 30px rgba(140,110,60,.14);min-height:300px}
 #reader video{width:100%!important;display:block}
 .scanhint{text-align:center;color:var(--muted);font-size:15px;margin:10px 0 4px}
 .or{display:flex;align-items:center;gap:14px;margin:24px 2px 18px;color:var(--muted);font-size:15px}
 .or::before,.or::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(200,170,110,.5),transparent)}
-input[type=search]{width:100%;font-family:inherit;font-size:20px;color:var(--ink);
-  padding:16px 18px;border:1.5px solid rgba(180,150,100,.4);border-radius:14px;background:rgba(255,255,255,.85)}
+input[type=search]{width:100%;font-family:inherit;font-size:20px;color:var(--ink);padding:16px 18px;border:1.5px solid rgba(180,150,100,.4);border-radius:14px;background:rgba(255,255,255,.85)}
 input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(168,135,79,.16)}
 .list{margin-top:14px}
-.row{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.74);
-  border:1px solid rgba(200,170,110,.28);border-radius:14px;padding:15px 16px;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.74);border:1px solid rgba(200,170,110,.28);border-radius:14px;padding:15px 16px;margin-bottom:10px}
 .row .info{flex:1;min-width:0}
 .row .nm{font-weight:700;font-size:20px}
 .row .meta{font-size:14px;color:var(--muted);margin-top:2px}
-.row button{flex-shrink:0;font-family:inherit;font-size:17px;font-weight:700;color:#fff;
-  padding:12px 22px;border:none;border-radius:11px;cursor:pointer;
-  background:linear-gradient(135deg,var(--gold-lt),var(--gold))}
+.row button{flex-shrink:0;font-family:inherit;font-size:17px;font-weight:700;color:#fff;padding:12px 22px;border:none;border-radius:11px;cursor:pointer;background:linear-gradient(135deg,var(--gold-lt),var(--gold))}
 .row button:active{transform:translateY(1px)}
 .row.done{background:rgba(74,124,89,.08);border-color:rgba(74,124,89,.3)}
 .row .tag{flex-shrink:0;font-size:15px;font-weight:700;color:var(--ok);text-align:right;line-height:1.4}
 .empty{text-align:center;color:var(--muted);padding:26px 0;font-size:16px}
-#pop{position:fixed;inset:0;background:rgba(40,32,22,.55);backdrop-filter:blur(4px);
-  display:none;align-items:center;justify-content:center;padding:24px;z-index:99}
+#pop{position:fixed;inset:0;background:rgba(40,32,22,.55);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:24px;z-index:99}
 #pop.on{display:flex}
-.pop-card{width:100%;max-width:400px;background:var(--cream);border-radius:22px;
-  padding:36px 26px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);
-  animation:pop .22s cubic-bezier(.2,1.2,.4,1)}
+.pop-card{width:100%;max-width:400px;background:var(--cream);border-radius:22px;padding:36px 26px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:pop .22s cubic-bezier(.2,1.2,.4,1)}
 @keyframes pop{from{transform:scale(.86);opacity:0}to{transform:scale(1);opacity:1}}
-.pop-ico{width:80px;height:80px;margin:0 auto 18px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;font-size:42px}
+.pop-ico{width:80px;height:80px;margin:0 auto 18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:42px}
 .ok .pop-ico{background:rgba(74,124,89,.14);color:var(--ok);border:2px solid var(--ok)}
 .dup .pop-ico{background:rgba(192,138,62,.14);color:var(--warn);border:2px solid var(--warn)}
 .no .pop-ico{background:rgba(181,84,75,.12);color:var(--err);border:2px solid var(--err)}
 .pop-nm{font-family:'Noto Serif TC',serif;font-size:34px;font-weight:700;margin-bottom:10px}
 .pop-badges{display:flex;justify-content:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
 .badge{display:inline-block;padding:5px 16px;border-radius:20px;font-size:16px;font-weight:700}
-.badge-type{background:rgba(168,135,79,.15);color:var(--gold);border:1px solid rgba(168,135,79,.4)}
-.badge-fee{background:rgba(181,84,75,.12);color:#b04030;border:1px solid rgba(181,84,75,.35);font-size:18px}
-.badge-free{background:rgba(74,124,89,.12);color:var(--ok);border:1px solid rgba(74,124,89,.35);font-size:18px}
+.badge-meal{background:rgba(74,124,89,.12);color:var(--ok);border:1px solid rgba(74,124,89,.35)}
+.badge-lb{background:rgba(181,84,75,.12);color:#b04030;border:1px solid rgba(181,84,75,.35);font-size:18px}
 .pop-msg{font-size:19px;line-height:1.7}
 .ok .pop-msg{color:var(--ok);font-weight:700}
 .dup .pop-msg{color:var(--warn)}
 .no .pop-msg{color:var(--err)}
-.pop-card button{width:100%;margin-top:28px;font-family:inherit;font-size:20px;font-weight:700;
-  letter-spacing:.1em;color:#fff;padding:17px;border:none;border-radius:13px;cursor:pointer;
-  background:linear-gradient(135deg,var(--gold-lt),var(--gold))}
+.pop-card button{width:100%;margin-top:28px;font-family:inherit;font-size:20px;font-weight:700;letter-spacing:.1em;color:#fff;padding:17px;border:none;border-radius:13px;cursor:pointer;background:linear-gradient(135deg,var(--gold-lt),var(--gold))}
 </style>
 </head>
 <body>
@@ -86,9 +70,9 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
   </div>
   <div class="sec-label">掃描 QR Code 報到</div>
   <div id="reader"></div>
-  <p class="scanhint">來賓出示 QR Code 對準鏡頭即可</p>
+  <p class="scanhint">出示手機上的會員 QR Code 對準鏡頭</p>
   <div class="or">沒帶 QR？用姓名搜尋</div>
-  <input type="search" id="q" placeholder="輸入姓名或電話…" oninput="search()" autocomplete="off">
+  <input type="search" id="q" placeholder="輸入姓名或電話…" oninput="doSearch()" autocomplete="off">
   <div class="list" id="list"><div class="empty">輸入姓名或電話搜尋</div></div>
 </div>
 <div id="pop" onclick="closePop()">
@@ -103,60 +87,100 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
 <script>
 var API='https://script.google.com/macros/s/AKfycbyo57_hMEvdUP5vNLMUKSiD6jgFjct95cNY_nskRHxVxr6-LhId7UKJ--iVs_50b_3sJQ/exec';
 var $=function(id){return document.getElementById(id)};
-var scanner=null,busy=false,lastCode='',lastAt=0;
-fetch(API+'?action=info').then(function(r){return r.json()}).then(function(d){
-  if(d.ok&&d.eventName) $('evtTitle').textContent=d.eventName+' 報到';
+var busy=false,lastCode='',lastAt=0;
+
+fetch(API+'?action=info').then(function(r){return r.json();}).then(function(d){
+  if(d.ok&&d.config&&d.config.eventName)$('evtTitle').textContent=d.config.eventName+' 報到';
 }).catch(function(){});
+
+var scanner=null;
 function startScan(){
-  if(scanner)return;scanner=new Html5Qrcode('reader');
+  if(scanner)return;
+  scanner=new Html5Qrcode('reader');
   var boxSize=Math.min(Math.floor(window.innerWidth*0.72),300);
-  scanner.start({facingMode:'environment'},{fps:15,qrbox:{width:boxSize,height:boxSize}},onScan,function(){}).catch(function(){
-    $('reader').innerHTML='<div style="padding:44px 20px;text-align:center;color:#fff;font-size:16px">無法開啟相機<br><span style="font-size:14px;opacity:.75">請允許相機權限，或用下方搜尋姓名</span></div>';
-  });
+  scanner.start({facingMode:'environment'},{fps:15,qrbox:{width:boxSize,height:boxSize}},onScan,function(){})
+    .catch(function(){
+      $('reader').innerHTML='<div style="padding:44px 20px;text-align:center;color:#fff;font-size:16px">無法開啟相機<br><span style="font-size:14px;opacity:.75">請允許相機權限，或用下方搜尋姓名</span></div>';
+    });
 }
-function onScan(text){var now=Date.now();if(busy)return;if(text===lastCode&&now-lastAt<3000)return;lastCode=text;lastAt=now;doCheckIn(text.trim());}
-async function doCheckIn(id){
+
+function onScan(text){
+  var now=Date.now();
+  if(busy)return;
+  if(text===lastCode&&now-lastAt<3000)return;
+  lastCode=text;lastAt=now;
+  doCheckIn(text.trim());
+}
+
+function doCheckIn(id){
   busy=true;
-  try{var d=await(await fetch(API+'?action=checkin&id='+encodeURIComponent(id))).json();
-    if(d.ok){buzz([40,60,40]);showPop('ok','✓',d.name,'報到完成　'+d.time,d.lunchbox);}
-    else if(d.dup){buzz([120,80,120]);showPop('dup','!',d.name,d.msg,d.lunchbox);}
-    else{buzz([200]);showPop('no','✕','查無此人','請改用下方搜尋姓名',null);}
-    if(d.stats)setStats(d.stats);
-  }catch(e){showPop('no','✕','連線失敗','請檢查網路',null);}
-  busy=false;
+  fetch(API+'?action=event_checkin&id='+encodeURIComponent(id))
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.ok){
+        buzz([40,60,40]);
+        var badges='';
+        if(d.meal&&d.meal!=='不用餐')badges+='<span class="badge badge-meal">🍽 '+d.meal+'</span>';
+        if(d.lunchbox&&d.lunchbox!='0')badges+='<span class="badge badge-lb">🍱 加購便當 '+d.lunchbox+' 個</span>';
+        showPop('ok','✓',d.name,'報到完成！',badges);
+        setTimeout(closePop,3000);
+      }else{
+        buzz([200]);
+        showPop('no','✕',d.msg||'查無此人','請改用下方搜尋姓名','');
+      }
+      refreshStats();
+    })
+    .catch(function(){showPop('no','✕','連線失敗','請檢查網路','');})
+    .finally(function(){busy=false;});
 }
-var timer=null;function search(){clearTimeout(timer);timer=setTimeout(run,300);}
-async function run(){
+
+var searchTimer=null;
+function doSearch(){
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(runSearch,300);
+}
+
+function runSearch(){
   var q=$('q').value.trim();
   if(!q){$('list').innerHTML='<div class="empty">輸入姓名或電話搜尋</div>';return;}
-  try{var d=await(await fetch(API+'?action=search&q='+encodeURIComponent(q))).json();render(d.results||[]);}
-  catch(e){$('list').innerHTML='<div class="empty">連線失敗</div>';}
+  fetch(API+'?action=event_search&q='+encodeURIComponent(q))
+    .then(function(r){return r.json();})
+    .then(function(d){renderList(d.results||[]);})
+    .catch(function(){$('list').innerHTML='<div class="empty">連線失敗</div>';});
 }
-function render(rows){
+
+function renderList(rows){
   if(!rows.length){$('list').innerHTML='<div class="empty">查無此人</div>';return;}
   $('list').innerHTML=rows.map(function(r){
-    var tail=r.checked?'<div class="tag">✓ 已報到<br><span style="font-weight:400;color:var(--muted)">'+r.time+'</span></div>'
-      :'<button onclick="manual(\''+r.id+'\')">報到</button>';
-    return '<div class="row'+(r.checked?' done':'')+'"><div class="info"><div class="nm">'+esc(r.name)+'</div><div class="meta">'+mask(r.phone)+'</div></div>'+tail+'</div>';
+    var meta=(r.meal?r.meal:'')+(r.lunchbox&&r.lunchbox!='0'?' ・ 加購便當'+r.lunchbox+'個':'');
+    if(r.checkedIn){
+      return '<div class="row done"><div class="info"><div class="nm">'+esc(r.name)+'</div><div class="meta">'+mask(r.phone)+(meta?' ・ '+meta:'')+'</div></div><div class="tag">✓ 已報到</div></div>';
+    }
+    return '<div class="row"><div class="info"><div class="nm">'+esc(r.name)+'</div><div class="meta">'+mask(r.phone)+(meta?' ・ '+meta:'')+'</div></div><button onclick="manualCheckin(\''+r.memberId+'\')">報到</button></div>';
   }).join('');
 }
-async function manual(id){await doCheckIn(id);run();}
-async function refreshStats(){try{setStats(await(await fetch(API+'?action=stats')).json());}catch(e){}}
-function setStats(s){$('s-in').textContent=s.checked;$('s-left').textContent=s.remain;}
-function showPop(cls,ico,nm,msg,lunchbox){
+
+function manualCheckin(id){doCheckIn(id);setTimeout(runSearch,800);}
+
+function refreshStats(){
+  fetch(API+'?action=event_stats')
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.ok){$('s-in').textContent=d.checked;$('s-left').textContent=d.unchecked;}
+    }).catch(function(){});
+}
+
+function showPop(cls,ico,nm,msg,badges){
   $('popCard').className='pop-card '+cls;
   $('popIco').textContent=ico;
   $('popNm').textContent=nm;
   $('popMsg').textContent=msg;
-  var badges='';
-  if(lunchbox&&lunchbox!='0'){badges+='<span class="badge badge-fee">🍱 加購便當 '+lunchbox+' 個</span>';}
-  $('popBadges').innerHTML=badges;
+  $('popBadges').innerHTML=badges||'';
   $('pop').classList.add('on');
-  if(cls==='ok')setTimeout(closePop,3000);
 }
 function closePop(){$('pop').classList.remove('on');}
 function buzz(p){if(navigator.vibrate)navigator.vibrate(p);}
-function esc(s){return String(s).replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]});}
+function esc(s){return String(s).replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]);}
 function mask(p){p=String(p);return p.length>6?p.slice(0,4)+'***'+p.slice(-3):p;}
 startScan();refreshStats();setInterval(refreshStats,20000);
 </script>
