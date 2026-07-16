@@ -51,6 +51,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--i
 /* ── Form fields ── */
 .form-group{margin-bottom:18px}
 label{display:block;font-size:15px;font-weight:600;color:var(--gold-dk);margin-bottom:8px}
+.field-hint{font-size:13px;color:var(--muted);margin-bottom:8px;margin-top:-4px}
 input,select,textarea{width:100%;font-family:inherit;font-size:17px;color:var(--ink);padding:13px 14px;border:1.5px solid rgba(180,150,100,.4);border-radius:12px;background:#fff;outline:none;transition:border-color .2s,box-shadow .2s}
 input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(168,135,79,.14)}
 input::placeholder{color:#c0b09a}
@@ -70,6 +71,8 @@ textarea{resize:vertical;min-height:78px}
 .btn:active:not(:disabled){transform:translateY(0)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn-ghost{background:none;color:var(--muted);box-shadow:none;border:1px solid var(--border)}
+.btn-row{display:flex;gap:10px;margin-top:8px}
+.btn-row .btn{margin-top:0}
 
 /* ── Already registered banner ── */
 .already-banner{background:#fff8e6;border:1.5px solid #e6a817;border-radius:12px;padding:13px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.6;color:#7a5500}
@@ -80,8 +83,8 @@ textarea{resize:vertical;min-height:78px}
 .member-avatar{width:44px;height:44px;background:linear-gradient(135deg,var(--gold-lt),var(--gold));border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;flex-shrink:0}
 .mname{font-weight:700;font-size:17px}
 .msub{font-size:13px;color:var(--muted);margin-top:2px}
-.divider{text-align:center;color:var(--muted);font-size:14px;margin:4px 0 16px;position:relative}
-.divider::before,.divider::after{content:'';position:absolute;top:50%;width:calc(50% - 60px);height:1px;background:var(--border)}
+.divider{text-align:center;color:var(--muted);font-size:14px;margin:16px 0;position:relative}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:calc(50% - 70px);height:1px;background:var(--border)}
 .divider::before{left:0}.divider::after{right:0}
 
 /* ── Toast ── */
@@ -104,7 +107,6 @@ textarea{resize:vertical;min-height:78px}
 </style>
 </head>
 <body>
-
 <div class="wrap">
   <div class="page-header">
     <div class="brand">臺中市海德堡讀書會</div>
@@ -120,9 +122,9 @@ textarea{resize:vertical;min-height:78px}
   <div id="mode-qr" class="hidden">
     <div class="card">
       <div class="card-title">查詢我的 QR Code</div>
-      <p style="font-size:14px;color:var(--muted);margin-bottom:16px">輸入您的手機號碼，即可取得您的專屬 QR Code，截圖保存後下次活動直接掃描報到。</p>
+      <p class="field-hint" style="margin-bottom:14px">輸入您的手機號碼，取得專屬 QR Code，截圖保存後下次活動直接掃描報到。</p>
       <div class="form-group">
-        <label>電話號碼</label>
+        <label>手機號碼</label>
         <div class="lookup-row">
           <input type="tel" id="qr-phone" placeholder="請輸入手機號碼" inputmode="tel" onkeydown="if(event.key==='Enter')lookupQR()">
           <button class="btn-lookup" onclick="lookupQR()">查詢</button>
@@ -139,6 +141,7 @@ textarea{resize:vertical;min-height:78px}
           <strong>📌 請截圖保存這張 QR Code</strong><br>
           下次活動直接出示掃描即可報到，無需重新填寫資料。
         </div>
+        <button class="btn btn-ghost" onclick="resetQR()">重新查詢</button>
       </div>
     </div>
   </div>
@@ -149,20 +152,17 @@ textarea{resize:vertical;min-height:78px}
     <!-- ── Event info banner ── -->
     <div id="event-banner" class="hidden">
       <img id="ev-poster" class="ev-poster hidden" src="" alt="活動海報">
-
       <ul class="ev-info-list" id="ev-info-list"></ul>
-
       <div id="ev-desc-box" class="ev-desc-box hidden">
         <div id="ev-desc-text"></div>
       </div>
-
       <div id="ev-fee-banner" class="ev-fee-banner hidden"></div>
     </div>
 
     <!-- ── Success screen ── -->
     <div id="success-section" class="card">
-      <div class="success-icon">🎉</div>
-      <div class="success-title">報名成功！</div>
+      <div class="success-icon" id="success-icon">🎉</div>
+      <div class="success-title" id="success-title">報名成功！</div>
       <div class="success-sub" id="success-msg"></div>
       <div class="qr-wrap">
         <div class="qr-name" id="qr-name-text"></div>
@@ -182,16 +182,17 @@ textarea{resize:vertical;min-height:78px}
 
     <!-- Step 1: Phone lookup -->
     <div id="step1" class="card">
-      <div class="card-title">查詢會員資料</div>
+      <div class="card-title">輸入手機號碼查詢</div>
+      <p class="field-hint">已有報名記錄者輸入手機號碼即可快速報名；首次使用請點下方按鈕填寫資料。</p>
       <div class="form-group">
-        <label>電話號碼</label>
+        <label>手機號碼</label>
         <div class="lookup-row">
           <input type="tel" id="lookup-phone" placeholder="請輸入手機號碼" inputmode="tel" onkeydown="if(event.key==='Enter')lookupMember()">
           <button class="btn-lookup" onclick="lookupMember()">查詢</button>
         </div>
       </div>
-      <div class="divider">首次報名請填寫下方表單</div>
-      <button class="btn btn-ghost" onclick="showNewForm()">首次使用 / 新會員</button>
+      <div class="divider">首次報名</div>
+      <button class="btn btn-ghost" onclick="showNewForm()">首次使用 / 新會員填寫資料</button>
     </div>
 
     <!-- Step 2a: Existing member -->
@@ -209,7 +210,16 @@ textarea{resize:vertical;min-height:78px}
       </div>
       <div class="card-title">本次活動選擇</div>
       <div class="form-group">
-        <label>出席狀況 *</label>
+        <label>加購便當數量</label>
+        <p class="field-hint">🍱 愛心家園便當 140 元／份・請自備餐盒</p>
+        <select id="ex-lunchbox">
+          <option value="0">不加購</option>
+          <option value="1">1 個</option><option value="2">2 個</option>
+          <option value="3">3 個</option><option value="4">4 個</option><option value="5">5 個</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>出席或請假 *</label>
         <div class="toggle-row">
           <input type="radio" name="ex-att" id="ex-att-yes" value="出席">
           <label for="ex-att-yes">✅ 出席</label>
@@ -219,7 +229,7 @@ textarea{resize:vertical;min-height:78px}
       </div>
       <div id="ex-meal-wrap" class="hidden">
         <div class="form-group">
-          <label>用餐 *</label>
+          <label>是否用餐 *</label>
           <div class="toggle-row">
             <input type="radio" name="ex-meal" id="ex-meal-yes" value="用餐">
             <label for="ex-meal-yes">🍱 用餐</label>
@@ -227,21 +237,15 @@ textarea{resize:vertical;min-height:78px}
             <label for="ex-meal-no">✕ 不用餐</label>
           </div>
         </div>
-        <div class="form-group">
-          <label>加購便當數量</label>
-          <select id="ex-lunchbox">
-            <option value="0">不加購</option>
-            <option value="1">1 個</option><option value="2">2 個</option>
-            <option value="3">3 個</option><option value="4">4 個</option><option value="5">5 個</option>
-          </select>
-        </div>
       </div>
       <div class="form-group">
         <label>備註（選填）</label>
         <textarea id="ex-note" placeholder="如有特殊需求請填寫"></textarea>
       </div>
-      <button class="btn" id="ex-btn" onclick="submitExisting()">確認報名</button>
-      <button class="btn btn-ghost" onclick="goBack()">← 返回</button>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goBack()" style="flex:1">← 返回</button>
+        <button class="btn" id="ex-btn" onclick="submitExisting()" style="flex:2">確認報名</button>
+      </div>
     </div>
 
     <!-- Step 2b: New member -->
@@ -257,6 +261,7 @@ textarea{resize:vertical;min-height:78px}
       </div>
       <div class="form-group">
         <label>生日（選填）🎂</label>
+        <p class="field-hint">填寫後活動當月會自動標記壽星</p>
         <div class="bday-row">
           <select id="new-by"><option value="">年</option></select>
           <select id="new-bm"><option value="">月</option></select>
@@ -265,7 +270,7 @@ textarea{resize:vertical;min-height:78px}
       </div>
       <div class="form-group">
         <label>加購便當數量</label>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:8px">🍱 愛心家園便當 140 元／份・請自備餐盒</p>
+        <p class="field-hint">🍱 愛心家園便當 140 元／份・請自備餐盒</p>
         <select id="new-lunchbox">
           <option value="0">不加購</option>
           <option value="1">1 個</option><option value="2">2 個</option>
@@ -305,8 +310,10 @@ textarea{resize:vertical;min-height:78px}
         <label>備註（選填）</label>
         <textarea id="new-note" placeholder="如有特殊需求請填寫"></textarea>
       </div>
-      <button class="btn" id="new-btn" onclick="submitNew()">確認報名</button>
-      <button class="btn btn-ghost" onclick="goBack()">← 返回</button>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goBack()" style="flex:1">← 返回</button>
+        <button class="btn" id="new-btn" onclick="submitNew()" style="flex:2">確認報名</button>
+      </div>
     </div>
 
   </div><!-- end mode-reg -->
@@ -325,6 +332,7 @@ function switchMode(mode){
   document.getElementById('tab-reg').classList.toggle('active',isReg);
   document.getElementById('tab-qr').classList.toggle('active',!isReg);
   document.getElementById('page-title').textContent=isReg?'活動報名系統':'取得我的 QR Code';
+  scrollTop();
 }
 
 function lookupQR(){
@@ -340,8 +348,16 @@ function lookupQR(){
       new QRCode(el,{text:d.phone,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff'});
       document.getElementById('qr-result').classList.remove('hidden');
       toast('找到了！請截圖保存');
+      scrollTop();
     })
     .catch(function(){toast('網路錯誤，請重試',true);});
+}
+
+function resetQR(){
+  document.getElementById('qr-result').classList.add('hidden');
+  document.getElementById('qr-phone').value='';
+  document.getElementById('qrcode-lookup').innerHTML='';
+  scrollTop();
 }
 
 (function(){
@@ -363,8 +379,10 @@ var _tt;
 function toast(msg,err){
   var t=document.getElementById('toast');
   t.textContent=msg;t.className=err?'err':'ok';t.style.display='block';
-  clearTimeout(_tt);_tt=setTimeout(function(){t.style.display='none';},3000);
+  clearTimeout(_tt);_tt=setTimeout(function(){t.style.display='none';},3200);
 }
+
+function scrollTop(){window.scrollTo({top:0,behavior:'smooth'});}
 
 function apiFetch(url){
   var ctrl=new AbortController();
@@ -421,18 +439,16 @@ apiFetch(API+'?action=info').then(function(d){
     var box=document.getElementById('ev-desc-box');
     var txt=document.getElementById('ev-desc-text');
     c.desc.split(/\n\n+/).forEach(function(para){
-      var p=document.createElement('p');
-      p.textContent=para.trim();
-      txt.appendChild(p);
+      var p=document.createElement('p');p.textContent=para.trim();txt.appendChild(p);
     });
     box.classList.remove('hidden');
     hasContent=true;
   }
 
-  if(c.guestFee||c.memberFee!==undefined){
+  if(c.guestFee){
     var fee=document.getElementById('ev-fee-banner');
     var mf=c.memberFee||'免費';
-    fee.innerHTML='<span class="fee-item"><span class="fee-label">會員</span><span class="fee-val">'+mf+'</span></span><span class="fee-sep">　|　</span><span class="fee-item"><span class="fee-label">來賓</span><span class="fee-val">'+(c.guestFee||'')+'</span></span>';
+    fee.innerHTML='<span class="fee-item"><span class="fee-label">會員</span><span class="fee-val">'+mf+'</span></span><span class="fee-sep">　|　</span><span class="fee-item"><span class="fee-label">來賓</span><span class="fee-val">'+c.guestFee+'</span></span>';
     fee.classList.remove('hidden');
     hasContent=true;
   }
@@ -450,7 +466,7 @@ function lookupMember(){
       if(!d.found){
         document.getElementById('new-phone').value=phone;
         showNewForm();
-        toast('找不到此電話，請填寫完整資料');
+        toast('查無記錄，請填寫完整資料');
         return;
       }
       curPhone=d.member.phone;curName=d.member.name;
@@ -468,13 +484,14 @@ function show(id){
   ['step1','step-existing','step-new'].forEach(function(s){
     document.getElementById(s).classList.toggle('hidden',s!==id);
   });
+  scrollTop();
 }
 
 function submitExisting(){
   var att=document.querySelector('input[name="ex-att"]:checked');
   var meal=document.querySelector('input[name="ex-meal"]:checked');
   if(!att)return toast('請選擇出席或請假',true);
-  if(att.value==='出席'&&!meal)return toast('請選擇用餐方式',true);
+  if(att.value==='出席'&&!meal)return toast('請選擇是否用餐',true);
   var lunchbox=document.getElementById('ex-lunchbox').value||'0';
   var note=document.getElementById('ex-note').value.trim();
   var btn=document.getElementById('ex-btn');
@@ -500,8 +517,8 @@ function submitNew(){
   if(!name)return toast('請填寫姓名',true);
   if(!phone)return toast('請填寫電話',true);
   if(!typeEl)return toast('請選擇身份',true);
-  if(!attEl)return toast('請選擇出席狀況',true);
-  if(attEl.value==='出席'&&!mealEl)return toast('請選擇用餐方式',true);
+  if(!attEl)return toast('請選擇出席或請假',true);
+  if(attEl.value==='出席'&&!mealEl)return toast('請選擇是否用餐',true);
   var btn=document.getElementById('new-btn');
   btn.disabled=true;btn.textContent='送出中…';
   var p=new URLSearchParams({action:'event_register',name:name,phone:phone,birthday:birthday,memberType:typeEl.value,attendance:attEl.value,meal:attEl.value==='出席'?(mealEl?mealEl.value:''):'',lunchbox:lunchbox,note:note});
@@ -515,14 +532,16 @@ function submitNew(){
 function showSuccess(name,phone,updated){
   ['step1','step-existing','step-new'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
   document.getElementById('form-section-hd').classList.add('hidden');
-  document.getElementById('success-msg').textContent=updated?(name||'')+'，報名資料已更新！':(name||'')+'，報名完成！';
-  document.getElementById('success-section').style.setProperty('border-top','4px solid '+(updated?'#e6a817':'#4a7c59'));
+  document.getElementById('success-icon').textContent=updated?'✅':'🎉';
+  document.getElementById('success-title').textContent=updated?'更新成功！':'報名成功！';
+  document.getElementById('success-msg').textContent=(name||'')+(updated?'，報名資料已更新。':'，感謝您的報名！');
+  document.getElementById('success-section').style.borderTop='4px solid '+(updated?'#e6a817':'#4a7c59');
   document.getElementById('qr-name-text').textContent=name||'';
   document.getElementById('qr-phone-text').textContent=phone||'';
   var el=document.getElementById('qrcode');el.innerHTML='';
   new QRCode(el,{text:phone,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff'});
   document.getElementById('success-section').style.display='';
-  window.scrollTo({top:0,behavior:'smooth'});
+  scrollTop();
 }
 </script>
 </body>
