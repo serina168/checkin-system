@@ -269,8 +269,8 @@ function adminCreateEvent(p) {
   if (!p.eventName) return {ok:false, msg:'請提供活動名稱'};
   var ss = getSpreadsheet();
   var cfgSh = ss.getSheetByName(CONFIG_SHEET) || ss.insertSheet(CONFIG_SHEET);
-  var keys = ['currentEvent','eventName','eventDate','eventTime','location','topic','speaker','desc','guestFee'];
-  var vals = [p.eventName,p.eventName,p.eventDate||'',p.eventTime||'',p.location||'',p.topic||'',p.speaker||'',p.desc||'',p.guestFee||''];
+  var keys = ['currentEvent','eventName','eventDate','eventTime','location','topic','speaker','desc','guestFee','posterUrl'];
+  var vals = [p.eventName,p.eventName,p.eventDate||'',p.eventTime||'',p.location||'',p.topic||'',p.speaker||'',p.desc||'',p.guestFee||'',p.posterUrl||''];
   cfgSh.clearContents();
   keys.forEach(function(k,i){ cfgSh.getRange(i+1,1,1,2).setValues([[k,vals[i]]]); });
   var evSh = ss.getSheetByName(p.eventName);

@@ -123,7 +123,9 @@ td{padding:8px;border-bottom:1px solid #e8ddd0}
         <label>內容簡介</label>
         <textarea id="ev-desc" style="min-height:60px"></textarea>
         <label>來賓費用</label>
-        <input type="text" id="ev-fee" placeholder="例：200元">
+        <input type="text" id="ev-fee" placeholder="例：500元(含便當)">
+        <label>海報圖片連結（選填）</label>
+        <input type="url" id="ev-poster" placeholder="https://... 圖片網址">
         <button class="btn" onclick="doSaveEvent()">建立 / 更新活動</button>
         <div class="msg" id="setup-msg"></div>
       </div>
@@ -173,6 +175,7 @@ function loadEventInfo(){
       document.getElementById('ev-speaker').value=c.speaker||'';
       document.getElementById('ev-desc').value=c.desc||'';
       document.getElementById('ev-fee').value=c.guestFee||'';
+      document.getElementById('ev-poster').value=c.posterUrl||'';
     }
   }).catch(function(){});
 }
@@ -272,7 +275,8 @@ function doSaveEvent(){
     topic:document.getElementById('ev-topic').value.trim(),
     speaker:document.getElementById('ev-speaker').value.trim(),
     desc:document.getElementById('ev-desc').value.trim(),
-    guestFee:document.getElementById('ev-fee').value.trim()});
+    guestFee:document.getElementById('ev-fee').value.trim(),
+    posterUrl:document.getElementById('ev-poster').value.trim()});
   apiFetch(API+'?'+p)
     .then(function(d){
       if(d.ok){showMsg('setup-msg',d.msg||'活動已建立',true);loadEventInfo();}
