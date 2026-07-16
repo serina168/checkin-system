@@ -103,11 +103,17 @@ function findInEventSheet(sh, phone) {
   if (!sh || sh.getLastRow() < 2) return null;
   var norm = normalizePhone(phone);
   var old = isOldFormat(sh);
-  var cols = old ? 10 : 7; // old: A~J(10cols), new: A~G(7cols)
-  var phoneCol = old ? 2 : 1; // old=C(idx2), new=B(idx1)
+  var cols = old ? 10 : 7;
   var data = sh.getRange(2, 1, sh.getLastRow() - 1, cols).getValues();
   for (var i = 0; i < data.length; i++) {
-    if (normalizePhone(data[i][phoneCol]) === norm) return {row: i+2, data: data[i], old: old};
+    if (old) {
+      // Check correct col C (idx2) first; also check col B (idx1) for mixed rows
+      var atC = normalizePhone(data[i][2]) === norm;
+      var atB = normalizePhone(data[i][1]) === norm;
+      if (atC || atB) return {row: i+2, data: data[i], old: true, mixed: !atC && atB};
+    } else {
+      if (normalizePhone(data[i][1]) === norm) return {row: i+2, data: data[i], old: false};
+    }
   }
   return null;
 }
@@ -164,18 +170,31 @@ function eventRegister(p) {
     var updated = false;
     if (existing) {
       if (existing.old) {
-        // old format: G=col7=出席, H=col8=用餐, E=col5=加購便當, I=col9=備註
-        evSh.getRange(existing.row, 7).setValue(attendance);
-        evSh.getRange(existing.row, 8).setValue(meal);
-        evSh.getRange(existing.row, 5).setValue(lunchbox);
-        evSh.getRange(existing.row, 9).setValue(note);
+        if (existing.mixed) {
+          // Corrupted row (phone at B not C): rewrite entire row in correct old format
+          var ts = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy/MM/dd HH:mm:ss');
+          var mType = (member.memberType) || '';
+          evSh.getRange(existing.row, 1, 1, 10).setValues([[ts, member.name, member.phone, '', lunchbox, mType, attendance, meal, note, '']]);
+        } else {
+          // old format: G=col7=出席, H=col8=用餐, E=col5=加購便當, I=col9=備註
+          evSh.getRange(existing.row, 7).setValue(attendance);
+          evSh.getRange(existing.row, 8).setValue(meal);
+          evSh.getRange(existing.row, 5).setValue(lunchbox);
+          evSh.getRange(existing.row, 9).setValue(note);
+        }
       } else {
         // new format: C=col3=出席, D=col4=用餐, E=col5=加購便當, F=col6=備註
         evSh.getRange(existing.row, 3, 1, 4).setValues([[attendance, meal, lunchbox, note]]);
       }
       updated = true;
     } else {
-      evSh.appendRow([member.name, member.phone, attendance, meal, lunchbox, note, '']);
+      if (isOldFormat(evSh)) {
+        // Append in old format column order: A=timestamp B=姓名 C=電話 D=生日 E=加購 F=身份 G=出席 H=用餐 I=備註 J=報到時間
+        var ts = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy/MM/dd HH:mm:ss');
+        evSh.appendRow([ts, member.name, member.phone, '', lunchbox, member.memberType||'', attendance, meal, note, '']);
+      } else {
+        evSh.appendRow([member.name, member.phone, attendance, meal, lunchbox, note, '']);
+      }
     }
 
     return {ok: true, name: member.name, phone: member.phone, updated: updated, msg: updated ? '報名資料已更新' : '報名成功'};
