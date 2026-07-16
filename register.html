@@ -53,9 +53,11 @@ textarea{resize:vertical;min-height:78px}
 .success-icon{font-size:54px;margin-bottom:10px}
 .success-title{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;margin-bottom:4px}
 .success-sub{color:var(--muted);font-size:15px;margin-bottom:20px}
-.qr-wrap{background:#fff;border-radius:16px;padding:22px;display:inline-block;box-shadow:0 4px 20px rgba(140,110,60,.12);margin-bottom:14px}
-#qrcode{margin:0 auto}
-.qr-id{font-family:monospace;font-size:22px;font-weight:700;color:var(--gold);margin-top:12px;letter-spacing:.1em}
+.qr-wrap{background:#fff;border-radius:20px;padding:24px 22px 20px;display:inline-block;box-shadow:0 6px 28px rgba(140,110,60,.15);margin-bottom:14px;border:1.5px solid rgba(200,170,110,.25)}
+#qrcode,#qrcode-lookup{margin:0 auto}
+.qr-name{font-family:'Noto Serif TC',serif;font-size:26px;font-weight:700;color:var(--ink);margin-bottom:14px;letter-spacing:.05em}
+.qr-id{font-family:monospace;font-size:16px;font-weight:700;color:var(--muted);margin-top:12px;letter-spacing:.12em}
+.qr-org{font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:.3em}
 .qr-hint{background:rgba(168,135,79,.08);border:1px solid rgba(168,135,79,.25);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:16px;text-align:left}
 .qr-hint strong{color:var(--ink)}
 .hidden{display:none!important}
@@ -88,9 +90,10 @@ textarea{resize:vertical;min-height:78px}
       </div>
       <div id="qr-result" class="hidden" style="text-align:center;margin-top:16px">
         <div class="qr-wrap">
+          <div class="qr-name" id="qr-lookup-name"></div>
           <div id="qrcode-lookup"></div>
           <div class="qr-id" id="qr-lookup-id"></div>
-          <div style="font-size:14px;color:var(--muted);margin-top:6px" id="qr-lookup-name"></div>
+          <div class="qr-org">臺中市海德堡讀書會</div>
         </div>
         <div class="qr-hint">
           <strong>📌 請截圖保存這張 QR Code</strong><br>
@@ -111,8 +114,10 @@ textarea{resize:vertical;min-height:78px}
     <div class="success-title">報名成功！</div>
     <div class="success-sub" id="success-msg"></div>
     <div class="qr-wrap">
+      <div class="qr-name" id="qr-name-text"></div>
       <div id="qrcode"></div>
       <div class="qr-id" id="qr-id-text"></div>
+      <div class="qr-org">臺中市海德堡讀書會</div>
     </div>
     <div class="qr-hint">
       <strong>📌 請截圖保存這張 QR Code</strong><br>
@@ -273,8 +278,8 @@ function lookupQR(){
   apiFetch(API+'?action=member_qr&phone='+encodeURIComponent(phone))
     .then(function(d){
       if(!d.ok){toast(d.msg||'查無此電話，請先完成活動報名',true);return;}
-      document.getElementById('qr-lookup-id').textContent=d.memberId;
       document.getElementById('qr-lookup-name').textContent=d.name;
+      document.getElementById('qr-lookup-id').textContent=d.memberId;
       var el=document.getElementById('qrcode-lookup');el.innerHTML='';
       new QRCode(el,{text:d.memberId,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff'});
       document.getElementById('qr-result').classList.remove('hidden');
@@ -401,6 +406,7 @@ function submitNew(){
 function showSuccess(memberId,name){
   ['step1','step-existing','step-new'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
   document.getElementById('success-msg').textContent=(name||'')+'，報名完成！';
+  document.getElementById('qr-name-text').textContent=name||'';
   document.getElementById('qr-id-text').textContent=memberId;
   var el=document.getElementById('qrcode');el.innerHTML='';
   new QRCode(el,{text:memberId,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff'});
