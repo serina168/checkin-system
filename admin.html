@@ -187,12 +187,25 @@ function switchTab(name){
   if(name==='members'&&!_members.length)loadMembers();
 }
 
+function fixOldFormatGuests(guests){
+  // Old GAS (Google Form sheet): col A=timestamp, B=姓名, C=電話, F=身份, G=出席狀況
+  // Old GAS mapped those as: name=A phone=B attendance=C note=F checkinTime=G
+  // Detect: if name looks like ISO timestamp, remap everything
+  if(!guests.length||!/^\d{4}-\d{2}-\d{2}T/.test(String(guests[0].name)))return guests;
+  return guests.map(function(g){
+    var realTime=/^\d{2}:\d{2}/.test(String(g.checkinTime))?String(g.checkinTime):'';
+    return{name:String(g.phone||''),phone:String(g.attendance||''),
+      attendance:'出席',meal:'',lunchbox:'0',note:String(g.note||''),
+      checkinTime:realTime,checkedIn:!!realTime};
+  });
+}
+
 function loadGuests(){
   document.getElementById('event-table').innerHTML='<tr><th>#</th><th>姓名</th><th>電話</th><th>出席</th><th>用餐</th><th>加購</th><th>備註</th><th>報到</th></tr><tr><td colspan="8" style="text-align:center;padding:20px;color:#8a7a63">載入中…</td></tr>';
   apiFetch(API+'?action=admin_event_guests&pass='+encodeURIComponent(PASS))
     .then(function(d){
       if(!d.ok){alert(d.msg||'載入失敗');return;}
-      _guests=d.guests||[];
+      _guests=fixOldFormatGuests(d.guests||[]);
       renderGuests(_guests);
       document.getElementById('st-total').textContent=_guests.length;
       document.getElementById('st-checked').textContent=_guests.filter(function(g){return g.checkedIn;}).length;
