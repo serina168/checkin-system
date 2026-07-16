@@ -2,99 +2,77 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>管理後台 — 海德堡讀書會</title>
 <style>
-:root{--gold:#a8874f;--gold-lt:#c9a86a;--cream:#faf6ef;--ink:#3d3226;--muted:#8a7a63;--ok:#4a7c59;--err:#b5544b;--border:rgba(200,170,110,.32)}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:'Noto Sans TC',system-ui,sans-serif;background:#faf6ef;color:#3d3226;font-size:16px;line-height:1.7;padding:16px 14px 60px;min-height:100vh}
+body{margin:0;padding:16px;background:#faf6ef;font-family:sans-serif;font-size:16px;color:#3d3226}
 .wrap{max-width:700px;margin:0 auto}
-header{text-align:center;padding:10px 0 18px}
-.brand{font-size:12px;letter-spacing:.5em;color:var(--gold);text-indent:.5em;margin-bottom:4px}
-h1{font-size:22px;font-weight:700}
-.card{background:#ffffff;border:1px solid #d4b88a;border-radius:18px;padding:22px 18px;box-shadow:0 4px 20px rgba(0,0,0,.08);margin-bottom:16px}
-.card-title{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;margin-bottom:14px;color:var(--gold);display:flex;align-items:center;gap:8px}
-.card-title::before{content:'';width:14px;height:2px;background:var(--gold-lt);border-radius:2px}
-label{display:block;font-size:14px;font-weight:700;margin-bottom:5px;margin-top:12px}
-label:first-child{margin-top:0}
-input,select,textarea{width:100%;font-family:inherit;font-size:16px;color:var(--ink);padding:11px 13px;border:1.5px solid rgba(180,150,100,.4);border-radius:11px;background:#fff;outline:none}
-input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(168,135,79,.14)}
-.btn{width:100%;font-family:inherit;font-size:16px;font-weight:700;color:#fff;padding:13px;border:none;border-radius:11px;cursor:pointer;margin-top:12px;background:linear-gradient(135deg,var(--gold-lt),var(--gold));box-shadow:0 4px 14px rgba(168,135,79,.3)}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-sm{width:auto;padding:8px 18px;margin-top:0;font-size:14px}
-.btn-outline{background:none;color:var(--gold);border:1.5px solid var(--gold);box-shadow:none}
-.btn-danger{background:linear-gradient(135deg,#c96060,#a04040)}
-
-/* Tabs */
-.tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px}
-.tab{flex-shrink:0;padding:10px 18px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:rgba(255,255,255,.5);color:var(--muted);transition:all .2s}
-.tab.active{background:var(--gold);color:#fff;border-color:var(--gold)}
-
-/* Stats */
-.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-.s-box{text-align:center;padding:12px 8px;background:rgba(255,255,255,.6);border:1px solid var(--border);border-radius:11px}
-.s-box .num{font-family:'Noto Serif TC',serif;font-size:26px;font-weight:700;line-height:1.2}
-.s-box .lbl{font-size:12px;color:var(--muted)}
-.s-box.a .num{color:var(--gold)}.s-box.b .num{color:var(--ok)}.s-box.c .num{color:var(--err)}
-
-/* Table */
-.tbl-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
-th{text-align:left;padding:9px 8px;background:rgba(168,135,79,.12);color:var(--gold);font-weight:700;border-bottom:2px solid rgba(168,135,79,.3);white-space:nowrap}
-td{padding:9px 8px;border-bottom:1px solid rgba(200,170,110,.2);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(168,135,79,.04)}
-.badge-ok{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(74,124,89,.12);color:var(--ok);border:1px solid rgba(74,124,89,.3)}
-.badge-no{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(180,150,100,.12);color:var(--muted);border:1px solid rgba(180,150,100,.3)}
-
-/* Login */
-#login-section{display:block}
-#main-section{display:none}
-.msg{margin-top:10px;padding:11px 13px;border-radius:9px;font-size:14px;display:none}
+h1{font-size:22px;font-weight:700;text-align:center;margin-bottom:4px}
+.sub{text-align:center;font-size:12px;letter-spacing:.4em;color:#a8874f;margin-bottom:20px}
+.box{background:#fff;border:2px solid #c9a86a;border-radius:14px;padding:24px 20px;margin-bottom:16px}
+.box-title{font-size:16px;font-weight:700;color:#a8874f;margin-bottom:14px;border-bottom:1px solid #e8d9c0;padding-bottom:8px}
+label{display:block;font-size:14px;font-weight:700;margin:10px 0 4px}
+input,select,textarea{width:100%;box-sizing:border-box;font-size:16px;padding:10px 12px;border:1.5px solid #c8aa80;border-radius:8px;background:#fff;color:#3d3226;outline:none}
+input:focus,select:focus{border-color:#a8874f}
+.btn{display:block;width:100%;margin-top:12px;padding:13px;font-size:16px;font-weight:700;color:#fff;background:#a8874f;border:none;border-radius:10px;cursor:pointer}
+.btn:hover{background:#8a6e3f}
+.btn-sm{width:auto;display:inline-block;padding:8px 16px;font-size:14px;margin-top:0;margin-right:8px}
+.btn-outline{background:#fff;color:#a8874f;border:1.5px solid #a8874f}
+.tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto}
+.tab{flex-shrink:0;padding:9px 16px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;border:1.5px solid #c8aa80;background:#fff;color:#8a7a63}
+.tab.active{background:#a8874f;color:#fff;border-color:#a8874f}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;text-align:center}
+.stat{background:#f5f0e8;border:1px solid #ddd0b8;border-radius:10px;padding:10px}
+.stat .n{font-size:26px;font-weight:700}
+.stat .l{font-size:12px;color:#8a7a63}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+th{background:#f5ece0;color:#a8874f;font-weight:700;padding:8px;text-align:left;border-bottom:2px solid #c8aa80}
+td{padding:8px;border-bottom:1px solid #e8ddd0}
+.ok{color:#4a7c59;font-weight:700}.no{color:#8a7a63}
+.msg{display:none;margin-top:10px;padding:10px 12px;border-radius:8px;font-size:14px}
 .msg.show{display:block}
-.msg.ok{background:rgba(74,124,89,.1);border:1px solid rgba(74,124,89,.3);color:var(--ok)}
-.msg.err{background:rgba(181,84,75,.09);border:1px solid rgba(181,84,75,.3);color:var(--err)}
-.hidden{display:none!important}
+.msg.ok-msg{background:#e8f4ec;border:1px solid #4a7c59;color:#4a7c59}
+.msg.err-msg{background:#faeaea;border:1px solid #c05050;color:#c05050}
+#main{display:none}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div class="brand">臺中市海德堡讀書會</div>
-    <h1>管理後台</h1>
-  </header>
+  <div class="sub">臺中市海德堡讀書會</div>
+  <h1>管理後台</h1>
 
-  <!-- Login -->
-  <div id="login-section" style="display:block;background:#ffffff;border:1px solid #d4b88a;border-radius:18px;padding:28px 20px;box-shadow:0 4px 20px rgba(0,0,0,.08);margin-bottom:16px">
-    <div style="font-size:17px;font-weight:700;color:#a8874f;margin-bottom:16px">輸入管理密碼</div>
-    <label style="display:block;font-size:14px;font-weight:700;margin-bottom:6px">密碼</label>
-    <input type="password" id="pass-input" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;font-size:16px;color:#3d3226;padding:12px 14px;border:1.5px solid rgba(180,150,100,.5);border-radius:11px;background:#fff;outline:none;box-sizing:border-box">
-    <button onclick="doLogin()" style="width:100%;font-size:16px;font-weight:700;color:#fff;padding:14px;border:none;border-radius:11px;cursor:pointer;margin-top:14px;background:linear-gradient(135deg,#c9a86a,#a8874f)">登入</button>
+  <!-- 登入 -->
+  <div id="login" class="box" style="margin-top:24px">
+    <div class="box-title">輸入管理密碼</div>
+    <label>密碼</label>
+    <input type="password" id="pass-input" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn" onclick="doLogin()">登入</button>
     <div class="msg" id="login-msg"></div>
   </div>
 
-  <!-- Main -->
-  <div id="main-section">
+  <!-- 主要內容 -->
+  <div id="main">
     <div class="tabs">
       <div class="tab active" onclick="switchTab('event')">📋 本次活動</div>
       <div class="tab" onclick="switchTab('members')">👥 會員名冊</div>
       <div class="tab" onclick="switchTab('setup')">⚙️ 活動管理</div>
     </div>
 
-    <!-- Tab: Event guests -->
+    <!-- 活動名單 -->
     <div id="tab-event">
-      <div class="card">
-        <div class="card-title" id="event-tab-title">本次活動名單</div>
-        <div class="stats-grid">
-          <div class="s-box a"><div class="num" id="st-total">0</div><div class="lbl">總報名</div></div>
-          <div class="s-box b"><div class="num" id="st-checked">0</div><div class="lbl">已報到</div></div>
-          <div class="s-box c"><div class="num" id="st-meal">0</div><div class="lbl">用餐人數</div></div>
+      <div class="box">
+        <div class="box-title" id="event-title">本次活動名單</div>
+        <div class="grid3">
+          <div class="stat"><div class="n" id="st-total">0</div><div class="l">總報名</div></div>
+          <div class="stat"><div class="n" id="st-checked" style="color:#4a7c59">0</div><div class="l">已報到</div></div>
+          <div class="stat"><div class="n" id="st-meal" style="color:#a8874f">0</div><div class="l">用餐</div></div>
         </div>
-        <div style="display:flex;gap:8px;margin-bottom:12px">
-          <button class="btn btn-sm btn-outline" onclick="loadEventGuests()">重新整理</button>
-          <button class="btn btn-sm btn-outline" onclick="exportEventCSV()">匯出 CSV</button>
+        <div style="margin-bottom:10px">
+          <button class="btn btn-sm btn-outline" onclick="loadGuests()">重新整理</button>
+          <button class="btn btn-sm btn-outline" onclick="exportGuestsCSV()">匯出 CSV</button>
         </div>
-        <div class="tbl-wrap">
+        <div class="tbl">
           <table id="event-table">
             <tr><th>#</th><th>姓名</th><th>電話</th><th>出席</th><th>用餐</th><th>加購</th><th>備註</th><th>報到</th></tr>
           </table>
@@ -102,23 +80,23 @@ tr:hover td{background:rgba(168,135,79,.04)}
       </div>
     </div>
 
-    <!-- Tab: Members -->
-    <div id="tab-members" class="hidden">
-      <div class="card" id="migrate-card">
-        <div class="card-title">匯入現有報名名單 → 會員名冊</div>
-        <p style="font-size:14px;color:var(--muted);margin-bottom:12px">如果已有人報名活動但尚未建立永久會員 QR Code，可輸入該活動的試算表分頁名稱，系統會自動將這些人新增到會員名冊並指派永久 QR Code。</p>
-        <label>活動分頁名稱（試算表中的 Sheet 名稱）</label>
+    <!-- 會員名冊 -->
+    <div id="tab-members" style="display:none">
+      <div class="box">
+        <div class="box-title">匯入現有名單 → 會員名冊</div>
+        <p style="font-size:13px;color:#8a7a63;margin-bottom:10px">輸入試算表分頁名稱，將報名者新增至會員名冊</p>
+        <label>活動分頁名稱</label>
         <input type="text" id="migrate-sheet" placeholder="例：七月份例會">
         <button class="btn" onclick="doMigrate()">開始匯入</button>
         <div class="msg" id="migrate-msg"></div>
       </div>
-      <div class="card">
-        <div class="card-title">會員名冊</div>
-        <div style="display:flex;gap:8px;margin-bottom:12px">
+      <div class="box">
+        <div class="box-title">會員名冊</div>
+        <div style="margin-bottom:10px">
           <button class="btn btn-sm btn-outline" onclick="loadMembers()">重新整理</button>
           <button class="btn btn-sm btn-outline" onclick="exportMembersCSV()">匯出 CSV</button>
         </div>
-        <div class="tbl-wrap">
+        <div class="tbl">
           <table id="members-table">
             <tr><th>姓名</th><th>電話</th><th>出生年月日</th><th>身份</th><th>加入日期</th></tr>
           </table>
@@ -126,11 +104,11 @@ tr:hover td{background:rgba(168,135,79,.04)}
       </div>
     </div>
 
-    <!-- Tab: Setup -->
-    <div id="tab-setup" class="hidden">
-      <div class="card">
-        <div class="card-title">建立 / 切換活動</div>
-        <label>活動名稱 *（將成為試算表分頁名稱）</label>
+    <!-- 活動管理 -->
+    <div id="tab-setup" style="display:none">
+      <div class="box">
+        <div class="box-title">建立 / 切換活動</div>
+        <label>活動名稱 *</label>
         <input type="text" id="ev-name" placeholder="例：八月份例會">
         <label>活動日期</label>
         <input type="text" id="ev-date" placeholder="例：2026/08/24">
@@ -139,11 +117,11 @@ tr:hover td{background:rgba(168,135,79,.04)}
         <label>地點</label>
         <input type="text" id="ev-loc" placeholder="例：愛心家園">
         <label>主題</label>
-        <input type="text" id="ev-topic" placeholder="">
+        <input type="text" id="ev-topic">
         <label>導讀人</label>
-        <input type="text" id="ev-speaker" placeholder="">
+        <input type="text" id="ev-speaker">
         <label>內容簡介</label>
-        <textarea id="ev-desc" style="min-height:60px" placeholder=""></textarea>
+        <textarea id="ev-desc" style="min-height:60px"></textarea>
         <label>來賓費用</label>
         <input type="text" id="ev-fee" placeholder="例：200元">
         <button class="btn" onclick="createEvent()">建立 / 更新活動</button>
@@ -159,14 +137,13 @@ var PASS='';
 var _guests=[],_members=[];
 
 function apiFetch(url){
-  var ctrl=new AbortController();
-  setTimeout(function(){ctrl.abort();},15000);
-  return fetch(url,{redirect:'follow',signal:ctrl.signal}).then(function(r){return r.json();});
+  return fetch(url,{redirect:'follow'}).then(function(r){return r.json();});
 }
 
-function showMsg(id,msg,ok){
+function showMsg(id,txt,ok){
   var el=document.getElementById(id);
-  el.textContent=msg;el.className='msg show '+(ok?'ok':'err');
+  el.textContent=txt;
+  el.className='msg show '+(ok?'ok-msg':'err-msg');
 }
 
 function doLogin(){
@@ -176,9 +153,9 @@ function doLogin(){
     .then(function(d){
       if(!d.ok){showMsg('login-msg','密碼錯誤',false);return;}
       PASS=p;
-      document.getElementById('login-section').style.display='none';
-      document.getElementById('main-section').style.display='';
-      loadEventGuests();
+      document.getElementById('login').style.display='none';
+      document.getElementById('main').style.display='block';
+      loadGuests();
       loadEventInfo();
     }).catch(function(){showMsg('login-msg','連線失敗',false);});
 }
@@ -186,7 +163,7 @@ function doLogin(){
 function loadEventInfo(){
   apiFetch(API+'?action=info').then(function(d){
     if(d.ok&&d.config&&d.config.eventName){
-      document.getElementById('event-tab-title').textContent=d.config.eventName+' 名單';
+      document.getElementById('event-title').textContent=d.config.eventName+' 名單';
       var c=d.config;
       document.getElementById('ev-name').value=c.eventName||'';
       document.getElementById('ev-date').value=c.eventDate||'';
@@ -202,105 +179,82 @@ function loadEventInfo(){
 
 function switchTab(name){
   ['event','members','setup'].forEach(function(t){
-    document.getElementById('tab-'+t).classList.toggle('hidden',t!==name);
+    document.getElementById('tab-'+t).style.display=(t===name?'block':'none');
   });
   document.querySelectorAll('.tab').forEach(function(el,i){
     el.classList.toggle('active',['event','members','setup'][i]===name);
   });
-  if(name==='members'&&_members.length===0)loadMembers();
+  if(name==='members'&&!_members.length)loadMembers();
 }
 
-// === Event guests ===
-function loadEventGuests(){
-  document.getElementById('event-table').innerHTML='<tr><th>#</th><th>姓名</th><th>電話</th><th>出席</th><th>用餐</th><th>加購</th><th>備註</th><th>報到</th></tr><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">載入中…</td></tr>';
+function loadGuests(){
+  document.getElementById('event-table').innerHTML='<tr><th>#</th><th>姓名</th><th>電話</th><th>出席</th><th>用餐</th><th>加購</th><th>備註</th><th>報到</th></tr><tr><td colspan="8" style="text-align:center;padding:20px;color:#8a7a63">載入中…</td></tr>';
   apiFetch(API+'?action=admin_event_guests&pass='+encodeURIComponent(PASS))
     .then(function(d){
       if(!d.ok){alert(d.msg||'載入失敗');return;}
       _guests=d.guests||[];
-      renderEventTable(_guests);
-      updateStats(_guests);
+      renderGuests(_guests);
+      document.getElementById('st-total').textContent=_guests.length;
+      document.getElementById('st-checked').textContent=_guests.filter(function(g){return g.checkedIn;}).length;
+      document.getElementById('st-meal').textContent=_guests.filter(function(g){return g.meal==='用餐';}).length;
     }).catch(function(){alert('連線失敗');});
 }
 
-function updateStats(guests){
-  document.getElementById('st-total').textContent=guests.length;
-  document.getElementById('st-checked').textContent=guests.filter(function(g){return g.checkedIn;}).length;
-  document.getElementById('st-meal').textContent=guests.filter(function(g){return g.meal==='用餐';}).length;
-}
-
-function renderEventTable(guests){
+function renderGuests(guests){
   var rows=guests.map(function(g,i){
-    var ci=g.checkedIn?'<span class="badge-ok">✓ '+g.checkinTime+'</span>':'<span class="badge-no">未到</span>';
+    var ci=g.checkedIn?'<span class="ok">✓ '+g.checkinTime+'</span>':'<span class="no">未到</span>';
     return '<tr><td>'+(i+1)+'</td><td>'+esc(g.name)+'</td><td>'+esc(g.phone)+'</td><td>'+(g.attendance||'')+'</td><td>'+(g.meal||'')+'</td><td>'+(g.lunchbox||'0')+'</td><td>'+esc(g.note||'')+'</td><td>'+ci+'</td></tr>';
   }).join('');
-  document.getElementById('event-table').innerHTML='<tr><th>#</th><th>姓名</th><th>電話</th><th>出席</th><th>用餐</th><th>加購</th><th>備註</th><th>報到</th></tr>'+(rows||'<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">尚無資料</td></tr>');
+  document.getElementById('event-table').innerHTML='<tr><th>#</th><th>姓名</th><th>電話</th><th>出席</th><th>用餐</th><th>加購</th><th>備註</th><th>報到</th></tr>'+(rows||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#8a7a63">尚無資料</td></tr>');
 }
 
-function exportEventCSV(){
+function exportGuestsCSV(){
   if(!_guests.length){alert('尚無資料');return;}
   var rows=[['編號','姓名','電話','出席狀況','用餐','加購便當','備註','報到狀態','報到時間']];
-  _guests.forEach(function(g,i){
-    rows.push([i+1,g.name,'="'+g.phone+'"',g.attendance||'',g.meal||'',g.lunchbox||'0',g.note||'',g.checkedIn?'已報到':'未到',g.checkinTime||'']);
-  });
+  _guests.forEach(function(g,i){rows.push([i+1,g.name,'="'+g.phone+'"',g.attendance||'',g.meal||'',g.lunchbox||'0',g.note||'',g.checkedIn?'已報到':'未到',g.checkinTime||'']);});
   dlCSV(rows,'活動名單.csv');
 }
 
-// === Members ===
 function loadMembers(){
-  document.getElementById('members-table').innerHTML='<tr><th>編號</th><th>姓名</th><th>電話</th><th>出生年月日</th><th>身份</th><th>加入日期</th></tr><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">載入中…</td></tr>';
+  document.getElementById('members-table').innerHTML='<tr><th>姓名</th><th>電話</th><th>出生年月日</th><th>身份</th><th>加入日期</th></tr><tr><td colspan="5" style="text-align:center;padding:20px;color:#8a7a63">載入中…</td></tr>';
   apiFetch(API+'?action=admin_members&pass='+encodeURIComponent(PASS))
     .then(function(d){
       if(!d.ok){alert(d.msg||'載入失敗');return;}
       _members=d.members||[];
-      renderMembersTable(_members);
+      var rows=_members.map(function(m){return '<tr><td>'+esc(m.name)+'</td><td>'+esc(m.phone)+'</td><td>'+(m.birthday||'')+'</td><td>'+(m.memberType||'')+'</td><td>'+(m.joinDate||'')+'</td></tr>';}).join('');
+      document.getElementById('members-table').innerHTML='<tr><th>姓名</th><th>電話</th><th>出生年月日</th><th>身份</th><th>加入日期</th></tr>'+(rows||'<tr><td colspan="5" style="text-align:center;padding:20px;color:#8a7a63">尚無資料</td></tr>');
     }).catch(function(){alert('連線失敗');});
-}
-
-function renderMembersTable(members){
-  var rows=members.map(function(m){
-    return '<tr><td>'+esc(m.name)+'</td><td>'+esc(m.phone)+'</td><td>'+(m.birthday||'')+'</td><td>'+(m.memberType||'')+'</td><td>'+(m.joinDate||'')+'</td></tr>';
-  }).join('');
-  document.getElementById('members-table').innerHTML='<tr><th>姓名</th><th>電話</th><th>出生年月日</th><th>身份</th><th>加入日期</th></tr>'+(rows||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">尚無資料</td></tr>');
 }
 
 function exportMembersCSV(){
   if(!_members.length){alert('尚無資料');return;}
-  var rows=[['姓名','電話','出生年月日','身份','加入日期','備註']];
-  _members.forEach(function(m){
-    rows.push([m.name,'="'+m.phone+'"',m.birthday||'',m.memberType||'',m.joinDate||'',m.note||'']);
-  });
+  var rows=[['姓名','電話','出生年月日','身份','加入日期']];
+  _members.forEach(function(m){rows.push([m.name,'="'+m.phone+'"',m.birthday||'',m.memberType||'',m.joinDate||'']);});
   dlCSV(rows,'會員名冊.csv');
 }
 
-// === Migrate existing sheet to 會員名冊 ===
 function doMigrate(){
   var sheet=document.getElementById('migrate-sheet').value.trim();
   if(!sheet){showMsg('migrate-msg','請填寫活動分頁名稱',false);return;}
   showMsg('migrate-msg','匯入中，請稍候…',true);
   apiFetch(API+'?action=admin_migrate&pass='+encodeURIComponent(PASS)+'&sheetName='+encodeURIComponent(sheet))
     .then(function(d){
-      if(d.ok){
-        showMsg('migrate-msg','匯入完成！新增 '+d.added+' 位會員，跳過 '+d.skipped+' 位（已存在）。',true);
-        loadMembers();
-      } else showMsg('migrate-msg',d.msg||'匯入失敗',false);
+      if(d.ok){showMsg('migrate-msg','匯入完成！新增 '+d.added+' 位，跳過 '+d.skipped+' 位（已存在）',true);loadMembers();}
+      else showMsg('migrate-msg',d.msg||'匯入失敗',false);
     }).catch(function(){showMsg('migrate-msg','連線失敗',false);});
 }
 
-// === Create event ===
 function createEvent(){
   var name=document.getElementById('ev-name').value.trim();
   if(!name){showMsg('setup-msg','請填寫活動名稱',false);return;}
-  var p=new URLSearchParams({
-    action:'admin_create_event',pass:PASS,
-    eventName:name,
+  var p=new URLSearchParams({action:'admin_create_event',pass:PASS,eventName:name,
     eventDate:document.getElementById('ev-date').value.trim(),
     eventTime:document.getElementById('ev-time').value.trim(),
     location:document.getElementById('ev-loc').value.trim(),
     topic:document.getElementById('ev-topic').value.trim(),
     speaker:document.getElementById('ev-speaker').value.trim(),
     desc:document.getElementById('ev-desc').value.trim(),
-    guestFee:document.getElementById('ev-fee').value.trim()
-  });
+    guestFee:document.getElementById('ev-fee').value.trim()});
   apiFetch(API+'?'+p)
     .then(function(d){
       if(d.ok){showMsg('setup-msg',d.msg||'活動已建立',true);loadEventInfo();}
@@ -308,10 +262,8 @@ function createEvent(){
     }).catch(function(){showMsg('setup-msg','連線失敗',false);});
 }
 
-// === Helpers ===
 function dlCSV(rows,filename){
-  var bom='﻿';
-  var csv=bom+rows.map(function(r){return r.map(function(c){return '"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
+  var csv='﻿'+rows.map(function(r){return r.map(function(c){return '"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
   var a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
   a.download=filename;a.click();
