@@ -57,7 +57,7 @@ function getEventSheet() {
 
 function getMemberSheet() { return getSpreadsheet().getSheetByName(MEMBER_SHEET); }
 
-function normalizePhone(p) { return String(p || '').replace(/[-\s]/g, ''); }
+function normalizePhone(p) { return String(p || '').replace(/[-\s]/g, '').replace(/^0/, ''); }
 
 function findMemberByPhone(phone) {
   var sh = getMemberSheet();
