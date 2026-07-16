@@ -71,6 +71,10 @@ textarea{resize:vertical;min-height:78px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn-ghost{background:none;color:var(--muted);box-shadow:none;border:1px solid var(--border)}
 
+/* ── Already registered banner ── */
+.already-banner{background:#fff8e6;border:1.5px solid #e6a817;border-radius:12px;padding:13px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;font-size:14px;line-height:1.6;color:#7a5500}
+.already-banner strong{display:block;font-size:15px;margin-bottom:2px;color:#5a3d00}
+
 /* ── Member welcome ── */
 .member-welcome{background:rgba(74,124,89,.08);border:1px solid rgba(74,124,89,.3);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
 .member-avatar{width:44px;height:44px;background:linear-gradient(135deg,var(--gold-lt),var(--gold));border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;flex-shrink:0}
@@ -198,6 +202,10 @@ textarea{resize:vertical;min-height:78px}
           <div class="mname" id="welcome-name"></div>
           <div class="msub" id="welcome-sub"></div>
         </div>
+      </div>
+      <div id="already-banner" class="already-banner hidden">
+        <span style="font-size:22px;flex-shrink:0">⚠️</span>
+        <div><strong>您已完成報名！</strong>若需修改出席、用餐或加購便當，請重新選擇後再次送出。</div>
       </div>
       <div class="card-title">本次活動選擇</div>
       <div class="form-group">
@@ -448,8 +456,8 @@ function lookupMember(){
       curPhone=d.member.phone;curName=d.member.name;
       document.getElementById('welcome-name').textContent=d.member.name;
       document.getElementById('welcome-sub').textContent=d.member.phone+(d.member.memberType?' ・ '+d.member.memberType:'');
+      document.getElementById('already-banner').classList.toggle('hidden',!d.alreadyRegistered);
       show('step-existing');
-      if(d.alreadyRegistered)toast('您已完成報名，可修改用餐選擇');
     })
     .catch(function(){toast('網路錯誤，請重試',true);});
 }
@@ -474,7 +482,7 @@ function submitExisting(){
   var p=new URLSearchParams({action:'event_register',phone:curPhone,attendance:att.value,meal:att.value==='出席'?(meal?meal.value:''):'',lunchbox:lunchbox,note:note});
   apiFetch(API+'?'+p).then(function(d){
     if(!d.ok)throw new Error(d.msg||'報名失敗');
-    showSuccess(d.name,d.phone);
+    showSuccess(d.name,d.phone,d.updated);
   }).catch(function(e){toast(e.message||'報名失敗',true);})
   .finally(function(){btn.disabled=false;btn.textContent='確認報名';});
 }
@@ -499,15 +507,16 @@ function submitNew(){
   var p=new URLSearchParams({action:'event_register',name:name,phone:phone,birthday:birthday,memberType:typeEl.value,attendance:attEl.value,meal:attEl.value==='出席'?(mealEl?mealEl.value:''):'',lunchbox:lunchbox,note:note});
   apiFetch(API+'?'+p).then(function(d){
     if(!d.ok)throw new Error(d.msg||'報名失敗');
-    showSuccess(d.name,d.phone);
+    showSuccess(d.name,d.phone,d.updated);
   }).catch(function(e){toast(e.message||'報名失敗',true);})
   .finally(function(){btn.disabled=false;btn.textContent='確認報名';});
 }
 
-function showSuccess(name,phone){
+function showSuccess(name,phone,updated){
   ['step1','step-existing','step-new'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
   document.getElementById('form-section-hd').classList.add('hidden');
-  document.getElementById('success-msg').textContent=(name||'')+'，報名完成！';
+  document.getElementById('success-msg').textContent=updated?(name||'')+'，報名資料已更新！':(name||'')+'，報名完成！';
+  document.getElementById('success-section').style.setProperty('border-top','4px solid '+(updated?'#e6a817':'#4a7c59'));
   document.getElementById('qr-name-text').textContent=name||'';
   document.getElementById('qr-phone-text').textContent=phone||'';
   var el=document.getElementById('qrcode');el.innerHTML='';

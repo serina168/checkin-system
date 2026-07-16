@@ -158,13 +158,15 @@ function eventRegister(p) {
     var note       = p.note || '';
 
     var existing = findInEventSheet(evSh, p.phone);
+    var updated = false;
     if (existing) {
       evSh.getRange(existing.row, 3, 1, 4).setValues([[attendance, meal, lunchbox, note]]);
+      updated = true;
     } else {
       evSh.appendRow([member.name, member.phone, attendance, meal, lunchbox, note, '']);
     }
 
-    return {ok: true, name: member.name, phone: member.phone, msg: '報名成功'};
+    return {ok: true, name: member.name, phone: member.phone, updated: updated, msg: updated ? '報名資料已更新' : '報名成功'};
   } finally { lock.releaseLock(); }
 }
 
