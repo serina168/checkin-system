@@ -65,8 +65,43 @@ textarea{resize:vertical;min-height:78px}
 <div class="wrap">
   <header>
     <div class="brand">臺中市海德堡讀書會</div>
-    <h1>活動報名</h1>
+    <h1 id="page-title">活動報名</h1>
   </header>
+
+  <!-- Mode tabs -->
+  <div style="display:flex;gap:8px;margin-bottom:16px">
+    <button id="tab-reg" class="btn" style="flex:1;margin-top:0;padding:12px" onclick="switchMode('reg')">📝 活動報名</button>
+    <button id="tab-qr" class="btn btn-ghost" style="flex:1;margin-top:0;padding:12px" onclick="switchMode('qr')">🔖 取得我的 QR Code</button>
+  </div>
+
+  <!-- ===== QR Lookup mode ===== -->
+  <div id="mode-qr" class="hidden">
+    <div class="card">
+      <div class="card-title">查詢我的永久 QR Code</div>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:16px">輸入您報名時的電話號碼，即可取得您的永久會員 QR Code，下次活動直接出示掃描即可。</p>
+      <div class="form-group">
+        <label>電話號碼</label>
+        <div class="lookup-row">
+          <input type="tel" id="qr-phone" placeholder="請輸入手機號碼" inputmode="tel" onkeydown="if(event.key==='Enter')lookupQR()">
+          <button class="btn-lookup" onclick="lookupQR()">查詢</button>
+        </div>
+      </div>
+      <div id="qr-result" class="hidden" style="text-align:center;margin-top:16px">
+        <div class="qr-wrap">
+          <div id="qrcode-lookup"></div>
+          <div class="qr-id" id="qr-lookup-id"></div>
+          <div style="font-size:14px;color:var(--muted);margin-top:6px" id="qr-lookup-name"></div>
+        </div>
+        <div class="qr-hint">
+          <strong>📌 請截圖保存這張 QR Code</strong><br>
+          這是您的<strong>永久會員 QR Code</strong>，下次活動直接出示掃描即可報到，無需重新填寫資料。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Registration mode ===== -->
+  <div id="mode-reg">
 
   <div id="event-info-card" class="event-info hidden"></div>
 
@@ -209,6 +244,8 @@ textarea{resize:vertical;min-height:78px}
     <button class="btn" id="new-btn" onclick="submitNew()">確認報名</button>
     <button class="btn btn-ghost" onclick="goBack()">← 返回</button>
   </div>
+
+  </div><!-- end mode-reg -->
 </div>
 
 <div id="toast"></div>
@@ -216,6 +253,35 @@ textarea{resize:vertical;min-height:78px}
 <script>
 var API='https://script.google.com/macros/s/AKfycbyo57_hMEvdUP5vNLMUKSiD6jgFjct95cNY_nskRHxVxr6-LhId7UKJ--iVs_50b_3sJQ/exec';
 var curId='',curName='';
+
+function switchMode(mode){
+  var isReg=mode==='reg';
+  document.getElementById('mode-reg').classList.toggle('hidden',!isReg);
+  document.getElementById('mode-qr').classList.toggle('hidden',isReg);
+  document.getElementById('tab-reg').className='btn'+(isReg?'':' btn-ghost')+' '+(isReg?'':'');
+  document.getElementById('tab-qr').className='btn'+(isReg?' btn-ghost':'');
+  // fix inline styles
+  document.getElementById('tab-reg').style.cssText='flex:1;margin-top:0;padding:12px'+(isReg?';background:linear-gradient(135deg,var(--gold-lt),var(--gold));color:#fff':';background:none;color:var(--muted);border:1px solid var(--border);box-shadow:none');
+  document.getElementById('tab-qr').style.cssText='flex:1;margin-top:0;padding:12px'+(isReg?';background:none;color:var(--muted);border:1px solid var(--border);box-shadow:none':';background:linear-gradient(135deg,var(--gold-lt),var(--gold));color:#fff');
+  document.getElementById('page-title').textContent=isReg?'活動報名':'取得我的 QR Code';
+}
+
+function lookupQR(){
+  var phone=document.getElementById('qr-phone').value.trim();
+  if(!phone){toast('請輸入電話號碼',true);return;}
+  toast('查詢中…');
+  apiFetch(API+'?action=member_qr&phone='+encodeURIComponent(phone))
+    .then(function(d){
+      if(!d.ok){toast(d.msg||'查無此電話，請先完成活動報名',true);return;}
+      document.getElementById('qr-lookup-id').textContent=d.memberId;
+      document.getElementById('qr-lookup-name').textContent=d.name;
+      var el=document.getElementById('qrcode-lookup');el.innerHTML='';
+      new QRCode(el,{text:d.memberId,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff'});
+      document.getElementById('qr-result').classList.remove('hidden');
+      toast('找到了！請截圖保存');
+    })
+    .catch(function(){toast('網路錯誤，請重試',true);});
+}
 
 (function(){
   var by=document.getElementById('new-by'),bm=document.getElementById('new-bm'),bd=document.getElementById('new-bd');

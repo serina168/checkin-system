@@ -105,6 +105,14 @@ tr:hover td{background:rgba(168,135,79,.04)}
 
     <!-- Tab: Members -->
     <div id="tab-members" class="hidden">
+      <div class="card" id="migrate-card">
+        <div class="card-title">匯入現有報名名單 → 會員名冊</div>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:12px">如果已有人報名活動但尚未建立永久會員 QR Code，可輸入該活動的試算表分頁名稱，系統會自動將這些人新增到會員名冊並指派永久 QR Code。</p>
+        <label>活動分頁名稱（試算表中的 Sheet 名稱）</label>
+        <input type="text" id="migrate-sheet" placeholder="例：七月份例會">
+        <button class="btn" onclick="doMigrate()">開始匯入</button>
+        <div class="msg" id="migrate-msg"></div>
+      </div>
       <div class="card">
         <div class="card-title">會員名冊</div>
         <div style="display:flex;gap:8px;margin-bottom:12px">
@@ -263,6 +271,20 @@ function exportMembersCSV(){
     rows.push([m.memberId,m.name,'="'+m.phone+'"',m.birthday||'',m.memberType||'',m.joinDate||'',m.note||'']);
   });
   dlCSV(rows,'會員名冊.csv');
+}
+
+// === Migrate existing sheet to 會員名冊 ===
+function doMigrate(){
+  var sheet=document.getElementById('migrate-sheet').value.trim();
+  if(!sheet){showMsg('migrate-msg','請填寫活動分頁名稱',false);return;}
+  showMsg('migrate-msg','匯入中，請稍候…',true);
+  apiFetch(API+'?action=admin_migrate&pass='+encodeURIComponent(PASS)+'&sheetName='+encodeURIComponent(sheet))
+    .then(function(d){
+      if(d.ok){
+        showMsg('migrate-msg','匯入完成！新增 '+d.added+' 位會員，跳過 '+d.skipped+' 位（已存在）。',true);
+        loadMembers();
+      } else showMsg('migrate-msg',d.msg||'匯入失敗',false);
+    }).catch(function(){showMsg('migrate-msg','連線失敗',false);});
 }
 
 // === Create event ===
