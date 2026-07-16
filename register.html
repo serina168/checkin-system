@@ -9,26 +9,45 @@
 <style>
 :root{--gold:#a8874f;--gold-lt:#c9a86a;--gold-dk:#8a6c38;--cream:#faf6ef;--ink:#3d3226;--muted:#8a7a63;--ok:#4a7c59;--err:#b5544b;--border:rgba(200,170,110,.32)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--ink);font-size:17px;line-height:1.7;min-height:100vh;padding:20px 16px 60px}
-.wrap{max-width:540px;margin:0 auto}
-header{text-align:center;padding:16px 0 20px}
-.brand{font-size:12px;letter-spacing:.5em;color:var(--gold);text-indent:.5em;margin-bottom:6px;font-weight:500}
-h1{font-family:'Noto Serif TC',serif;font-size:24px;font-weight:700}
-.event-detail-card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:20px 18px;margin-bottom:18px;box-shadow:0 6px 24px rgba(140,110,60,.09)}
-.ev-title{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--ink);margin-bottom:14px;line-height:1.4;text-align:center}
-.ev-rows{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
-.ev-row{display:flex;align-items:flex-start;gap:10px;font-size:15px;line-height:1.6}
-.ev-row-icon{flex-shrink:0;width:22px;text-align:center;margin-top:1px}
-.ev-row-label{color:var(--muted);white-space:nowrap;flex-shrink:0;min-width:42px}
-.ev-row-val{color:var(--ink);font-weight:500}
-.ev-section-label{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.08em;margin-bottom:6px;margin-top:4px}
-.ev-desc-text{font-size:15px;color:var(--ink);line-height:1.8;white-space:pre-wrap}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--ink);font-size:17px;line-height:1.7;min-height:100vh;padding:0 0 60px}
+.wrap{max-width:540px;margin:0 auto;padding:0 16px}
+
+/* ── Page title ── */
+.page-header{text-align:center;padding:22px 0 16px}
+.brand{font-size:12px;letter-spacing:.5em;color:var(--gold);text-indent:.5em;margin-bottom:4px;font-weight:500}
+.page-title{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;color:var(--ink)}
+
+/* ── Mode tabs ── */
+.mode-tabs{display:flex;gap:8px;margin-bottom:18px}
+.mode-tab{flex:1;font-family:inherit;font-size:16px;font-weight:700;padding:12px;border-radius:12px;border:1.5px solid var(--border);cursor:pointer;transition:all .2s;background:rgba(255,255,255,.5);color:var(--muted)}
+.mode-tab.active{background:linear-gradient(135deg,var(--gold-lt),var(--gold));color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(168,135,79,.3)}
+
+/* ── Event info section ── */
+#event-banner{margin-bottom:4px}
+.ev-poster{width:100%;border-radius:16px;display:block;margin-bottom:14px;box-shadow:0 6px 28px rgba(140,110,60,.18)}
+.ev-info-list{list-style:none;padding:0;margin:0 0 14px}
+.ev-info-list li{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid rgba(200,170,110,.18);font-size:16px;line-height:1.6}
+.ev-info-list li:last-child{border-bottom:none}
+.ev-info-label{color:var(--muted);font-weight:500;min-width:52px;flex-shrink:0}
+.ev-info-val{color:var(--ink);font-weight:600}
+.ev-desc-box{border-left:4px solid var(--gold-lt);background:rgba(168,135,79,.07);border-radius:0 12px 12px 0;padding:14px 16px;margin-bottom:14px}
+.ev-desc-box p{font-size:15px;color:var(--ink);line-height:1.9;margin-bottom:8px}
+.ev-desc-box p:last-child{margin-bottom:0}
+.ev-fee-banner{background:linear-gradient(135deg,var(--gold-dk),var(--gold));color:#fff;border-radius:50px;padding:14px 24px;text-align:center;font-size:17px;font-weight:700;letter-spacing:.04em;margin-bottom:22px;box-shadow:0 4px 16px rgba(168,135,79,.35)}
+
+/* ── Form section divider ── */
+.form-section-title{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--ink);margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.form-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── Card ── */
 .card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:24px 20px;box-shadow:0 8px 30px rgba(140,110,60,.10);margin-bottom:16px}
 .card-title{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--gold);margin-bottom:18px;display:flex;align-items:center;gap:8px}
 .card-title::before{content:'';width:14px;height:2px;background:var(--gold-lt);border-radius:2px;flex-shrink:0}
-.form-group{margin-bottom:16px}
-label{display:block;font-size:15px;font-weight:600;color:var(--gold-dk);margin-bottom:7px}
-input,select,textarea{width:100%;font-family:inherit;font-size:17px;color:var(--ink);padding:12px 14px;border:1.5px solid rgba(180,150,100,.4);border-radius:12px;background:#fff;outline:none;transition:border-color .2s,box-shadow .2s}
+
+/* ── Form fields ── */
+.form-group{margin-bottom:18px}
+label{display:block;font-size:15px;font-weight:600;color:var(--gold-dk);margin-bottom:8px}
+input,select,textarea{width:100%;font-family:inherit;font-size:17px;color:var(--ink);padding:13px 14px;border:1.5px solid rgba(180,150,100,.4);border-radius:12px;background:#fff;outline:none;transition:border-color .2s,box-shadow .2s}
 input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(168,135,79,.14)}
 input::placeholder{color:#c0b09a}
 textarea{resize:vertical;min-height:78px}
@@ -36,31 +55,36 @@ textarea{resize:vertical;min-height:78px}
 .bday-row select{flex:1}
 .toggle-row{display:flex;gap:10px}
 .toggle-row input[type="radio"]{display:none}
-.toggle-row label{flex:1;text-align:center;padding:12px 6px;border:1.5px solid rgba(180,150,100,.4);border-radius:12px;background:#fff;cursor:pointer;font-size:17px;font-weight:500;color:var(--muted);transition:all .2s;margin-bottom:0}
+.toggle-row label{flex:1;text-align:center;padding:13px 6px;border:1.5px solid rgba(180,150,100,.4);border-radius:12px;background:#fff;cursor:pointer;font-size:17px;font-weight:500;color:var(--muted);transition:all .2s;margin-bottom:0}
 .toggle-row input[type="radio"]:checked+label{border-color:var(--gold);background:rgba(168,135,79,.12);color:var(--gold-dk);font-weight:700;box-shadow:0 0 0 3px rgba(168,135,79,.14)}
 .lookup-row{display:flex;gap:10px}
 .lookup-row input{flex:1}
-.btn-lookup{padding:12px 20px;background:var(--gold);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.btn-lookup{padding:13px 20px;background:var(--gold);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
 .btn-lookup:active{opacity:.8}
-.btn{width:100%;font-family:inherit;font-size:18px;font-weight:700;letter-spacing:.06em;color:#fff;padding:15px;border:none;border-radius:12px;cursor:pointer;margin-top:8px;background:linear-gradient(135deg,var(--gold-lt),var(--gold));box-shadow:0 4px 14px rgba(168,135,79,.3);transition:opacity .2s,transform .15s}
+.btn{width:100%;font-family:inherit;font-size:18px;font-weight:700;letter-spacing:.06em;color:#fff;padding:16px;border:none;border-radius:12px;cursor:pointer;margin-top:8px;background:linear-gradient(135deg,var(--gold-lt),var(--gold));box-shadow:0 4px 14px rgba(168,135,79,.3);transition:opacity .2s,transform .15s}
 .btn:hover:not(:disabled){opacity:.88;transform:translateY(-1px)}
 .btn:active:not(:disabled){transform:translateY(0)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn-ghost{background:none;color:var(--muted);box-shadow:none;border:1px solid var(--border)}
+
+/* ── Member welcome ── */
 .member-welcome{background:rgba(74,124,89,.08);border:1px solid rgba(74,124,89,.3);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
 .member-avatar{width:44px;height:44px;background:linear-gradient(135deg,var(--gold-lt),var(--gold));border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;flex-shrink:0}
 .mname{font-weight:700;font-size:17px}
 .msub{font-size:13px;color:var(--muted);margin-top:2px}
 .divider{text-align:center;color:var(--muted);font-size:14px;margin:4px 0 16px;position:relative}
-.divider::before,.divider::after{content:'';position:absolute;top:50%;width:calc(50% - 50px);height:1px;background:var(--border)}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:calc(50% - 60px);height:1px;background:var(--border)}
 .divider::before{left:0}.divider::after{right:0}
+
+/* ── Toast ── */
 #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:12px 22px;border-radius:12px;font-size:15px;font-weight:500;color:#fff;z-index:999;display:none;max-width:calc(100% - 40px);text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.2)}
 #toast.ok{background:var(--ok)}#toast.err{background:var(--err)}
+
+/* ── Success ── */
 #success-section{display:none;text-align:center}
 .success-icon{font-size:54px;margin-bottom:10px}
 .success-title{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;margin-bottom:4px}
 .success-sub{color:var(--muted);font-size:15px;margin-bottom:20px}
-/* QR Card */
 .qr-wrap{background:#fff;border-radius:20px;padding:26px 24px 20px;display:inline-block;box-shadow:0 6px 28px rgba(140,110,60,.15);margin-bottom:14px;border:1.5px solid rgba(200,170,110,.25)}
 #qrcode,#qrcode-lookup{margin:0 auto}
 .qr-name{font-family:'Noto Serif TC',serif;font-size:26px;font-weight:700;color:var(--ink);margin-bottom:14px;letter-spacing:.05em}
@@ -69,22 +93,19 @@ textarea{resize:vertical;min-height:78px}
 .qr-hint{background:rgba(168,135,79,.08);border:1px solid rgba(168,135,79,.25);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:16px;text-align:left}
 .qr-hint strong{color:var(--ink)}
 .hidden{display:none!important}
-/* mode tabs */
-.mode-tabs{display:flex;gap:8px;margin-bottom:16px}
-.mode-tab{flex:1;font-family:inherit;font-size:16px;font-weight:700;padding:12px;border-radius:12px;border:1.5px solid var(--border);cursor:pointer;transition:all .2s;background:rgba(255,255,255,.5);color:var(--muted)}
-.mode-tab.active{background:linear-gradient(135deg,var(--gold-lt),var(--gold));color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(168,135,79,.3)}
 </style>
 </head>
 <body>
+
 <div class="wrap">
-  <header>
+  <div class="page-header">
     <div class="brand">臺中市海德堡讀書會</div>
-    <h1 id="page-title">活動報名</h1>
-  </header>
+    <div class="page-title" id="page-title">活動報名系統</div>
+  </div>
 
   <div class="mode-tabs">
     <button class="mode-tab active" id="tab-reg" onclick="switchMode('reg')">📝 活動報名</button>
-    <button class="mode-tab" id="tab-qr" onclick="switchMode('qr')">🔖 取得我的 QR Code</button>
+    <button class="mode-tab" id="tab-qr" onclick="switchMode('qr')">🔖 取得 QR Code</button>
   </div>
 
   <!-- ===== QR Lookup mode ===== -->
@@ -117,165 +138,166 @@ textarea{resize:vertical;min-height:78px}
   <!-- ===== Registration mode ===== -->
   <div id="mode-reg">
 
-  <!-- Event Info Banner -->
-  <div id="event-banner" class="hidden">
-    <div id="event-poster-wrap" class="hidden">
-      <img id="event-poster-img" src="" alt="活動海報" style="width:100%;border-radius:16px;display:block;margin-bottom:16px;box-shadow:0 6px 24px rgba(140,110,60,.18)">
-    </div>
-    <div class="event-detail-card">
-      <div id="ev-name" class="ev-title hidden"></div>
-      <div class="ev-rows" id="ev-rows"></div>
-      <div id="ev-desc-wrap" class="hidden">
-        <div class="ev-section-label">活動簡介</div>
-        <div id="ev-desc" class="ev-desc-text"></div>
-      </div>
-    </div>
-  </div>
+    <!-- ── Event info banner ── -->
+    <div id="event-banner" class="hidden">
+      <img id="ev-poster" class="ev-poster hidden" src="" alt="活動海報">
 
-  <!-- Success -->
-  <div id="success-section" class="card">
-    <div class="success-icon">🎉</div>
-    <div class="success-title">報名成功！</div>
-    <div class="success-sub" id="success-msg"></div>
-    <div class="qr-wrap">
-      <div class="qr-name" id="qr-name-text"></div>
-      <div id="qrcode"></div>
-      <div class="qr-phone" id="qr-phone-text"></div>
-      <div class="qr-org">臺中市海德堡讀書會</div>
-    </div>
-    <div class="qr-hint">
-      <strong>📌 請截圖保存這張 QR Code</strong><br>
-      下次活動直接出示掃描即可報到，無需重新填寫資料。
-    </div>
-    <button class="btn" onclick="location.reload()">繼續報名（其他人）</button>
-  </div>
+      <ul class="ev-info-list" id="ev-info-list"></ul>
 
-  <!-- Step 1: Phone lookup -->
-  <div id="step1" class="card">
-    <div class="card-title">查詢會員資料</div>
-    <div class="form-group">
-      <label>電話號碼</label>
-      <div class="lookup-row">
-        <input type="tel" id="lookup-phone" placeholder="請輸入手機號碼" inputmode="tel" onkeydown="if(event.key==='Enter')lookupMember()">
-        <button class="btn-lookup" onclick="lookupMember()">查詢</button>
+      <div id="ev-desc-box" class="ev-desc-box hidden">
+        <div id="ev-desc-text"></div>
       </div>
-    </div>
-    <div class="divider">首次報名請填寫下方表單</div>
-    <button class="btn btn-ghost" onclick="showNewForm()">首次使用 / 新會員</button>
-  </div>
 
-  <!-- Step 2a: Existing member -->
-  <div id="step-existing" class="card hidden">
-    <div class="member-welcome">
-      <div class="member-avatar">👤</div>
-      <div>
-        <div class="mname" id="welcome-name"></div>
-        <div class="msub" id="welcome-sub"></div>
-      </div>
+      <div id="ev-fee-banner" class="ev-fee-banner hidden"></div>
     </div>
-    <div class="card-title">本次活動選擇</div>
-    <div class="form-group">
-      <label>出席狀況 *</label>
-      <div class="toggle-row">
-        <input type="radio" name="ex-att" id="ex-att-yes" value="出席">
-        <label for="ex-att-yes">出席</label>
-        <input type="radio" name="ex-att" id="ex-att-no" value="請假">
-        <label for="ex-att-no">請假</label>
+
+    <!-- ── Success screen ── -->
+    <div id="success-section" class="card">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">報名成功！</div>
+      <div class="success-sub" id="success-msg"></div>
+      <div class="qr-wrap">
+        <div class="qr-name" id="qr-name-text"></div>
+        <div id="qrcode"></div>
+        <div class="qr-phone" id="qr-phone-text"></div>
+        <div class="qr-org">臺中市海德堡讀書會</div>
       </div>
+      <div class="qr-hint">
+        <strong>📌 請截圖保存這張 QR Code</strong><br>
+        下次活動直接出示掃描即可報到，無需重新填寫資料。
+      </div>
+      <button class="btn" onclick="location.reload()">繼續報名（其他人）</button>
     </div>
-    <div id="ex-meal-wrap" class="hidden">
+
+    <!-- ── Form section title ── -->
+    <div id="form-section-hd" class="form-section-title">填寫報名資料</div>
+
+    <!-- Step 1: Phone lookup -->
+    <div id="step1" class="card">
+      <div class="card-title">查詢會員資料</div>
       <div class="form-group">
-        <label>用餐 *</label>
+        <label>電話號碼</label>
+        <div class="lookup-row">
+          <input type="tel" id="lookup-phone" placeholder="請輸入手機號碼" inputmode="tel" onkeydown="if(event.key==='Enter')lookupMember()">
+          <button class="btn-lookup" onclick="lookupMember()">查詢</button>
+        </div>
+      </div>
+      <div class="divider">首次報名請填寫下方表單</div>
+      <button class="btn btn-ghost" onclick="showNewForm()">首次使用 / 新會員</button>
+    </div>
+
+    <!-- Step 2a: Existing member -->
+    <div id="step-existing" class="card hidden">
+      <div class="member-welcome">
+        <div class="member-avatar">👤</div>
+        <div>
+          <div class="mname" id="welcome-name"></div>
+          <div class="msub" id="welcome-sub"></div>
+        </div>
+      </div>
+      <div class="card-title">本次活動選擇</div>
+      <div class="form-group">
+        <label>出席狀況 *</label>
         <div class="toggle-row">
-          <input type="radio" name="ex-meal" id="ex-meal-yes" value="用餐">
-          <label for="ex-meal-yes">用餐</label>
-          <input type="radio" name="ex-meal" id="ex-meal-no" value="不用餐">
-          <label for="ex-meal-no">不用餐</label>
+          <input type="radio" name="ex-att" id="ex-att-yes" value="出席">
+          <label for="ex-att-yes">✅ 出席</label>
+          <input type="radio" name="ex-att" id="ex-att-no" value="請假">
+          <label for="ex-att-no">🙏 請假</label>
+        </div>
+      </div>
+      <div id="ex-meal-wrap" class="hidden">
+        <div class="form-group">
+          <label>用餐 *</label>
+          <div class="toggle-row">
+            <input type="radio" name="ex-meal" id="ex-meal-yes" value="用餐">
+            <label for="ex-meal-yes">🍱 用餐</label>
+            <input type="radio" name="ex-meal" id="ex-meal-no" value="不用餐">
+            <label for="ex-meal-no">✕ 不用餐</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>加購便當數量</label>
+          <select id="ex-lunchbox">
+            <option value="0">不加購</option>
+            <option value="1">1 個</option><option value="2">2 個</option>
+            <option value="3">3 個</option><option value="4">4 個</option><option value="5">5 個</option>
+          </select>
         </div>
       </div>
       <div class="form-group">
-        <label>加購便當（0–5 個）</label>
-        <select id="ex-lunchbox">
-          <option value="0">不加購</option>
-          <option value="1">1 個</option><option value="2">2 個</option>
-          <option value="3">3 個</option><option value="4">4 個</option><option value="5">5 個</option>
-        </select>
+        <label>備註（選填）</label>
+        <textarea id="ex-note" placeholder="如有特殊需求請填寫"></textarea>
       </div>
+      <button class="btn" id="ex-btn" onclick="submitExisting()">確認報名</button>
+      <button class="btn btn-ghost" onclick="goBack()">← 返回</button>
     </div>
-    <div class="form-group">
-      <label>備註（選填）</label>
-      <textarea id="ex-note" placeholder="如有特殊需求請填寫"></textarea>
-    </div>
-    <button class="btn" id="ex-btn" onclick="submitExisting()">確認報名</button>
-    <button class="btn btn-ghost" onclick="goBack()">← 返回</button>
-  </div>
 
-  <!-- Step 2b: New member -->
-  <div id="step-new" class="card hidden">
-    <div class="card-title">新會員報名</div>
-    <div class="form-group">
-      <label>姓名 *</label>
-      <input type="text" id="new-name" placeholder="請填寫真實姓名">
-    </div>
-    <div class="form-group">
-      <label>電話 *</label>
-      <input type="tel" id="new-phone" placeholder="手機號碼" inputmode="tel">
-    </div>
-    <div class="form-group">
-      <label>出生年月日（選填，用於壽星統計 🎂）</label>
-      <div class="bday-row">
-        <select id="new-by"><option value="">年</option></select>
-        <select id="new-bm"><option value="">月</option></select>
-        <select id="new-bd"><option value="">日</option></select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>身份 *</label>
-      <div class="toggle-row">
-        <input type="radio" name="new-type" id="new-type-m" value="會員">
-        <label for="new-type-m">會員</label>
-        <input type="radio" name="new-type" id="new-type-g" value="來賓">
-        <label for="new-type-g">來賓</label>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>出席狀況 *</label>
-      <div class="toggle-row">
-        <input type="radio" name="new-att" id="new-att-yes" value="出席">
-        <label for="new-att-yes">出席</label>
-        <input type="radio" name="new-att" id="new-att-no" value="請假">
-        <label for="new-att-no">請假</label>
-      </div>
-    </div>
-    <div id="new-meal-wrap" class="hidden">
+    <!-- Step 2b: New member -->
+    <div id="step-new" class="card hidden">
+      <div class="card-title">報名資料</div>
       <div class="form-group">
-        <label>用餐 *</label>
+        <label>姓名 *</label>
+        <input type="text" id="new-name" placeholder="請輸入姓名">
+      </div>
+      <div class="form-group">
+        <label>聯絡電話 *</label>
+        <input type="tel" id="new-phone" placeholder="請輸入手機號碼" inputmode="tel">
+      </div>
+      <div class="form-group">
+        <label>身份 *</label>
         <div class="toggle-row">
-          <input type="radio" name="new-meal" id="new-meal-yes" value="用餐">
-          <label for="new-meal-yes">用餐</label>
-          <input type="radio" name="new-meal" id="new-meal-no" value="不用餐">
-          <label for="new-meal-no">不用餐</label>
+          <input type="radio" name="new-type" id="new-type-m" value="會員">
+          <label for="new-type-m">🏅 會員</label>
+          <input type="radio" name="new-type" id="new-type-g" value="來賓">
+          <label for="new-type-g">🎫 來賓</label>
         </div>
       </div>
       <div class="form-group">
-        <label>加購便當（0–5 個）</label>
-        <select id="new-lunchbox">
-          <option value="0">不加購</option>
-          <option value="1">1 個</option><option value="2">2 個</option>
-          <option value="3">3 個</option><option value="4">4 個</option><option value="5">5 個</option>
-        </select>
+        <label>出席狀況 *</label>
+        <div class="toggle-row">
+          <input type="radio" name="new-att" id="new-att-yes" value="出席">
+          <label for="new-att-yes">✅ 出席</label>
+          <input type="radio" name="new-att" id="new-att-no" value="請假">
+          <label for="new-att-no">🙏 請假</label>
+        </div>
       </div>
+      <div id="new-meal-wrap" class="hidden">
+        <div class="form-group">
+          <label>用餐 *</label>
+          <div class="toggle-row">
+            <input type="radio" name="new-meal" id="new-meal-yes" value="用餐">
+            <label for="new-meal-yes">🍱 用餐</label>
+            <input type="radio" name="new-meal" id="new-meal-no" value="不用餐">
+            <label for="new-meal-no">✕ 不用餐</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>加購便當數量</label>
+          <select id="new-lunchbox">
+            <option value="0">不加購</option>
+            <option value="1">1 個</option><option value="2">2 個</option>
+            <option value="3">3 個</option><option value="4">4 個</option><option value="5">5 個</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>出生年月日（選填）🎂</label>
+        <div class="bday-row">
+          <select id="new-by"><option value="">年</option></select>
+          <select id="new-bm"><option value="">月</option></select>
+          <select id="new-bd"><option value="">日</option></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>備註（選填）</label>
+        <textarea id="new-note" placeholder="如有特殊需求請填寫"></textarea>
+      </div>
+      <button class="btn" id="new-btn" onclick="submitNew()">確認報名</button>
+      <button class="btn btn-ghost" onclick="goBack()">← 返回</button>
     </div>
-    <div class="form-group">
-      <label>備註（選填）</label>
-      <textarea id="new-note" placeholder="如有特殊需求請填寫"></textarea>
-    </div>
-    <button class="btn" id="new-btn" onclick="submitNew()">確認報名</button>
-    <button class="btn btn-ghost" onclick="goBack()">← 返回</button>
-  </div>
 
   </div><!-- end mode-reg -->
-</div>
+</div><!-- end wrap -->
 
 <div id="toast"></div>
 
@@ -289,7 +311,7 @@ function switchMode(mode){
   document.getElementById('mode-qr').classList.toggle('hidden',isReg);
   document.getElementById('tab-reg').classList.toggle('active',isReg);
   document.getElementById('tab-qr').classList.toggle('active',!isReg);
-  document.getElementById('page-title').textContent=isReg?'活動報名':'取得我的 QR Code';
+  document.getElementById('page-title').textContent=isReg?'活動報名系統':'取得我的 QR Code';
 }
 
 function lookupQR(){
@@ -337,60 +359,62 @@ function apiFetch(url){
   return fetch(url,{redirect:'follow',signal:ctrl.signal}).then(function(r){return r.json();});
 }
 
-apiFetch(API+'?action=info').then(function(d){
-  if(!d.ok||!d.config)return;
-  var c=d.config;
-  var banner=document.getElementById('event-banner');
-  var hasContent=false;
-
-  // Poster image
-  if(c.posterUrl){
-    document.getElementById('event-poster-img').src=c.posterUrl;
-    document.getElementById('event-poster-wrap').classList.remove('hidden');
-    hasContent=true;
-  }
-
-  // Event title
-  if(c.eventName){
-    var el=document.getElementById('ev-name');
-    el.textContent=c.eventName;
-    el.classList.remove('hidden');
-    hasContent=true;
-  }
-
-  // Info rows
-  var rows=[];
-  if(c.eventDate||c.eventTime){
-    var dt=(c.eventDate?formatDate(c.eventDate):'')+(c.eventTime?' '+c.eventTime:'');
-    rows.push({icon:'📅',label:'時間',val:dt.trim()});
-    hasContent=true;
-  }
-  if(c.location){rows.push({icon:'📍',label:'地點',val:c.location});hasContent=true;}
-  if(c.speaker){rows.push({icon:'🎤',label:'主講者',val:c.speaker});hasContent=true;}
-  if(c.topic){rows.push({icon:'📖',label:'主題',val:c.topic});hasContent=true;}
-  if(c.guestFee){rows.push({icon:'💰',label:'費用',val:c.guestFee});hasContent=true;}
-
-  var rowsEl=document.getElementById('ev-rows');
-  rows.forEach(function(r){
-    rowsEl.innerHTML+='<div class="ev-row"><span class="ev-row-icon">'+r.icon+'</span><span class="ev-row-label">'+r.label+'</span><span class="ev-row-val">'+r.val+'</span></div>';
-  });
-
-  // Description
-  if(c.desc){
-    document.getElementById('ev-desc').textContent=c.desc;
-    document.getElementById('ev-desc-wrap').classList.remove('hidden');
-    hasContent=true;
-  }
-
-  if(hasContent)banner.classList.remove('hidden');
-}).catch(function(){});
-
 function formatDate(s){
   if(!s)return'';
   var m=String(s).match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
   if(m)return m[1]+'年'+parseInt(m[2])+'月'+parseInt(m[3])+'日';
   return s;
 }
+
+apiFetch(API+'?action=info').then(function(d){
+  if(!d.ok||!d.config)return;
+  var c=d.config;
+  var hasContent=false;
+
+  if(c.posterUrl){
+    var img=document.getElementById('ev-poster');
+    img.src=c.posterUrl;
+    img.classList.remove('hidden');
+    hasContent=true;
+  }
+
+  var listEl=document.getElementById('ev-info-list');
+  var rows=[];
+  if(c.eventDate||c.eventTime){
+    var dt=(c.eventDate?formatDate(c.eventDate):'')+(c.eventTime?' '+c.eventTime:'');
+    rows.push({label:'時間',val:dt.trim()});
+  }
+  if(c.location)rows.push({label:'地點',val:c.location});
+  if(c.topic)rows.push({label:'主題',val:c.topic});
+  if(c.speaker)rows.push({label:'主講者',val:c.speaker});
+  rows.forEach(function(r){
+    var li=document.createElement('li');
+    li.innerHTML='<span class="ev-info-label">• '+r.label+'</span><span class="ev-info-val">'+r.val+'</span>';
+    listEl.appendChild(li);
+    hasContent=true;
+  });
+
+  if(c.desc){
+    var box=document.getElementById('ev-desc-box');
+    var txt=document.getElementById('ev-desc-text');
+    c.desc.split(/\n\n+/).forEach(function(para){
+      var p=document.createElement('p');
+      p.textContent=para.trim();
+      txt.appendChild(p);
+    });
+    box.classList.remove('hidden');
+    hasContent=true;
+  }
+
+  if(c.guestFee){
+    var fee=document.getElementById('ev-fee-banner');
+    fee.textContent='來賓費用：'+c.guestFee;
+    fee.classList.remove('hidden');
+    hasContent=true;
+  }
+
+  if(hasContent)document.getElementById('event-banner').classList.remove('hidden');
+}).catch(function(){});
 
 function lookupMember(){
   var phone=document.getElementById('lookup-phone').value.trim();
@@ -466,6 +490,7 @@ function submitNew(){
 
 function showSuccess(name,phone){
   ['step1','step-existing','step-new'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
+  document.getElementById('form-section-hd').classList.add('hidden');
   document.getElementById('success-msg').textContent=(name||'')+'，報名完成！';
   document.getElementById('qr-name-text').textContent=name||'';
   document.getElementById('qr-phone-text').textContent=phone||'';
