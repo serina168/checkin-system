@@ -19,7 +19,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--i
 
 /* ── Mode tabs ── */
 .mode-tabs{display:flex;gap:8px;margin-bottom:18px}
-.mode-tab{flex:1;font-family:inherit;font-size:16px;font-weight:700;padding:12px;border-radius:12px;border:1.5px solid var(--border);cursor:pointer;transition:all .2s;background:rgba(255,255,255,.5);color:var(--muted)}
+.mode-tab{flex:1;font-family:inherit;font-size:14px;font-weight:700;padding:10px 6px;border-radius:12px;border:1.5px solid var(--border);cursor:pointer;transition:all .2s;background:rgba(255,255,255,.5);color:var(--muted)}
 .mode-tab.active{background:linear-gradient(135deg,var(--gold-lt),var(--gold));color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(168,135,79,.3)}
 
 /* ── Event info section ── */
@@ -91,6 +91,22 @@ textarea{resize:vertical;min-height:78px}
 #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:12px 22px;border-radius:12px;font-size:15px;font-weight:500;color:#fff;z-index:999;display:none;max-width:calc(100% - 40px);text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.2)}
 #toast.ok{background:var(--ok)}#toast.err{background:var(--err)}
 
+/* ── Batch print ── */
+#mode-batch .batch-login{margin-bottom:16px}
+#batch-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:16px}
+.badge-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center;break-inside:avoid}
+.badge-name{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--ink);margin-bottom:10px}
+.badge-qr{display:flex;justify-content:center;margin-bottom:8px}
+.badge-phone{font-size:13px;color:var(--muted);letter-spacing:.06em}
+.badge-org{font-size:10px;color:rgba(140,120,90,.4);letter-spacing:.3em;margin-top:4px}
+#btn-batch-print{margin-top:20px}
+@media print{
+  body{padding:0}
+  .wrap>.page-header,.mode-tabs,#mode-batch>.card:first-child,#btn-batch-print{display:none!important}
+  #batch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0}
+  .badge-card{border:1px solid #ccc;page-break-inside:avoid}
+}
+
 /* ── Success ── */
 #success-section{text-align:center}
 .success-icon{font-size:54px;margin-bottom:10px}
@@ -130,6 +146,7 @@ textarea{resize:vertical;min-height:78px}
     <div class="mode-tabs" id="mode-tabs">
       <button class="mode-tab active" id="tab-reg" onclick="switchMode('reg')">📝 活動報名</button>
       <button class="mode-tab" id="tab-qr" onclick="switchMode('qr')">🔖 取得 QR Code</button>
+      <button class="mode-tab" id="tab-batch" onclick="switchMode('batch')">🖨️ 批次列印</button>
     </div>
 
     <!-- ── Success screen (below tabs so tabs always visible) ── -->
@@ -177,6 +194,25 @@ textarea{resize:vertical;min-height:78px}
           </div>
           <button class="btn btn-ghost" onclick="resetQR()">重新查詢</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ── Batch print panel ── -->
+    <div id="mode-batch" class="hidden">
+      <div class="card batch-login" id="batch-login-card">
+        <div class="card-title">批次列印 QR Code 名牌</div>
+        <p class="field-hint" style="margin-bottom:14px">輸入管理員密碼，系統將自動產生全體會員的 QR Code，直接列印即可貼於名牌背面。</p>
+        <div class="form-group">
+          <label>管理員密碼</label>
+          <div class="lookup-row">
+            <input type="password" id="batch-pass" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')loadBatch()">
+            <button class="btn-lookup" onclick="loadBatch()">載入</button>
+          </div>
+        </div>
+      </div>
+      <div id="batch-result" class="hidden">
+        <button class="btn" id="btn-batch-print" onclick="window.print()">🖨️ 列印所有名牌</button>
+        <div id="batch-grid"></div>
       </div>
     </div>
 
@@ -331,13 +367,50 @@ var API='https://script.google.com/macros/s/AKfycbx8wYkMnToVxSSwK0YxC-Ki99-h-W3_
 var curPhone='',curName='';
 
 function switchMode(mode){
-  var isReg=mode==='reg';
-  document.getElementById('mode-qr').classList.toggle('hidden',isReg);
-  document.getElementById('reg-form-area').classList.toggle('hidden',!isReg);
-  document.getElementById('tab-reg').classList.toggle('active',isReg);
-  document.getElementById('tab-qr').classList.toggle('active',!isReg);
+  document.getElementById('mode-qr').classList.toggle('hidden',mode!=='qr');
+  document.getElementById('mode-batch').classList.toggle('hidden',mode!=='batch');
+  document.getElementById('reg-form-area').classList.toggle('hidden',mode!=='reg');
+  document.getElementById('tab-reg').classList.toggle('active',mode==='reg');
+  document.getElementById('tab-qr').classList.toggle('active',mode==='qr');
+  document.getElementById('tab-batch').classList.toggle('active',mode==='batch');
   scrollTop();
 }
+
+function loadBatch(){
+  var pass=document.getElementById('batch-pass').value;
+  if(!pass){toast('請輸入密碼',true);return;}
+  toast('載入中…');
+  apiFetch(API+'?action=admin_members&pass='+encodeURIComponent(pass))
+    .then(function(d){
+      if(!d.ok){toast(d.msg||'密碼錯誤',true);return;}
+      var members=d.members||[];
+      if(!members.length){toast('目前沒有會員資料',true);return;}
+      var grid=document.getElementById('batch-grid');
+      grid.innerHTML='';
+      members.forEach(function(m){
+        if(!m.phone)return;
+        var div=document.createElement('div');
+        div.className='badge-card';
+        var qid='bqr-'+m.phone.replace(/\D/g,'');
+        div.innerHTML='<div class="badge-name">'+escHtml(m.name||'')+'</div>'
+          +'<div class="badge-qr" id="'+qid+'"></div>'
+          +'<div class="badge-phone">'+escHtml(m.phone)+'</div>'
+          +'<div class="badge-org">臺中市海德堡讀書會</div>';
+        grid.appendChild(div);
+        new QRCode(document.getElementById(qid),{
+          text:window.location.origin+'/checkin.html?p='+encodeURIComponent(m.phone),
+          width:160,height:160,colorDark:'#3a2e1e',colorLight:'#fff',
+          correctLevel:QRCode.CorrectLevel.M
+        });
+      });
+      document.getElementById('batch-result').classList.remove('hidden');
+      document.getElementById('batch-login-card').classList.add('hidden');
+      toast('已載入 '+members.length+' 位會員');
+    })
+    .catch(function(){toast('網路錯誤，請重試',true);});
+}
+
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 function lookupQR(){
   var phone=document.getElementById('qr-phone').value.trim();
