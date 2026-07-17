@@ -73,6 +73,8 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
       <input type="file" id="qr-photo" accept="image/*" capture="environment" style="display:none" onchange="photoScan(this)">
     </label>
     <div style="color:rgba(255,255,255,.45);font-size:13px;margin-top:12px">對準 QR Code 後拍照即可報到</div>
+    <img id="photo-preview" style="display:none;width:100%;border-radius:10px;margin-top:14px" alt="拍到的照片">
+    <div id="photo-hint" style="color:#f90;font-size:13px;margin-top:8px"></div>
   </div>
   <div class="or">沒帶 QR？用姓名搜尋</div>
   <input type="search" id="q" placeholder="輸入姓名或電話…" oninput="doSearch()" autocomplete="off">
@@ -189,6 +191,10 @@ function photoScan(input) {
   var file = input.files[0];
   input.value = '';
   if (!file) { return; }
+  var url = URL.createObjectURL(file);
+  var preview = document.getElementById('photo-preview');
+  preview.src = url;
+  preview.style.display = 'block';
   var img = new Image();
   img.onload = function() {
     var cvs = document.createElement('canvas');
@@ -198,14 +204,15 @@ function photoScan(input) {
     ctx.drawImage(img, 0, 0);
     var imageData = ctx.getImageData(0, 0, cvs.width, cvs.height);
     var code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts: 'attemptBoth'});
-    URL.revokeObjectURL(img.src);
     if (code && code.data && code.data.trim()) {
+      URL.revokeObjectURL(url);
+      preview.style.display = 'none';
       doCheckIn(code.data.trim());
     } else {
-      showPop('no', '✕', '讀取失敗', '請重新拍照，確保 QR Code 清晰完整', '');
+      document.getElementById('photo-hint').textContent = '↑ 上面是拍到的照片，QR Code 是否清晰可見？若是，請告知；若否，請重新拍照。';
     }
   };
-  img.src = URL.createObjectURL(file);
+  img.src = url;
 }
 
 refreshStats();
