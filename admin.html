@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>管理後台 — 海德堡讀書會</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 body{margin:0;padding:16px;background:#faf6ef;font-family:sans-serif;font-size:16px;color:#3d3226}
 .wrap{max-width:700px;margin:0 auto}
@@ -23,6 +24,29 @@ input:focus,select:focus{border-color:#a8874f}
 .tab.active{background:#a8874f;color:#fff;border-color:#a8874f}
 .grid3{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px;text-align:center}
 .grid4{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;text-align:center}
+.badge-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
+.badge-card{background:#faf6ef;border:1px solid #ddd0b8;border-radius:12px;padding:14px 10px;text-align:center;position:relative;break-inside:avoid}
+.badge-num{position:absolute;top:4px;right:7px;font-size:10px;color:#ddd}
+.badge-name{font-size:17px;font-weight:700;color:#3d3226;margin-bottom:8px}
+.badge-qr{display:flex;justify-content:center;margin-bottom:6px}
+.badge-phone{font-size:12px;color:#8a7a63}
+.badge-org{font-size:10px;color:rgba(140,120,90,.4);letter-spacing:.3em;margin-top:3px}
+.from-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:14px}
+.from-row input{width:70px;padding:7px 10px;border:1.5px solid #c8aa80;border-radius:8px;font-size:14px}
+.from-row button{padding:7px 14px;background:#a8874f;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer}
+@media print{
+  @page{size:A4 portrait;margin:10mm}
+  body{padding:0;background:#fff}
+  .wrap>*:not(#main){display:none!important}
+  #main>*:not(#tab-print){display:none!important}
+  .tabs,.btn,.btn-sm,.from-row,#batch-count{display:none!important}
+  #tab-print .box-title{display:none!important}
+  .badge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6mm}
+  .badge-card{border:1px solid #ccc;border-radius:6px;padding:6mm 4mm}
+  .badge-name{font-size:14px}
+  .badge-phone{font-size:11px}
+  .badge-org{font-size:9px}
+}
 .stat{background:#f5f0e8;border:1px solid #ddd0b8;border-radius:10px;padding:10px}
 .stat .n{font-size:26px;font-weight:700}
 .stat .l{font-size:12px;color:#8a7a63}
@@ -58,6 +82,7 @@ td{padding:8px;border-bottom:1px solid #e8ddd0}
       <div class="tab active" onclick="switchTab('event')">📋 本次活動</div>
       <div class="tab" onclick="switchTab('members')">👥 會員名冊</div>
       <div class="tab" onclick="switchTab('setup')">⚙️ 活動管理</div>
+      <div class="tab" onclick="switchTab('print')">🖨️ 批次列印</div>
     </div>
 
     <!-- 活動名單 -->
@@ -104,6 +129,25 @@ td{padding:8px;border-bottom:1px solid #e8ddd0}
             <tr><th>姓名</th><th>電話</th><th>出生年月日</th><th>身份</th><th>加入日期</th></tr>
           </table>
         </div>
+      </div>
+    </div>
+
+    <!-- 批次列印 -->
+    <div id="tab-print" style="display:none">
+      <div class="box">
+        <div class="box-title">批次列印 QR Code 名牌</div>
+        <div style="margin-bottom:10px">
+          <button class="btn btn-sm btn-outline" onclick="loadBatchPrint()">重新載入</button>
+          <button class="btn btn-sm" onclick="window.print()">🖨️ 列印（A4）</button>
+        </div>
+        <div id="batch-count" style="font-size:14px;color:#8a7a63;margin-bottom:8px"></div>
+        <div class="from-row">
+          <span>從第</span>
+          <input type="number" id="from-num" value="1" min="1">
+          <span>號開始</span>
+          <button onclick="applyFrom()">套用</button>
+        </div>
+        <div class="badge-grid" id="badge-grid"></div>
       </div>
     </div>
 
@@ -184,14 +228,59 @@ function loadEventInfo(){
 }
 
 function switchTab(name){
-  ['event','members','setup'].forEach(function(t){
+  ['event','members','setup','print'].forEach(function(t){
     document.getElementById('tab-'+t).style.display=(t===name?'block':'none');
   });
   document.querySelectorAll('.tab').forEach(function(el,i){
-    el.classList.toggle('active',['event','members','setup'][i]===name);
+    el.classList.toggle('active',['event','members','setup','print'][i]===name);
   });
   if(name==='members'&&!_members.length)loadMembers();
+  if(name==='print'&&!document.getElementById('badge-grid').children.length)loadBatchPrint();
 }
+
+function loadBatchPrint(){
+  document.getElementById('batch-count').textContent='載入中…';
+  apiFetch(API+'?action=admin_members&pass='+encodeURIComponent(PASS))
+    .then(function(d){
+      if(!d.ok){document.getElementById('batch-count').textContent='載入失敗';return;}
+      var members=d.members||[];
+      var grid=document.getElementById('badge-grid');
+      grid.innerHTML='';
+      members.forEach(function(m){
+        if(!m.phone)return;
+        var phone=String(m.phone).trim();
+        if(!phone)return;
+        var num=grid.children.length+1;
+        var div=document.createElement('div');
+        div.className='badge-card';
+        div.dataset.num=num;
+        var qid='bqr-'+phone.replace(/\D/g,'');
+        div.innerHTML='<div class="badge-num">'+num+'</div>'
+          +'<div class="badge-name">'+escH(m.name||'')+'</div>'
+          +'<div class="badge-qr" id="'+qid+'"></div>'
+          +'<div class="badge-phone">'+escH(phone)+'</div>'
+          +'<div class="badge-org">臺中市海德堡讀書會</div>';
+        grid.appendChild(div);
+        new QRCode(document.getElementById(qid),{
+          text:'https://check-in-system.netlify.app/checkin.html?p='+encodeURIComponent(phone),
+          width:150,height:150,colorDark:'#3a2e1e',colorLight:'#fff',
+          correctLevel:QRCode.CorrectLevel.M
+        });
+      });
+      document.getElementById('batch-count').textContent='共 '+members.length+' 位會員';
+      document.getElementById('from-num').max=members.length;
+    })
+    .catch(function(){document.getElementById('batch-count').textContent='網路錯誤，請重試';});
+}
+
+function applyFrom(){
+  var from=parseInt(document.getElementById('from-num').value)||1;
+  document.querySelectorAll('.badge-card').forEach(function(c){
+    c.style.display=parseInt(c.dataset.num)>=from?'':'none';
+  });
+}
+
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 function fixOldFormatGuests(guests){
   // Fallback for old server code that returned timestamp as 'name'.

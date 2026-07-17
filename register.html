@@ -91,32 +91,6 @@ textarea{resize:vertical;min-height:78px}
 #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:12px 22px;border-radius:12px;font-size:15px;font-weight:500;color:#fff;z-index:999;display:none;max-width:calc(100% - 40px);text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.2)}
 #toast.ok{background:var(--ok)}#toast.err{background:var(--err)}
 
-/* ── Batch print ── */
-#mode-batch .batch-login{margin-bottom:16px}
-#batch-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:16px}
-.badge-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center;break-inside:avoid}
-.badge-name{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--ink);margin-bottom:10px}
-.badge-qr{display:flex;justify-content:center;margin-bottom:8px}
-.badge-phone{font-size:13px;color:var(--muted);letter-spacing:.06em}
-.badge-org{font-size:10px;color:rgba(140,120,90,.4);letter-spacing:.3em;margin-top:4px}
-.badge-date{font-size:11px;color:#bbb;margin-top:4px}
-.badge-card{position:relative}
-.badge-num{position:absolute;top:4px;right:7px;font-size:10px;color:#ddd;line-height:1}
-#btn-batch-print{margin-top:20px}
-.from-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:15px}
-.from-row input{width:80px;padding:8px 10px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit}
-.from-row button{padding:8px 16px;background:var(--gold);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}
-@media print{
-  @page{size:A4 portrait;margin:10mm}
-  body{padding:0;background:#fff}
-  .wrap>.page-header,.mode-tabs,#batch-login-card,#btn-batch-print,#batch-count{display:none!important}
-  #batch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6mm;margin:0}
-  .badge-card{border:1px solid #ccc;border-radius:6px;padding:6mm 4mm;break-inside:avoid;page-break-inside:avoid}
-  .badge-name{font-size:14px;margin-bottom:6px}
-  .badge-phone{font-size:11px}
-  .badge-org{font-size:9px}
-  .badge-date{font-size:9px}
-}
 
 /* ── Success ── */
 #success-section{text-align:center}
@@ -157,7 +131,6 @@ textarea{resize:vertical;min-height:78px}
     <div class="mode-tabs" id="mode-tabs">
       <button class="mode-tab active" id="tab-reg" onclick="switchMode('reg')">📝 活動報名</button>
       <button class="mode-tab" id="tab-qr" onclick="switchMode('qr')">🔖 取得 QR Code</button>
-      <button class="mode-tab" id="tab-batch" onclick="switchMode('batch')">🖨️ 批次列印</button>
     </div>
 
     <!-- ── Success screen (below tabs so tabs always visible) ── -->
@@ -205,33 +178,6 @@ textarea{resize:vertical;min-height:78px}
           </div>
           <button class="btn btn-ghost" onclick="resetQR()">重新查詢</button>
         </div>
-      </div>
-    </div>
-
-    <!-- ── Batch print panel ── -->
-    <div id="mode-batch" class="hidden">
-      <div class="card batch-login" id="batch-login-card">
-        <div class="card-title">批次列印 QR Code 名牌</div>
-        <p class="field-hint" style="margin-bottom:14px">輸入管理員密碼，系統將自動產生全體會員的 QR Code，直接列印即可貼於名牌背面。</p>
-        <div class="form-group">
-          <label>管理員密碼</label>
-          <div class="lookup-row">
-            <input type="password" id="batch-pass" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')loadBatch()">
-            <button class="btn-lookup" onclick="loadBatch()">載入</button>
-          </div>
-        </div>
-        <div id="batch-status" style="margin-top:10px;padding:10px 14px;border-radius:10px;font-size:15px;display:none"></div>
-      </div>
-      <div id="batch-result" class="hidden">
-        <div id="batch-count" style="margin-bottom:12px;font-size:15px;color:var(--muted)"></div>
-        <div class="from-row">
-          <span>從第</span>
-          <input type="number" id="from-num" value="1" min="1">
-          <span>號開始列印</span>
-          <button onclick="applyFrom()">套用</button>
-        </div>
-        <button class="btn" id="btn-batch-print" onclick="window.print()">🖨️ 列印（A4）</button>
-        <div id="batch-grid"></div>
       </div>
     </div>
 
@@ -387,63 +333,11 @@ var curPhone='',curName='';
 
 function switchMode(mode){
   document.getElementById('mode-qr').classList.toggle('hidden',mode!=='qr');
-  document.getElementById('mode-batch').classList.toggle('hidden',mode!=='batch');
   document.getElementById('reg-form-area').classList.toggle('hidden',mode!=='reg');
   document.getElementById('tab-reg').classList.toggle('active',mode==='reg');
   document.getElementById('tab-qr').classList.toggle('active',mode==='qr');
-  document.getElementById('tab-batch').classList.toggle('active',mode==='batch');
   scrollTop();
 }
-
-function loadBatch(){
-  var pass=document.getElementById('batch-pass').value;
-  if(!pass){toast('請輸入密碼',true);return;}
-  var btn=document.querySelector('#batch-login-card .btn-lookup');
-  btn.disabled=true;btn.textContent='載入中…';
-  apiFetch(API+'?action=admin_members&pass='+encodeURIComponent(pass))
-    .then(function(d){
-      if(!d.ok){toast(d.msg||'密碼錯誤，請重新輸入',true);btn.disabled=false;btn.textContent='載入';return;}
-      var members=d.members||[];
-      if(!members.length){toast('目前沒有會員資料',true);btn.disabled=false;btn.textContent='載入';return;}
-      var grid=document.getElementById('batch-grid');
-      grid.innerHTML='';
-      members.forEach(function(m){
-        if(!m.phone)return;
-        var phone=String(m.phone).trim();
-        if(!phone)return;
-        var num=grid.children.length+1;
-        var div=document.createElement('div');
-        div.className='badge-card';
-        div.dataset.num=num;
-        var qid='bqr-'+phone.replace(/\D/g,'');
-        div.innerHTML='<div class="badge-num">'+num+'</div>'
-          +'<div class="badge-name">'+escHtml(m.name||'')+'</div>'
-          +'<div class="badge-qr" id="'+qid+'"></div>'
-          +'<div class="badge-phone">'+escHtml(phone)+'</div>'
-          +'<div class="badge-org">臺中市海德堡讀書會</div>';
-        grid.appendChild(div);
-        new QRCode(document.getElementById(qid),{
-          text:window.location.origin+'/checkin.html?p='+encodeURIComponent(phone),
-          width:160,height:160,colorDark:'#3a2e1e',colorLight:'#fff',
-          correctLevel:QRCode.CorrectLevel.M
-        });
-      });
-      document.getElementById('batch-count').textContent='共載入 '+members.length+' 位會員，新加入的會員排在後面';
-      document.getElementById('batch-result').classList.remove('hidden');
-      document.getElementById('batch-login-card').classList.add('hidden');
-      toast('已載入 '+members.length+' 位會員');
-    })
-    .catch(function(){toast('網路錯誤，請重試',true);btn.disabled=false;btn.textContent='載入';});
-}
-
-function applyFrom(){
-  var from=parseInt(document.getElementById('from-num').value)||1;
-  document.querySelectorAll('.badge-card').forEach(function(c){
-    c.style.display=parseInt(c.dataset.num)>=from?'':'none';
-  });
-}
-
-function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 function lookupQR(){
   var phone=document.getElementById('qr-phone').value.trim();
