@@ -21,13 +21,12 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--i
 .stat.left .n{color:var(--gold)}
 .sec-label{font-size:16px;font-weight:700;color:var(--gold);margin:6px 2px 10px;display:flex;align-items:center;gap:8px}
 .sec-label::before{content:'';width:20px;height:2px;background:var(--gold-lt);border-radius:2px}
-#cam-wrap{position:relative;border-radius:18px;overflow:hidden;border:1px solid rgba(200,170,110,.35);background:#111;box-shadow:0 8px 30px rgba(140,110,60,.14);min-height:280px;display:flex;align-items:center;justify-content:center}
-#cam-wrap video{width:100%;display:block;border-radius:18px}
-#cam-wrap canvas{display:none}
-.cam-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.cam-box{width:220px;height:220px;border:3px solid rgba(169,135,79,.8);border-radius:18px;box-shadow:0 0 0 9999px rgba(0,0,0,.35)}
-#cam-msg{text-align:center;padding:40px 20px;color:#fff;font-size:16px;line-height:1.8}
-#cam-btn{margin:10px auto 0;display:block;font-family:inherit;font-size:16px;font-weight:700;color:#fff;padding:12px 28px;border:none;border-radius:11px;cursor:pointer;background:linear-gradient(135deg,var(--gold-lt),var(--gold))}
+#cam-wrap{position:relative;border-radius:18px;overflow:hidden;border:1px solid rgba(200,170,110,.35);background:#111;box-shadow:0 8px 30px rgba(140,110,60,.14);min-height:260px;display:flex;align-items:center;justify-content:center;flex-direction:column}
+#cam-video{width:100%;display:none;border-radius:18px}
+#cam-guide{position:absolute;width:200px;height:200px;border:3px solid rgba(169,135,79,.85);border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.3);display:none;pointer-events:none}
+#cam-status{padding:30px 20px;text-align:center;color:#fff;font-size:16px;line-height:1.9}
+#cam-canvas{display:none}
+.btn-gold{font-family:inherit;font-size:17px;font-weight:700;color:#fff;padding:13px 30px;border:none;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,var(--gold-lt),var(--gold));margin-top:10px}
 .scanhint{text-align:center;color:var(--muted);font-size:15px;margin:10px 0 4px}
 .or{display:flex;align-items:center;gap:14px;margin:24px 2px 18px;color:var(--muted);font-size:15px}
 .or::before,.or::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(200,170,110,.5),transparent)}
@@ -73,15 +72,14 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
     </div>
   </div>
   <div class="sec-label">掃描 QR Code 報到</div>
-  <div id="cam-wrap" style="position:relative">
-    <div id="cam-msg">
-      <div style="font-size:48px;margin-bottom:14px">📷</div>
-      <button id="cam-btn" onclick="startScan()" style="font-family:inherit;font-size:18px;font-weight:700;color:#fff;padding:14px 32px;border:none;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,#c9a86a,#a8874f)">點此開啟相機掃描</button>
-      <div style="font-size:13px;opacity:.6;margin-top:10px">需在 Chrome 瀏覽器開啟</div>
-    </div>
+  <div id="cam-wrap">
+    <video id="cam-video" playsinline autoplay muted></video>
+    <div id="cam-guide"></div>
     <canvas id="cam-canvas"></canvas>
-    <div class="cam-overlay" id="cam-overlay" style="display:none;position:absolute;inset:0;pointer-events:none;align-items:center;justify-content:center">
-      <div class="cam-box"></div>
+    <div id="cam-status">
+      <div style="font-size:40px;margin-bottom:10px">&#128247;</div>
+      <button class="btn-gold" onclick="startCamera()">開啟相機掃描</button>
+      <div style="font-size:12px;opacity:.55;margin-top:8px">請使用 Chrome 瀏覽器開啟</div>
     </div>
   </div>
   <p class="scanhint">出示手機上的會員 QR Code 對準鏡頭</p>
@@ -99,206 +97,231 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
   </div>
 </div>
 <script>
-var API='https://script.google.com/macros/s/AKfycbx8wYkMnToVxSSwK0YxC-Ki99-h-W3_VVKhHwbpUgpLVcIyjD_RJ-SYAW85hd1e_8-J0g/exec';
-var $=function(id){return document.getElementById(id)};
-var busy=false,lastCode='',lastAt=0;
+var API = 'https://script.google.com/macros/s/AKfycbx8wYkMnToVxSSwK0YxC-Ki99-h-W3_VVKhHwbpUgpLVcIyjD_RJ-SYAW85hd1e_8-J0g/exec';
 
-fetch(API+'?action=info').then(function(r){return r.json();}).then(function(d){
-  if(d.ok&&d.config&&d.config.eventName)$('evtTitle').textContent=d.config.eventName+' 報到';
-}).catch(function(){});
+function getEl(id) { return document.getElementById(id); }
 
-// ── Native camera scanner (no external library) ───────────
-var camStream=null, scanTick=null, videoEl=null, detector=null;
+var busy = false;
+var lastCode = '';
+var lastAt = 0;
+var scanLoop = null;
+var detector = null;
 
-function showCamMsg(html){
-  $('cam-msg').style.display='';
-  $('cam-msg').innerHTML=html+'<br><button onclick="location.reload()" style="margin-top:12px;font-family:inherit;font-size:16px;font-weight:700;color:#fff;padding:11px 26px;border:none;border-radius:11px;cursor:pointer;background:linear-gradient(135deg,#c9a86a,#a8874f)">重試</button>';
-  $('cam-overlay').style.display='none';
-  if(videoEl){videoEl.style.display='none';}
-  camStream=null;
-}
-
-function dbg(msg){
-  var el=$('dbg-log');
-  if(el) el.textContent+='\n'+msg;
-}
-function startScan(){
-  if(camStream) return;
-  $('cam-msg').style.display='';
-  $('cam-msg').innerHTML='<div style="font-size:28px;margin-bottom:10px">📷</div>正在啟動相機…<div id="dbg-log" style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.7);text-align:left;white-space:pre;line-height:1.5;max-height:120px;overflow:auto"></div>';
-  dbg('1. 按鈕已觸發');
-  dbg('2. mediaDevices: '+(typeof navigator.mediaDevices));
-  dbg('3. getUserMedia: '+(navigator.mediaDevices?typeof navigator.mediaDevices.getUserMedia:'N/A'));
-  dbg('4. protocol: '+location.protocol);
-  if(typeof navigator.mediaDevices==='undefined'||typeof navigator.mediaDevices.getUserMedia==='undefined'){
-    showCamMsg('<div style="font-size:28px;margin-bottom:10px">⚠️</div>此瀏覽器不支援相機<br><span style="font-size:13px;opacity:.8">請用 <b>Chrome</b> 開啟此頁面</span>');
-    return;
-  }
-
-  // Prepare BarcodeDetector (Chrome native) or fall back to jsQR
-  var useDetector = (typeof BarcodeDetector !== 'undefined');
-  if(useDetector){
-    try{ detector = new BarcodeDetector({formats:['qr_code']}); } catch(e){ useDetector=false; }
-  }
-  if(!useDetector && typeof jsQR === 'undefined'){
-    // Load jsQR dynamically
-    var s=document.createElement('script');
-    s.src='https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
-    s.onload=function(){ openCamera(); };
-    s.onerror=function(){ showCamMsg('<div style="font-size:28px;margin-bottom:10px">⚠️</div>無法載入掃描元件<br><span style="font-size:13px;opacity:.7">請用下方姓名搜尋報到</span>', false); };
-    document.head.appendChild(s);
-    return;
-  }
-  openCamera();
-}
-
-function openCamera(){
-  var constraints={
-    video:{
-      facingMode:{ideal:'environment'},
-      width:{ideal:1280}, height:{ideal:720}
+// Load event name
+fetch(API + '?action=info')
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.ok && d.config && d.config.eventName) {
+      getEl('evtTitle').textContent = d.config.eventName + ' 報到';
     }
-  };
-  dbg('5. 呼叫 getUserMedia...');
-  var camTimeout=setTimeout(function(){
-    dbg('逾時！6秒內無回應');
-    showCamMsg('<div style="font-size:28px;margin-bottom:10px">⚠️</div>相機啟動逾時<br><span style="font-size:13px;opacity:.8">請用 <b>Chrome 瀏覽器</b>直接開啟<br>（勿在 LINE / FB 等 App 內開啟）</span>');
-  }, 6000);
-  navigator.mediaDevices.getUserMedia(constraints)
-    .then(function(stream){
-      clearTimeout(camTimeout);
-      dbg('6. getUserMedia 成功');
-      camStream=stream;
-      // Create video element inside cam-wrap
-      var wrap=$('cam-wrap');
-      videoEl=document.createElement('video');
-      videoEl.setAttribute('playsinline','');
-      videoEl.setAttribute('autoplay','');
-      videoEl.setAttribute('muted','');
-      videoEl.style.cssText='width:100%;display:block;border-radius:18px';
-      wrap.insertBefore(videoEl, wrap.firstChild);
-      videoEl.srcObject=stream;
-      videoEl.play().then(function(){
-        $('cam-msg').style.display='none';
-        $('cam-overlay').style.display='flex';
-        beginScan();
-      }).catch(function(e){ showCamMsg('<div style="font-size:28px;margin-bottom:10px">⚠️</div>相機啟動失敗<br><span style="font-size:13px;opacity:.7">'+e.message+'</span>', true); });
+  })
+  .catch(function() {});
+
+// ── Camera ────────────────────────────────────────────────
+function setStatus(html) {
+  getEl('cam-status').style.display = 'block';
+  getEl('cam-status').innerHTML = html;
+  getEl('cam-video').style.display = 'none';
+  getEl('cam-guide').style.display = 'none';
+  if (scanLoop) { clearInterval(scanLoop); scanLoop = null; }
+}
+
+function startCamera() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    setStatus('<div style="font-size:30px;margin-bottom:8px">&#9888;&#65039;</div>此瀏覽器不支援相機<br><small>請用 Chrome 開啟</small>');
+    return;
+  }
+  setStatus('<div style="font-size:30px;margin-bottom:8px">&#128247;</div>正在啟動相機…');
+
+  var timer = setTimeout(function() {
+    setStatus('<div style="font-size:30px;margin-bottom:8px">&#9888;&#65039;</div>相機啟動逾時<br><small>請在 Chrome 中開啟此頁面</small><br><button class="btn-gold" onclick="startCamera()" style="margin-top:12px">重試</button>');
+  }, 8000);
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+    .then(function(stream) {
+      clearTimeout(timer);
+      var vid = getEl('cam-video');
+      vid.srcObject = stream;
+      vid.onloadedmetadata = function() {
+        vid.play();
+        getEl('cam-status').style.display = 'none';
+        vid.style.display = 'block';
+        getEl('cam-guide').style.display = 'block';
+        initDetector();
+        startScanLoop();
+      };
     })
-    .catch(function(err){
-      clearTimeout(camTimeout);
-      dbg('錯誤: '+err.name+' '+err.message);
-      var msg='相機無法開啟';
-      if(err.name==='NotAllowedError') msg='未授權相機權限<br><span style="font-size:13px;opacity:.7">請在瀏覽器設定中允許相機</span>';
-      else if(err.name==='NotFoundError') msg='找不到相機裝置';
-      else if(err.name==='NotReadableError') msg='相機被其他程式佔用<br><span style="font-size:13px;opacity:.7">請關閉其他使用相機的 App</span>';
-      showCamMsg('<div style="font-size:28px;margin-bottom:10px">⚠️</div>'+msg);
+    .catch(function(err) {
+      clearTimeout(timer);
+      var msg = '相機無法開啟';
+      if (err.name === 'NotAllowedError') { msg = '請允許相機權限'; }
+      else if (err.name === 'NotReadableError') { msg = '相機被其他 App 佔用<br><small>請關閉其他使用相機的程式</small>'; }
+      else if (err.name === 'NotFoundError') { msg = '找不到相機裝置'; }
+      setStatus('<div style="font-size:30px;margin-bottom:8px">&#9888;&#65039;</div>' + msg + '<br><button class="btn-gold" onclick="startCamera()" style="margin-top:12px">重試</button>');
     });
 }
 
-function beginScan(){
-  var canvas=$('cam-canvas');
-  if(typeof BarcodeDetector !== 'undefined' && detector){
-    scanTick=setInterval(function(){
-      if(!videoEl||videoEl.readyState<2) return;
-      detector.detect(videoEl).then(function(codes){
-        if(codes.length>0) handleQR(codes[0].rawValue);
-      }).catch(function(){});
-    }, 300);
-  } else {
-    // jsQR canvas-based scan
-    scanTick=setInterval(function(){
-      if(!videoEl||videoEl.readyState<2||videoEl.videoWidth===0) return;
-      canvas.width=videoEl.videoWidth;
-      canvas.height=videoEl.videoHeight;
-      var ctx=canvas.getContext('2d');
-      ctx.drawImage(videoEl,0,0);
-      var img=ctx.getImageData(0,0,canvas.width,canvas.height);
-      var code=jsQR(img.data,img.width,img.height,{inversionAttempts:'dontInvert'});
-      if(code) handleQR(code.data);
-    }, 200);
+function initDetector() {
+  if (typeof BarcodeDetector !== 'undefined') {
+    try { detector = new BarcodeDetector({ formats: ['qr_code'] }); } catch(e) { detector = null; }
+  }
+  if (!detector && typeof jsQR === 'undefined') {
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+    document.head.appendChild(s);
   }
 }
 
-function handleQR(text){
-  var now=Date.now();
-  if(busy) return;
-  if(text===lastCode&&now-lastAt<3000) return;
-  lastCode=text; lastAt=now;
+function startScanLoop() {
+  var vid = getEl('cam-video');
+  var canvas = getEl('cam-canvas');
+  scanLoop = setInterval(function() {
+    if (!vid || vid.readyState < 2 || vid.videoWidth === 0) { return; }
+    if (detector) {
+      detector.detect(vid).then(function(codes) {
+        if (codes.length > 0) { onQR(codes[0].rawValue); }
+      }).catch(function() {});
+    } else if (typeof jsQR !== 'undefined') {
+      canvas.width = vid.videoWidth;
+      canvas.height = vid.videoHeight;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(vid, 0, 0);
+      var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var code = jsQR(img.data, img.width, img.height);
+      if (code) { onQR(code.data); }
+    }
+  }, 250);
+}
+
+function onQR(text) {
+  var now = Date.now();
+  if (busy) { return; }
+  if (text === lastCode && now - lastAt < 3000) { return; }
+  lastCode = text;
+  lastAt = now;
   doCheckIn(text.trim());
 }
 
-// ── Check-in logic ────────────────────────────────────────
-function doCheckIn(id){
-  busy=true;
-  fetch(API+'?action=event_checkin&phone='+encodeURIComponent(id))
-    .then(function(r){return r.json();})
-    .then(function(d){
-      if(d.ok){
-        buzz([40,60,40]);
-        var badges='';
-        if(d.meal&&d.meal!=='不用餐')badges+='<span class="badge badge-meal">🍽 '+d.meal+'</span>';
-        if(d.lunchbox&&d.lunchbox!='0')badges+='<span class="badge badge-lb">🍱 加購便當 '+d.lunchbox+' 個</span>';
-        showPop('ok','✓',d.name,'報到完成！',badges);
-        setTimeout(closePop,3000);
-      }else{
+// ── Check-in ──────────────────────────────────────────────
+function doCheckIn(id) {
+  busy = true;
+  fetch(API + '?action=event_checkin&phone=' + encodeURIComponent(id))
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.ok) {
+        buzz([40, 60, 40]);
+        var badges = '';
+        if (d.meal && d.meal !== '不用餐') {
+          badges += '<span class="badge badge-meal">' + escHtml(d.meal) + '</span>';
+        }
+        if (d.lunchbox && d.lunchbox !== '0') {
+          badges += '<span class="badge badge-lb">&#x1F371; x' + escHtml(d.lunchbox) + '</span>';
+        }
+        showPop('ok', '✓', d.name, '&#x5831;&#x5230;&#x5B8C;&#x6210;&#xFF01;', badges);
+        setTimeout(closePop, 3000);
+      } else {
         buzz([200]);
-        showPop('no','✕',d.msg||'查無此人','請改用下方搜尋姓名','');
+        showPop('no', '✕', d.msg || '&#x67E5;&#x7121;&#x6B64;&#x4EBA;', '&#x8ACB;&#x6539;&#x7528;&#x4E0B;&#x65B9;&#x641C;&#x5C0B;&#x59D3;&#x540D;', '');
       }
       refreshStats();
     })
-    .catch(function(){showPop('no','✕','連線失敗','請檢查網路','');})
-    .finally(function(){busy=false;});
+    .catch(function() {
+      showPop('no', '✕', '&#x9023;&#x7DDA;&#x5931;&#x6557;', '&#x8ACB;&#x6AA2;&#x67E5;&#x7DB2;&#x8DEF;', '');
+    })
+    .finally(function() { busy = false; });
 }
 
-var searchTimer=null;
-function doSearch(){
+// ── Name search ───────────────────────────────────────────
+var searchTimer = null;
+function doSearch() {
   clearTimeout(searchTimer);
-  searchTimer=setTimeout(runSearch,300);
+  searchTimer = setTimeout(runSearch, 300);
 }
 
-function runSearch(){
-  var q=$('q').value.trim();
-  if(!q){$('list').innerHTML='<div class="empty">輸入姓名或電話搜尋</div>';return;}
-  fetch(API+'?action=event_search&q='+encodeURIComponent(q))
-    .then(function(r){return r.json();})
-    .then(function(d){renderList(d.results||[]);})
-    .catch(function(){$('list').innerHTML='<div class="empty">連線失敗</div>';});
+function runSearch() {
+  var q = getEl('q').value.trim();
+  if (!q) {
+    getEl('list').innerHTML = '<div class="empty">&#x8F38;&#x5165;&#x59D3;&#x540D;&#x6216;&#x96FB;&#x8A71;&#x641C;&#x5C0B;</div>';
+    return;
+  }
+  fetch(API + '?action=event_search&q=' + encodeURIComponent(q))
+    .then(function(r) { return r.json(); })
+    .then(function(d) { renderList(d.results || []); })
+    .catch(function() { getEl('list').innerHTML = '<div class="empty">&#x9023;&#x7DDA;&#x5931;&#x6557;</div>'; });
 }
 
-function renderList(rows){
-  if(!rows.length){$('list').innerHTML='<div class="empty">查無此人</div>';return;}
-  $('list').innerHTML=rows.map(function(r){
-    var meta=(r.meal?r.meal:'')+(r.lunchbox&&r.lunchbox!='0'?' ・ 加購便當'+r.lunchbox+'個':'');
-    if(r.checkedIn){
-      return '<div class="row done"><div class="info"><div class="nm">'+esc(r.name)+'</div><div class="meta">'+mask(r.phone)+(meta?' ・ '+meta:'')+'</div></div><div class="tag">✓ 已報到</div></div>';
+function renderList(rows) {
+  if (!rows.length) {
+    getEl('list').innerHTML = '<div class="empty">&#x67E5;&#x7121;&#x6B64;&#x4EBA;</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    var meta = '';
+    if (r.meal) { meta += r.meal; }
+    if (r.lunchbox && r.lunchbox !== '0') { meta += (meta ? ' ・ ' : '') + '&#x52A0;&#x8CFC;&#x4FBF;&#x7576;' + r.lunchbox + '&#x500B;'; }
+    var phone = maskPhone(String(r.phone || ''));
+    if (r.checkedIn) {
+      html += '<div class="row done"><div class="info"><div class="nm">' + escHtml(r.name) + '</div><div class="meta">' + phone + (meta ? ' ・ ' + meta : '') + '</div></div><div class="tag">&#x2713; &#x5DF2;&#x5831;&#x5230;</div></div>';
+    } else {
+      html += '<div class="row"><div class="info"><div class="nm">' + escHtml(r.name) + '</div><div class="meta">' + phone + (meta ? ' ・ ' + meta : '') + '</div></div><button onclick="manualCheckin(\'' + escAttr(String(r.phone || '')) + '\')">&#x5831;&#x5230;</button></div>';
     }
-    return '<div class="row"><div class="info"><div class="nm">'+esc(r.name)+'</div><div class="meta">'+mask(r.phone)+(meta?' ・ '+meta:'')+'</div></div><button onclick="manualCheckin(\''+r.phone+'\')">報到</button></div>';
-  }).join('');
+  }
+  getEl('list').innerHTML = html;
 }
 
-function manualCheckin(id){doCheckIn(id);setTimeout(runSearch,800);}
-
-function refreshStats(){
-  fetch(API+'?action=event_stats')
-    .then(function(r){return r.json();})
-    .then(function(d){
-      if(d.ok){$('s-in').textContent=d.checked;$('s-left').textContent=d.unchecked;}
-    }).catch(function(){});
+function manualCheckin(id) {
+  doCheckIn(id);
+  setTimeout(runSearch, 800);
 }
 
-function showPop(cls,ico,nm,msg,badges){
-  $('popCard').className='pop-card '+cls;
-  $('popIco').textContent=ico;
-  $('popNm').textContent=nm;
-  $('popMsg').textContent=msg;
-  $('popBadges').innerHTML=badges||'';
-  $('pop').classList.add('on');
+// ── Stats ─────────────────────────────────────────────────
+function refreshStats() {
+  fetch(API + '?action=event_stats')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.ok) {
+        getEl('s-in').textContent = d.checked;
+        getEl('s-left').textContent = d.unchecked;
+      }
+    })
+    .catch(function() {});
 }
-function closePop(){$('pop').classList.remove('on');}
-function buzz(p){if(navigator.vibrate)navigator.vibrate(p);}
-function esc(s){return String(s).replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]);}
-function mask(p){p=String(p);return p.length>6?p.slice(0,4)+'***'+p.slice(-3):p;}
-refreshStats();setInterval(refreshStats,20000);
+
+// ── Popup ─────────────────────────────────────────────────
+function showPop(cls, ico, nm, msg, badges) {
+  getEl('popCard').className = 'pop-card ' + cls;
+  getEl('popIco').textContent = ico;
+  getEl('popNm').textContent = nm;
+  getEl('popMsg').innerHTML = msg;
+  getEl('popBadges').innerHTML = badges || '';
+  getEl('pop').classList.add('on');
+}
+function closePop() { getEl('pop').classList.remove('on'); }
+
+// ── Helpers ───────────────────────────────────────────────
+function buzz(p) { if (navigator.vibrate) { navigator.vibrate(p); } }
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function escAttr(s) {
+  return String(s).replace(/'/g, '&#39;');
+}
+
+function maskPhone(p) {
+  if (p.length > 6) { return p.slice(0, 4) + '***' + p.slice(-3); }
+  return p;
+}
+
+refreshStats();
+setInterval(refreshStats, 20000);
 </script>
 </body>
 </html>
