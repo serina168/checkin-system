@@ -379,12 +379,13 @@ function switchMode(mode){
 function loadBatch(){
   var pass=document.getElementById('batch-pass').value;
   if(!pass){toast('請輸入密碼',true);return;}
-  toast('載入中…');
+  var btn=document.querySelector('#batch-login-card .btn-lookup');
+  btn.disabled=true;btn.textContent='載入中…';
   apiFetch(API+'?action=admin_members&pass='+encodeURIComponent(pass))
     .then(function(d){
-      if(!d.ok){toast(d.msg||'密碼錯誤',true);return;}
+      if(!d.ok){toast(d.msg||'密碼錯誤，請重新輸入',true);btn.disabled=false;btn.textContent='載入';return;}
       var members=d.members||[];
-      if(!members.length){toast('目前沒有會員資料',true);return;}
+      if(!members.length){toast('目前沒有會員資料',true);btn.disabled=false;btn.textContent='載入';return;}
       var grid=document.getElementById('batch-grid');
       grid.innerHTML='';
       members.forEach(function(m){
@@ -407,7 +408,7 @@ function loadBatch(){
       document.getElementById('batch-login-card').classList.add('hidden');
       toast('已載入 '+members.length+' 位會員');
     })
-    .catch(function(){toast('網路錯誤，請重試',true);});
+    .catch(function(){toast('網路錯誤，請重試',true);btn.disabled=false;btn.textContent='載入';});
 }
 
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
