@@ -73,15 +73,15 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
     </div>
   </div>
   <div class="sec-label">掃描 QR Code 報到</div>
-  <div id="cam-wrap">
+  <div id="cam-wrap" style="position:relative">
     <div id="cam-msg">
       <div style="font-size:32px;margin-bottom:12px">📷</div>
       正在啟動相機…
     </div>
     <canvas id="cam-canvas"></canvas>
-  </div>
-  <div class="cam-overlay" id="cam-overlay" style="display:none">
-    <div class="cam-box"></div>
+    <div class="cam-overlay" id="cam-overlay" style="display:none;position:absolute;inset:0;pointer-events:none;align-items:center;justify-content:center">
+      <div class="cam-box"></div>
+    </div>
   </div>
   <p class="scanhint">出示手機上的會員 QR Code 對準鏡頭</p>
   <div class="or">沒帶 QR？用姓名搜尋</div>
