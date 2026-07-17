@@ -65,11 +65,11 @@ td{padding:8px;border-bottom:1px solid #e8ddd0}
       <div class="box">
         <div class="box-title" id="event-title">本次活動名單</div>
         <div class="grid4">
-          <div class="stat"><div class="n" id="st-total">0</div><div class="l">總報名</div></div>
-          <div class="stat"><div class="n" id="st-checked" style="color:#4a7c59">0</div><div class="l">實際出席</div></div>
-          <div class="stat"><div class="n" id="st-meal" style="color:#a8874f">0</div><div class="l">用餐</div></div>
-          <div class="stat"><div class="n" id="st-lunch" style="color:#b5544b">0</div><div class="l">加購便當（份）</div></div>
-          <div class="stat"><div class="n" id="st-absent" style="color:#8a7a63">0</div><div class="l">請假</div></div>
+          <div class="stat"><div class="n" id="st-total">0</div><div class="l">總填表人數</div></div>
+          <div class="stat"><div class="n" id="st-attend" style="color:#4a7c59">0</div><div class="l">出席人數</div></div>
+          <div class="stat"><div class="n" id="st-absent" style="color:#8a7a63">0</div><div class="l">請假人數</div></div>
+          <div class="stat"><div class="n" id="st-meal" style="color:#a8874f">0</div><div class="l">需備餐（含加購）</div></div>
+          <div class="stat"><div class="n" id="st-checked" style="color:#4a7c59">0</div><div class="l">當天出席人數</div></div>
         </div>
         <div style="margin-bottom:10px">
           <button class="btn btn-sm btn-outline" onclick="loadGuests()">重新整理</button>
@@ -216,11 +216,12 @@ function loadGuests(){
       _guests=fixOldFormatGuests(d.guests||[]);
       renderGuests(_guests);
       document.getElementById('st-total').textContent=_guests.length;
-      document.getElementById('st-checked').textContent=_guests.filter(function(g){return g.checkedIn;}).length;
-      document.getElementById('st-meal').textContent=_guests.filter(function(g){return g.meal==='用餐';}).length;
-      var lunchTotal=_guests.reduce(function(s,g){return s+parseInt(g.lunchbox||0);},0);
-      document.getElementById('st-lunch').textContent=lunchTotal;
+      document.getElementById('st-attend').textContent=_guests.filter(function(g){return g.attendance==='出席';}).length;
       document.getElementById('st-absent').textContent=_guests.filter(function(g){return g.attendance==='請假';}).length;
+      var mealCount=_guests.filter(function(g){return g.meal==='用餐';}).length;
+      var lunchTotal=_guests.reduce(function(s,g){return s+parseInt(g.lunchbox||0);},0);
+      document.getElementById('st-meal').textContent=(mealCount+lunchTotal)+'份';
+      document.getElementById('st-checked').textContent=_guests.filter(function(g){return g.checkedIn;}).length;
     }).catch(function(){alert('連線失敗');});
 }
 
