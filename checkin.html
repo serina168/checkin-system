@@ -75,8 +75,9 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
   <div class="sec-label">掃描 QR Code 報到</div>
   <div id="cam-wrap" style="position:relative">
     <div id="cam-msg">
-      <div style="font-size:32px;margin-bottom:12px">📷</div>
-      正在啟動相機…
+      <div style="font-size:48px;margin-bottom:14px">📷</div>
+      <button id="cam-btn" onclick="startScan()" style="font-family:inherit;font-size:18px;font-weight:700;color:#fff;padding:14px 32px;border:none;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,#c9a86a,#a8874f)">點此開啟相機掃描</button>
+      <div style="font-size:13px;opacity:.6;margin-top:10px">需在 Chrome 瀏覽器開啟</div>
     </div>
     <canvas id="cam-canvas"></canvas>
     <div class="cam-overlay" id="cam-overlay" style="display:none;position:absolute;inset:0;pointer-events:none;align-items:center;justify-content:center">
@@ -109,17 +110,22 @@ fetch(API+'?action=info').then(function(r){return r.json();}).then(function(d){
 // ── Native camera scanner (no external library) ───────────
 var camStream=null, scanTick=null, videoEl=null, detector=null;
 
-function showCamMsg(html, showRetry){
+function showCamMsg(html){
   $('cam-msg').style.display='';
-  $('cam-msg').innerHTML=html+(showRetry?'<br><button id="cam-btn" onclick="startScan()">重試開啟相機</button>':'');
+  $('cam-msg').innerHTML=html+'<br><button onclick="location.reload()" style="margin-top:12px;font-family:inherit;font-size:16px;font-weight:700;color:#fff;padding:11px 26px;border:none;border-radius:11px;cursor:pointer;background:linear-gradient(135deg,#c9a86a,#a8874f)">重試</button>';
   $('cam-overlay').style.display='none';
   if(videoEl){videoEl.style.display='none';}
+  camStream=null;
 }
 
 function startScan(){
   if(camStream) return;
   $('cam-msg').style.display='';
   $('cam-msg').innerHTML='<div style="font-size:28px;margin-bottom:10px">📷</div>正在啟動相機…';
+  if(typeof navigator.mediaDevices==='undefined'||typeof navigator.mediaDevices.getUserMedia==='undefined'){
+    showCamMsg('<div style="font-size:28px;margin-bottom:10px">⚠️</div>此瀏覽器不支援相機<br><span style="font-size:13px;opacity:.8">請用 <b>Chrome</b> 開啟此頁面</span>');
+    return;
+  }
 
   // Prepare BarcodeDetector (Chrome native) or fall back to jsQR
   var useDetector = (typeof BarcodeDetector !== 'undefined');
@@ -146,7 +152,7 @@ function openCamera(){
     }
   };
   var camTimeout=setTimeout(function(){
-    showCamMsg('<div style="font-size:28px;margin-bottom:10px">⚠️</div>相機啟動逾時<br><span style="font-size:13px;opacity:.8">請用 <b>Chrome 瀏覽器</b>開啟此頁面<br>（勿在 LINE / FB 等 App 內開啟）</span>', true);
+    showCamMsg('<div style="font-size:28px;margin-bottom:10px">⚠️</div>相機啟動逾時<br><span style="font-size:13px;opacity:.8">請用 <b>Chrome 瀏覽器</b>直接開啟<br>（勿在 LINE / FB 等 App 內開啟）</span>');
   }, 6000);
   navigator.mediaDevices.getUserMedia(constraints)
     .then(function(stream){
@@ -173,7 +179,7 @@ function openCamera(){
       if(err.name==='NotAllowedError') msg='未授權相機權限<br><span style="font-size:13px;opacity:.7">請在瀏覽器設定中允許相機</span>';
       else if(err.name==='NotFoundError') msg='找不到相機裝置';
       else if(err.name==='NotReadableError') msg='相機被其他程式佔用<br><span style="font-size:13px;opacity:.7">請關閉其他使用相機的 App</span>';
-      showCamMsg('<div style="font-size:28px;margin-bottom:10px">⚠️</div>'+msg, true);
+      showCamMsg('<div style="font-size:28px;margin-bottom:10px">⚠️</div>'+msg);
     });
 }
 
@@ -280,7 +286,7 @@ function closePop(){$('pop').classList.remove('on');}
 function buzz(p){if(navigator.vibrate)navigator.vibrate(p);}
 function esc(s){return String(s).replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]);}
 function mask(p){p=String(p);return p.length>6?p.slice(0,4)+'***'+p.slice(-3):p;}
-startScan();refreshStats();setInterval(refreshStats,20000);
+refreshStats();setInterval(refreshStats,20000);
 </script>
 </body>
 </html>
