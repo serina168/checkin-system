@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>現場報到 — 海德堡讀書會</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
 :root{--gold:#a8874f;--gold-lt:#c9a86a;--cream:#faf6ef;--ink:#3d3226;--muted:#8a7a63;--ok:#4a7c59;--warn:#c08a3e;--err:#b5544b}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -21,12 +22,11 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--i
 .stat.left .n{color:var(--gold)}
 .sec-label{font-size:16px;font-weight:700;color:var(--gold);margin:6px 2px 10px;display:flex;align-items:center;gap:8px}
 .sec-label::before{content:'';width:20px;height:2px;background:var(--gold-lt);border-radius:2px}
-#cam-wrap{position:relative;border-radius:18px;overflow:hidden;border:1px solid rgba(200,170,110,.35);background:#111;box-shadow:0 8px 30px rgba(140,110,60,.14);min-height:260px;display:flex;align-items:center;justify-content:center;flex-direction:column}
-#cam-video{width:100%;display:none;border-radius:18px}
-#cam-guide{position:absolute;width:200px;height:200px;border:3px solid rgba(169,135,79,.85);border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.3);display:none;pointer-events:none}
-#cam-status{padding:30px 20px;text-align:center;color:#fff;font-size:16px;line-height:1.9}
-#cam-canvas{display:none}
-.btn-gold{font-family:inherit;font-size:17px;font-weight:700;color:#fff;padding:13px 30px;border:none;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,var(--gold-lt),var(--gold));margin-top:10px}
+#cam-start{border-radius:18px;border:1px solid rgba(200,170,110,.35);background:#111;box-shadow:0 8px 30px rgba(140,110,60,.14);min-height:200px;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px}
+#reader{border-radius:18px;overflow:hidden;border:1px solid rgba(200,170,110,.35);background:#000;box-shadow:0 8px 30px rgba(140,110,60,.14);display:none}
+#reader video{width:100%!important;display:block}
+.btn-gold{font-family:inherit;font-size:18px;font-weight:700;color:#fff;padding:14px 34px;border:none;border-radius:13px;cursor:pointer;background:linear-gradient(135deg,var(--gold-lt),var(--gold))}
+.cam-note{font-size:12px;color:rgba(255,255,255,.5);margin-top:10px}
 .scanhint{text-align:center;color:var(--muted);font-size:15px;margin:10px 0 4px}
 .or{display:flex;align-items:center;gap:14px;margin:24px 2px 18px;color:var(--muted);font-size:15px}
 .or::before,.or::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(200,170,110,.5),transparent)}
@@ -72,16 +72,12 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
     </div>
   </div>
   <div class="sec-label">掃描 QR Code 報到</div>
-  <div id="cam-wrap">
-    <video id="cam-video" playsinline autoplay muted></video>
-    <div id="cam-guide"></div>
-    <canvas id="cam-canvas"></canvas>
-    <div id="cam-status">
-      <div style="font-size:40px;margin-bottom:10px">&#128247;</div>
-      <button class="btn-gold" onclick="startCamera()">開啟相機掃描</button>
-      <div style="font-size:12px;opacity:.55;margin-top:8px">請使用 Chrome 瀏覽器開啟</div>
-    </div>
+  <div id="cam-start">
+    <div style="font-size:44px;margin-bottom:14px">&#128247;</div>
+    <button class="btn-gold" onclick="startScan()">開啟相機掃描</button>
+    <div class="cam-note">請使用 Chrome 瀏覽器開啟</div>
   </div>
+  <div id="reader"></div>
   <p class="scanhint">出示手機上的會員 QR Code 對準鏡頭</p>
   <div class="or">沒帶 QR？用姓名搜尋</div>
   <input type="search" id="q" placeholder="輸入姓名或電話…" oninput="doSearch()" autocomplete="off">
@@ -98,142 +94,68 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
 </div>
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbx8wYkMnToVxSSwK0YxC-Ki99-h-W3_VVKhHwbpUgpLVcIyjD_RJ-SYAW85hd1e_8-J0g/exec';
-
 function getEl(id) { return document.getElementById(id); }
+var busy = false, lastCode = '', lastAt = 0, scanner = null;
 
-var busy = false;
-var lastCode = '';
-var lastAt = 0;
-var scanLoop = null;
-var detector = null;
-
-// Load event name
-fetch(API + '?action=info')
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
+fetch(API + '?action=info', {redirect:'follow'})
+  .then(function(r){return r.json();})
+  .then(function(d){
     if (d.ok && d.config && d.config.eventName) {
       getEl('evtTitle').textContent = d.config.eventName + ' 報到';
     }
-  })
-  .catch(function() {});
+  }).catch(function(){});
 
-// ── Camera ────────────────────────────────────────────────
-function setStatus(html) {
-  getEl('cam-status').style.display = 'block';
-  getEl('cam-status').innerHTML = html;
-  getEl('cam-video').style.display = 'none';
-  getEl('cam-guide').style.display = 'none';
-  if (scanLoop) { clearInterval(scanLoop); scanLoop = null; }
+function startScan() {
+  getEl('cam-start').style.display = 'none';
+  getEl('reader').style.display = 'block';
+  if (scanner) { return; }
+  scanner = new Html5Qrcode('reader');
+  var boxSize = Math.min(Math.floor(window.innerWidth * 0.7), 280);
+  scanner.start(
+    {facingMode: 'environment'},
+    {fps: 15, qrbox: {width: boxSize, height: boxSize}},
+    function(text) {
+      var clean = (text || '').trim();
+      if (!clean) { return; }
+      var now = Date.now();
+      if (busy) { return; }
+      if (clean === lastCode && now - lastAt < 3000) { return; }
+      lastCode = clean;
+      lastAt = now;
+      doCheckIn(clean);
+    },
+    function() {}
+  ).catch(function(err) {
+    getEl('reader').innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;font-size:16px;line-height:1.8">無法開啟相機<br><span style="font-size:13px;opacity:.7">請允許相機權限後重新整理</span><br><br><button onclick="location.reload()" style="font-family:inherit;font-size:15px;font-weight:700;color:#fff;padding:10px 24px;border:none;border-radius:10px;cursor:pointer;background:rgba(169,135,79,.8)">重新整理</button></div>';
+  });
 }
 
-function startCamera() {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    setStatus('<div style="font-size:30px;margin-bottom:8px">&#9888;&#65039;</div>此瀏覽器不支援相機<br><small>請用 Chrome 開啟</small>');
-    return;
-  }
-  setStatus('<div style="font-size:30px;margin-bottom:8px">&#128247;</div>正在啟動相機…');
-
-  var timer = setTimeout(function() {
-    setStatus('<div style="font-size:30px;margin-bottom:8px">&#9888;&#65039;</div>相機啟動逾時<br><small>請在 Chrome 中開啟此頁面</small><br><button class="btn-gold" onclick="startCamera()" style="margin-top:12px">重試</button>');
-  }, 8000);
-
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-    .then(function(stream) {
-      clearTimeout(timer);
-      var vid = getEl('cam-video');
-      vid.srcObject = stream;
-      vid.onloadedmetadata = function() {
-        vid.play();
-        getEl('cam-status').style.display = 'none';
-        vid.style.display = 'block';
-        getEl('cam-guide').style.display = 'block';
-        initDetector();
-        startScanLoop();
-      };
-    })
-    .catch(function(err) {
-      clearTimeout(timer);
-      var msg = '相機無法開啟';
-      if (err.name === 'NotAllowedError') { msg = '請允許相機權限'; }
-      else if (err.name === 'NotReadableError') { msg = '相機被其他 App 佔用<br><small>請關閉其他使用相機的程式</small>'; }
-      else if (err.name === 'NotFoundError') { msg = '找不到相機裝置'; }
-      setStatus('<div style="font-size:30px;margin-bottom:8px">&#9888;&#65039;</div>' + msg + '<br><button class="btn-gold" onclick="startCamera()" style="margin-top:12px">重試</button>');
-    });
-}
-
-function initDetector() {
-  if (typeof BarcodeDetector !== 'undefined') {
-    try { detector = new BarcodeDetector({ formats: ['qr_code'] }); } catch(e) { detector = null; }
-  }
-  if (!detector && typeof jsQR === 'undefined') {
-    var s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
-    document.head.appendChild(s);
-  }
-}
-
-function startScanLoop() {
-  var vid = getEl('cam-video');
-  var canvas = getEl('cam-canvas');
-  scanLoop = setInterval(function() {
-    if (!vid || vid.readyState < 2 || vid.videoWidth === 0) { return; }
-    if (detector) {
-      detector.detect(vid).then(function(codes) {
-        if (codes.length > 0) { onQR(codes[0].rawValue); }
-      }).catch(function() {});
-    } else if (typeof jsQR !== 'undefined') {
-      canvas.width = vid.videoWidth;
-      canvas.height = vid.videoHeight;
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(vid, 0, 0);
-      var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      var code = jsQR(img.data, img.width, img.height);
-      if (code) { onQR(code.data); }
-    }
-  }, 250);
-}
-
-function onQR(text) {
-  var clean = (text || '').trim();
-  if (!clean) { return; } // ignore empty decode
-  var now = Date.now();
-  if (busy) { return; }
-  if (clean === lastCode && now - lastAt < 3000) { return; }
-  lastCode = clean;
-  lastAt = now;
-  doCheckIn(clean);
-}
-
-// ── Check-in ──────────────────────────────────────────────
 function doCheckIn(id) {
   busy = true;
   fetch(API + '?action=event_checkin&phone=' + encodeURIComponent(id), {redirect:'follow'})
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
+    .then(function(r){return r.json();})
+    .then(function(d){
       if (d.ok) {
-        buzz([40, 60, 40]);
+        buzz([40,60,40]);
         var badges = '';
         if (d.meal && d.meal !== '不用餐') {
           badges += '<span class="badge badge-meal">' + escHtml(d.meal) + '</span>';
         }
         if (d.lunchbox && d.lunchbox !== '0') {
-          badges += '<span class="badge badge-lb">&#x1F371; x' + escHtml(d.lunchbox) + '</span>';
+          badges += '<span class="badge badge-lb">&#x1F371; x' + escHtml(String(d.lunchbox)) + '</span>';
         }
-        showPop('ok', '✓', d.name, '&#x5831;&#x5230;&#x5B8C;&#x6210;&#xFF01;', badges);
+        showPop('ok', '✓', escHtml(d.name), '報到完成！', badges);
         setTimeout(closePop, 3000);
       } else {
         buzz([200]);
-        showPop('no', '✕', d.msg || '&#x67E5;&#x7121;&#x6B64;&#x4EBA;', '&#x8ACB;&#x6539;&#x7528;&#x4E0B;&#x65B9;&#x641C;&#x5C0B;&#x59D3;&#x540D;', '');
+        showPop('no', '✕', escHtml(d.msg || '查無此人'), '請改用下方搜尋姓名', '');
       }
       refreshStats();
     })
-    .catch(function() {
-      showPop('no', '✕', '&#x9023;&#x7DDA;&#x5931;&#x6557;', '&#x8ACB;&#x6AA2;&#x67E5;&#x7DB2;&#x8DEF;', '');
-    })
-    .finally(function() { busy = false; });
+    .catch(function(){showPop('no','✕','連線失敗','請檢查網路','');})
+    .finally(function(){busy = false;});
 }
 
-// ── Name search ───────────────────────────────────────────
 var searchTimer = null;
 function doSearch() {
   clearTimeout(searchTimer);
@@ -242,85 +164,55 @@ function doSearch() {
 
 function runSearch() {
   var q = getEl('q').value.trim();
-  if (!q) {
-    getEl('list').innerHTML = '<div class="empty">&#x8F38;&#x5165;&#x59D3;&#x540D;&#x6216;&#x96FB;&#x8A71;&#x641C;&#x5C0B;</div>';
-    return;
-  }
-  fetch(API + '?action=event_search&q=' + encodeURIComponent(q))
-    .then(function(r) { return r.json(); })
-    .then(function(d) { renderList(d.results || []); })
-    .catch(function() { getEl('list').innerHTML = '<div class="empty">&#x9023;&#x7DDA;&#x5931;&#x6557;</div>'; });
+  if (!q) { getEl('list').innerHTML = '<div class="empty">輸入姓名或電話搜尋</div>'; return; }
+  fetch(API + '?action=event_search&q=' + encodeURIComponent(q), {redirect:'follow'})
+    .then(function(r){return r.json();})
+    .then(function(d){renderList(d.results || []);})
+    .catch(function(){getEl('list').innerHTML = '<div class="empty">連線失敗</div>';});
 }
 
 function renderList(rows) {
-  if (!rows.length) {
-    getEl('list').innerHTML = '<div class="empty">&#x67E5;&#x7121;&#x6B64;&#x4EBA;</div>';
-    return;
-  }
+  if (!rows.length) { getEl('list').innerHTML = '<div class="empty">查無此人</div>'; return; }
   var html = '';
   for (var i = 0; i < rows.length; i++) {
     var r = rows[i];
-    var meta = '';
-    if (r.meal) { meta += r.meal; }
-    if (r.lunchbox && r.lunchbox !== '0') { meta += (meta ? ' ・ ' : '') + '&#x52A0;&#x8CFC;&#x4FBF;&#x7576;' + r.lunchbox + '&#x500B;'; }
-    var phone = maskPhone(String(r.phone || ''));
+    var meta = r.meal || '';
+    if (r.lunchbox && r.lunchbox !== '0') { meta += (meta ? ' ・ ' : '') + '加購便當' + r.lunchbox + '個'; }
+    var ph = maskPhone(String(r.phone || ''));
     if (r.checkedIn) {
-      html += '<div class="row done"><div class="info"><div class="nm">' + escHtml(r.name) + '</div><div class="meta">' + phone + (meta ? ' ・ ' + meta : '') + '</div></div><div class="tag">&#x2713; &#x5DF2;&#x5831;&#x5230;</div></div>';
+      html += '<div class="row done"><div class="info"><div class="nm">' + escHtml(r.name) + '</div><div class="meta">' + ph + (meta ? ' ・ ' + meta : '') + '</div></div><div class="tag">✓ 已報到</div></div>';
     } else {
-      html += '<div class="row"><div class="info"><div class="nm">' + escHtml(r.name) + '</div><div class="meta">' + phone + (meta ? ' ・ ' + meta : '') + '</div></div><button onclick="manualCheckin(\'' + escAttr(String(r.phone || '')) + '\')">&#x5831;&#x5230;</button></div>';
+      html += '<div class="row"><div class="info"><div class="nm">' + escHtml(r.name) + '</div><div class="meta">' + ph + (meta ? ' ・ ' + meta : '') + '</div></div><button onclick="manualCheckin(\'' + escAttr(String(r.phone||'')) + '\')">報到</button></div>';
     }
   }
   getEl('list').innerHTML = html;
 }
 
-function manualCheckin(id) {
-  doCheckIn(id);
-  setTimeout(runSearch, 800);
-}
+function manualCheckin(id) { doCheckIn(id); setTimeout(runSearch, 800); }
 
-// ── Stats ─────────────────────────────────────────────────
 function refreshStats() {
-  fetch(API + '?action=event_stats')
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (d.ok) {
-        getEl('s-in').textContent = d.checked;
-        getEl('s-left').textContent = d.unchecked;
-      }
-    })
-    .catch(function() {});
+  fetch(API + '?action=event_stats', {redirect:'follow'})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if (d.ok) { getEl('s-in').textContent = d.checked; getEl('s-left').textContent = d.unchecked; }
+    }).catch(function(){});
 }
 
-// ── Popup ─────────────────────────────────────────────────
 function showPop(cls, ico, nm, msg, badges) {
   getEl('popCard').className = 'pop-card ' + cls;
   getEl('popIco').textContent = ico;
-  getEl('popNm').textContent = nm;
+  getEl('popNm').innerHTML = nm;
   getEl('popMsg').innerHTML = msg;
   getEl('popBadges').innerHTML = badges || '';
   getEl('pop').classList.add('on');
 }
 function closePop() { getEl('pop').classList.remove('on'); }
-
-// ── Helpers ───────────────────────────────────────────────
 function buzz(p) { if (navigator.vibrate) { navigator.vibrate(p); } }
-
 function escHtml(s) {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
-function escAttr(s) {
-  return String(s).replace(/'/g, '&#39;');
-}
-
-function maskPhone(p) {
-  if (p.length > 6) { return p.slice(0, 4) + '***' + p.slice(-3); }
-  return p;
-}
+function escAttr(s) { return String(s).replace(/'/g,'&#39;'); }
+function maskPhone(p) { return p.length > 6 ? p.slice(0,4) + '***' + p.slice(-3) : p; }
 
 refreshStats();
 setInterval(refreshStats, 20000);
