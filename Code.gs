@@ -160,8 +160,16 @@ function eventRegister(p) {
       var newMemberType = p.memberType || '來賓';
       mSh.appendRow([p.name, p.phone, p.birthday||'', newMemberType, today, '']);
       member = {name: p.name, phone: p.phone, birthday: p.birthday||'', memberType: newMemberType};
+    } else {
+      // If form provides birthday but member record is empty, update member sheet
+      if (p.birthday && !member.birthday) {
+        getMemberSheet().getRange(member.row, 3).setValue(p.birthday);
+        member.birthday = p.birthday;
+      }
     }
 
+    // Use form-provided birthday if member record is still empty
+    var birthday = p.birthday || member.birthday || '';
     var attendance = p.attendance || '出席';
     var meal       = attendance === '出席' ? (p.meal || '') : '';
     var lunchbox   = attendance === '出席' ? (p.lunchbox || '0') : '0';
@@ -175,7 +183,7 @@ function eventRegister(p) {
           // Corrupted row (phone at B not C): rewrite entire row in correct old format
           var ts = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy/MM/dd HH:mm:ss');
           var mType = (member.memberType) || '';
-          evSh.getRange(existing.row, 1, 1, 10).setValues([[ts, member.name, member.phone, '', lunchbox, mType, attendance, meal, note, '']]);
+          evSh.getRange(existing.row, 1, 1, 10).setValues([[ts, member.name, member.phone, birthday, lunchbox, mType, attendance, meal, note, '']]);
         } else {
           // old format: G=col7=出席, H=col8=用餐, E=col5=加購便當, I=col9=備註
           evSh.getRange(existing.row, 7).setValue(attendance);
@@ -192,7 +200,7 @@ function eventRegister(p) {
       if (isOldFormat(evSh)) {
         // Append in old format column order: A=timestamp B=姓名 C=電話 D=生日 E=加購 F=身份 G=出席 H=用餐 I=備註 J=報到時間
         var ts = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy/MM/dd HH:mm:ss');
-        evSh.appendRow([ts, member.name, member.phone, member.birthday||'', lunchbox, member.memberType||'', attendance, meal, note, '']);
+        evSh.appendRow([ts, member.name, member.phone, birthday, lunchbox, member.memberType||'', attendance, meal, note, '']);
       } else {
         evSh.appendRow([member.name, member.phone, attendance, meal, lunchbox, note, '']);
       }
