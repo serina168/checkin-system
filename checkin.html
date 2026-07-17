@@ -98,10 +98,28 @@ function startScan(){
   if(scanner)return;
   scanner=new Html5Qrcode('reader');
   var boxSize=Math.min(Math.floor(window.innerWidth*0.72),300);
-  scanner.start({facingMode:'environment'},{fps:15,qrbox:{width:boxSize,height:boxSize}},onScan,function(){})
+  var cfg={fps:15,qrbox:{width:boxSize,height:boxSize}};
+  // Try rear camera first; fall back to any camera if black/error
+  scanner.start({facingMode:{ideal:'environment'}},cfg,onScan,function(){})
+    .then(function(){
+      // Detect black frame after 2s and retry with front camera
+      setTimeout(function(){
+        var v=$('reader').querySelector('video');
+        if(v&&v.videoWidth===0){
+          scanner.stop().then(function(){
+            scanner.start({facingMode:'user'},cfg,onScan,function(){}).catch(showCamError);
+          }).catch(function(){});
+        }
+      },2000);
+    })
     .catch(function(){
-      $('reader').innerHTML='<div style="padding:44px 20px;text-align:center;color:#fff;font-size:16px">無法開啟相機<br><span style="font-size:14px;opacity:.75">請允許相機權限，或用下方搜尋姓名</span></div>';
+      // Rear camera failed entirely — try any available camera
+      scanner.start({facingMode:'user'},cfg,onScan,function(){})
+        .catch(showCamError);
     });
+}
+function showCamError(){
+  $('reader').innerHTML='<div style="padding:44px 20px;text-align:center;color:#fff;font-size:16px">無法開啟相機<br><span style="font-size:14px;opacity:.75">請允許相機權限，或用下方搜尋姓名</span></div>';
 }
 
 function onScan(text){
