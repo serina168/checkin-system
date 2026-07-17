@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>現場報到 — 海德堡讀書會</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/@zxing/browser@0.1.4/umd/index.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
 :root{--gold:#a8874f;--gold-lt:#c9a86a;--cream:#faf6ef;--ink:#3d3226;--muted:#8a7a63;--ok:#4a7c59;--warn:#c08a3e;--err:#b5544b}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -107,30 +107,25 @@ fetch(API + '?action=info', {redirect:'follow'})
 
 function startScan() {
   getEl('cam-start').style.display = 'none';
-  var readerEl = getEl('reader');
-  readerEl.style.display = 'block';
-  if (scanControls) { return; }
-
-  var video = document.createElement('video');
-  video.style.cssText = 'width:100%;display:block;border-radius:18px';
-  readerEl.innerHTML = '';
-  readerEl.appendChild(video);
-
-  scanner = new ZXingBrowser.BrowserQRCodeReader();
-  scanner.decodeFromVideoDevice(undefined, video, function(result, err) {
-    if (!result) { return; }
-    var clean = (result.getText() || '').trim();
-    if (!clean) { return; }
-    var now = Date.now();
-    if (busy) { return; }
-    if (clean === lastCode && now - lastAt < 3000) { return; }
-    lastCode = clean;
-    lastAt = now;
-    doCheckIn(clean);
-  }).then(function(controls) {
-    scanControls = controls;
-  }).catch(function(err) {
-    readerEl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;font-size:16px;line-height:1.8">無法開啟相機<br><span style="font-size:13px;opacity:.7">請允許相機權限後重新整理</span><br><br><button onclick="location.reload()" style="font-family:inherit;font-size:15px;font-weight:700;color:#fff;padding:10px 24px;border:none;border-radius:10px;cursor:pointer;background:rgba(169,135,79,.8)">重新整理</button></div>';
+  getEl('reader').style.display = 'block';
+  if (scanner) { return; }
+  scanner = new Html5Qrcode('reader');
+  scanner.start(
+    {facingMode: 'environment'},
+    {fps: 25},
+    function(text) {
+      var clean = (text || '').trim();
+      if (!clean) { return; }
+      var now = Date.now();
+      if (busy) { return; }
+      if (clean === lastCode && now - lastAt < 3000) { return; }
+      lastCode = clean;
+      lastAt = now;
+      doCheckIn(clean);
+    },
+    function() {}
+  ).catch(function(err) {
+    getEl('reader').innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;font-size:16px;line-height:1.8">無法開啟相機<br><span style="font-size:13px;opacity:.7">請允許相機權限後重新整理</span><br><br><button onclick="location.reload()" style="font-family:inherit;font-size:15px;font-weight:700;color:#fff;padding:10px 24px;border:none;border-radius:10px;cursor:pointer;background:rgba(169,135,79,.8)">重新整理</button></div>';
   });
 }
 
