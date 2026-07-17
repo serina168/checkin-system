@@ -100,7 +100,12 @@ textarea{resize:vertical;min-height:78px}
 .badge-phone{font-size:13px;color:var(--muted);letter-spacing:.06em}
 .badge-org{font-size:10px;color:rgba(140,120,90,.4);letter-spacing:.3em;margin-top:4px}
 .badge-date{font-size:11px;color:#bbb;margin-top:4px}
+.badge-card{position:relative}
+.badge-num{position:absolute;top:4px;right:7px;font-size:10px;color:#ddd;line-height:1}
 #btn-batch-print{margin-top:20px}
+.from-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:15px}
+.from-row input{width:80px;padding:8px 10px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit}
+.from-row button{padding:8px 16px;background:var(--gold);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}
 @media print{
   @page{size:A4 portrait;margin:10mm}
   body{padding:0;background:#fff}
@@ -219,7 +224,13 @@ textarea{resize:vertical;min-height:78px}
       </div>
       <div id="batch-result" class="hidden">
         <div id="batch-count" style="margin-bottom:12px;font-size:15px;color:var(--muted)"></div>
-        <button class="btn" id="btn-batch-print" onclick="window.print()">🖨️ 列印所有名牌（A4）</button>
+        <div class="from-row">
+          <span>從第</span>
+          <input type="number" id="from-num" value="1" min="1">
+          <span>號開始列印</span>
+          <button onclick="applyFrom()">套用</button>
+        </div>
+        <button class="btn" id="btn-batch-print" onclick="window.print()">🖨️ 列印（A4）</button>
         <div id="batch-grid"></div>
       </div>
     </div>
@@ -400,15 +411,16 @@ function loadBatch(){
         if(!m.phone)return;
         var phone=String(m.phone).trim();
         if(!phone)return;
+        var num=grid.children.length+1;
         var div=document.createElement('div');
         div.className='badge-card';
+        div.dataset.num=num;
         var qid='bqr-'+phone.replace(/\D/g,'');
-        var dateStr=m.joinDate?'加入：'+String(m.joinDate).slice(0,10):'';
-        div.innerHTML='<div class="badge-name">'+escHtml(m.name||'')+'</div>'
+        div.innerHTML='<div class="badge-num">'+num+'</div>'
+          +'<div class="badge-name">'+escHtml(m.name||'')+'</div>'
           +'<div class="badge-qr" id="'+qid+'"></div>'
           +'<div class="badge-phone">'+escHtml(phone)+'</div>'
-          +'<div class="badge-org">臺中市海德堡讀書會</div>'
-          +'<div class="badge-date">'+escHtml(dateStr)+'</div>';
+          +'<div class="badge-org">臺中市海德堡讀書會</div>';
         grid.appendChild(div);
         new QRCode(document.getElementById(qid),{
           text:window.location.origin+'/checkin.html?p='+encodeURIComponent(phone),
@@ -422,6 +434,13 @@ function loadBatch(){
       toast('已載入 '+members.length+' 位會員');
     })
     .catch(function(){toast('網路錯誤，請重試',true);btn.disabled=false;btn.textContent='載入';});
+}
+
+function applyFrom(){
+  var from=parseInt(document.getElementById('from-num').value)||1;
+  document.querySelectorAll('.badge-card').forEach(function(c){
+    c.style.display=parseInt(c.dataset.num)>=from?'':'none';
+  });
 }
 
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
