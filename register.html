@@ -99,12 +99,18 @@ textarea{resize:vertical;min-height:78px}
 .badge-qr{display:flex;justify-content:center;margin-bottom:8px}
 .badge-phone{font-size:13px;color:var(--muted);letter-spacing:.06em}
 .badge-org{font-size:10px;color:rgba(140,120,90,.4);letter-spacing:.3em;margin-top:4px}
+.badge-date{font-size:11px;color:#bbb;margin-top:4px}
 #btn-batch-print{margin-top:20px}
 @media print{
-  body{padding:0}
-  .wrap>.page-header,.mode-tabs,#mode-batch>.card:first-child,#btn-batch-print{display:none!important}
-  #batch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0}
-  .badge-card{border:1px solid #ccc;page-break-inside:avoid}
+  @page{size:A4 portrait;margin:10mm}
+  body{padding:0;background:#fff}
+  .wrap>.page-header,.mode-tabs,#batch-login-card,#btn-batch-print,#batch-count{display:none!important}
+  #batch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6mm;margin:0}
+  .badge-card{border:1px solid #ccc;border-radius:6px;padding:6mm 4mm;break-inside:avoid;page-break-inside:avoid}
+  .badge-name{font-size:14px;margin-bottom:6px}
+  .badge-phone{font-size:11px}
+  .badge-org{font-size:9px}
+  .badge-date{font-size:9px}
 }
 
 /* ── Success ── */
@@ -212,7 +218,8 @@ textarea{resize:vertical;min-height:78px}
         <div id="batch-status" style="margin-top:10px;padding:10px 14px;border-radius:10px;font-size:15px;display:none"></div>
       </div>
       <div id="batch-result" class="hidden">
-        <button class="btn" id="btn-batch-print" onclick="window.print()">🖨️ 列印所有名牌</button>
+        <div id="batch-count" style="margin-bottom:12px;font-size:15px;color:var(--muted)"></div>
+        <button class="btn" id="btn-batch-print" onclick="window.print()">🖨️ 列印所有名牌（A4）</button>
         <div id="batch-grid"></div>
       </div>
     </div>
@@ -396,10 +403,12 @@ function loadBatch(){
         var div=document.createElement('div');
         div.className='badge-card';
         var qid='bqr-'+phone.replace(/\D/g,'');
+        var dateStr=m.joinDate?'加入：'+String(m.joinDate).slice(0,10):'';
         div.innerHTML='<div class="badge-name">'+escHtml(m.name||'')+'</div>'
           +'<div class="badge-qr" id="'+qid+'"></div>'
           +'<div class="badge-phone">'+escHtml(phone)+'</div>'
-          +'<div class="badge-org">臺中市海德堡讀書會</div>';
+          +'<div class="badge-org">臺中市海德堡讀書會</div>'
+          +'<div class="badge-date">'+escHtml(dateStr)+'</div>';
         grid.appendChild(div);
         new QRCode(document.getElementById(qid),{
           text:window.location.origin+'/checkin.html?p='+encodeURIComponent(phone),
@@ -407,6 +416,7 @@ function loadBatch(){
           correctLevel:QRCode.CorrectLevel.M
         });
       });
+      document.getElementById('batch-count').textContent='共載入 '+members.length+' 位會員，新加入的會員排在後面';
       document.getElementById('batch-result').classList.remove('hidden');
       document.getElementById('batch-login-card').classList.add('hidden');
       toast('已載入 '+members.length+' 位會員');
