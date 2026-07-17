@@ -138,9 +138,7 @@ function startScan() {
         frameN++;
         cvs.width = vid.videoWidth;
         cvs.height = vid.videoHeight;
-        ctx.filter = 'contrast(180%) brightness(110%)';
         ctx.drawImage(vid, 0, 0);
-        ctx.filter = 'none';
         var img = ctx.getImageData(0, 0, cvs.width, cvs.height);
         var code = jsQR(img.data, img.width, img.height, {inversionAttempts: 'attemptBoth'});
         if (!code || !code.data) {
