@@ -293,7 +293,14 @@ function maskPhone(p) { return p.length > 6 ? p.slice(0,4) + '***' + p.slice(-3)
 /* 啟動 */
 refreshStats();
 setInterval(refreshStats, 20000);
-setTimeout(function(){ $('q').focus(); }, 400);
+(function() {
+  var p = new URLSearchParams(window.location.search).get('p');
+  if (p && p.trim()) {
+    doCheckIn(p.trim());
+  } else {
+    setTimeout(function(){ $('q').focus(); }, 400);
+  }
+})();
 </script>
 </body>
 </html>

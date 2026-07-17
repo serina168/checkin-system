@@ -350,7 +350,7 @@ function lookupQR(){
       document.getElementById('qr-lookup-name').textContent=d.name;
       document.getElementById('qr-lookup-phone').textContent=d.phone;
       var el=document.getElementById('qrcode-lookup');el.innerHTML='';
-      new QRCode(el,{text:d.phone,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.L});
+      new QRCode(el,{text:window.location.origin+'/checkin.html?p='+d.phone,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
       document.getElementById('qr-result').classList.remove('hidden');
       toast('找到了！請截圖保存');
       scrollTop();
@@ -548,7 +548,7 @@ function showSuccess(name,phone,updated){
   document.getElementById('qr-name-text').textContent=name||'';
   document.getElementById('qr-phone-text').textContent=phone||'';
   var el=document.getElementById('qrcode');el.innerHTML='';
-  new QRCode(el,{text:phone,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.L});
+  new QRCode(el,{text:window.location.origin+'/checkin.html?p='+phone,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
   document.getElementById('success-section').classList.remove('hidden');
 }
 
