@@ -145,8 +145,12 @@ function openCamera(){
       width:{ideal:1280}, height:{ideal:720}
     }
   };
+  var camTimeout=setTimeout(function(){
+    showCamMsg('<div style="font-size:28px;margin-bottom:10px">⚠️</div>相機啟動逾時<br><span style="font-size:13px;opacity:.8">請用 <b>Chrome 瀏覽器</b>開啟此頁面<br>（勿在 LINE / FB 等 App 內開啟）</span>', true);
+  }, 6000);
   navigator.mediaDevices.getUserMedia(constraints)
     .then(function(stream){
+      clearTimeout(camTimeout);
       camStream=stream;
       // Create video element inside cam-wrap
       var wrap=$('cam-wrap');
@@ -164,6 +168,7 @@ function openCamera(){
       }).catch(function(e){ showCamMsg('<div style="font-size:28px;margin-bottom:10px">⚠️</div>相機啟動失敗<br><span style="font-size:13px;opacity:.7">'+e.message+'</span>', true); });
     })
     .catch(function(err){
+      clearTimeout(camTimeout);
       var msg='相機無法開啟';
       if(err.name==='NotAllowedError') msg='未授權相機權限<br><span style="font-size:13px;opacity:.7">請在瀏覽器設定中允許相機</span>';
       else if(err.name==='NotFoundError') msg='找不到相機裝置';
