@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>現場報到 — 海德堡讀書會</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
 :root{--gold:#a8874f;--gold-lt:#c9a86a;--cream:#faf6ef;--ink:#3d3226;--muted:#8a7a63;--ok:#4a7c59;--warn:#c08a3e;--err:#b5544b}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -247,29 +247,32 @@ function photoScan(input) {
   var file = input.files[0];
   input.value = '';
   if (!file) { return; }
-  var url = URL.createObjectURL(file);
   var preview = $('photo-preview');
-  preview.src = url;
+  preview.src = URL.createObjectURL(file);
   preview.style.display = 'block';
-  $('photo-hint').textContent = '';
-  var img = new Image();
-  img.onload = function() {
-    var cvs = document.createElement('canvas');
-    cvs.width = img.width; cvs.height = img.height;
-    var ctx = cvs.getContext('2d', {willReadFrequently: true});
-    ctx.drawImage(img, 0, 0);
-    var imageData = ctx.getImageData(0, 0, cvs.width, cvs.height);
-    var code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts: 'attemptBoth'});
-    if (code && code.data && code.data.trim()) {
-      URL.revokeObjectURL(url);
-      preview.style.display = 'none';
-      $('qr-box').classList.remove('open');
-      doCheckIn(code.data.trim());
-    } else {
-      $('photo-hint').textContent = '↑ 請確認照片中 QR Code 清晰可見，若是請告知；若否請重拍。';
-    }
-  };
-  img.src = url;
+  $('photo-hint').textContent = '解碼中…';
+  var tmpDiv = document.createElement('div');
+  tmpDiv.id = 'qr-tmp-' + Date.now();
+  tmpDiv.style.display = 'none';
+  document.body.appendChild(tmpDiv);
+  var scanner = new Html5Qrcode(tmpDiv.id);
+  scanner.scanFileV2(file, false)
+    .then(function(result) {
+      var text = (result.decodedText || '').trim();
+      document.body.removeChild(tmpDiv);
+      if (text) {
+        preview.style.display = 'none';
+        $('photo-hint').textContent = '';
+        $('qr-box').classList.remove('open');
+        doCheckIn(text);
+      } else {
+        $('photo-hint').textContent = '讀取失敗，請重拍（QR Code 需佔畫面大部分且清晰）';
+      }
+    })
+    .catch(function() {
+      document.body.removeChild(tmpDiv);
+      $('photo-hint').textContent = '讀取失敗，請重拍（QR Code 需佔畫面大部分且清晰）';
+    });
 }
 
 /* 彈窗 */
