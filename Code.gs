@@ -157,8 +157,9 @@ function eventRegister(p) {
         mSh.setFrozenRows(1);
       }
       var today = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy/MM/dd');
-      mSh.appendRow([p.name, p.phone, p.birthday||'', p.memberType||'來賓', today, '']);
-      member = {name: p.name, phone: p.phone};
+      var newMemberType = p.memberType || '來賓';
+      mSh.appendRow([p.name, p.phone, p.birthday||'', newMemberType, today, '']);
+      member = {name: p.name, phone: p.phone, birthday: p.birthday||'', memberType: newMemberType};
     }
 
     var attendance = p.attendance || '出席';
@@ -191,7 +192,7 @@ function eventRegister(p) {
       if (isOldFormat(evSh)) {
         // Append in old format column order: A=timestamp B=姓名 C=電話 D=生日 E=加購 F=身份 G=出席 H=用餐 I=備註 J=報到時間
         var ts = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy/MM/dd HH:mm:ss');
-        evSh.appendRow([ts, member.name, member.phone, '', lunchbox, member.memberType||'', attendance, meal, note, '']);
+        evSh.appendRow([ts, member.name, member.phone, member.birthday||'', lunchbox, member.memberType||'', attendance, meal, note, '']);
       } else {
         evSh.appendRow([member.name, member.phone, attendance, meal, lunchbox, note, '']);
       }
