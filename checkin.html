@@ -115,51 +115,47 @@ function startScan() {
   vid.setAttribute('playsinline', '');
   vid.setAttribute('autoplay', '');
   vid.setAttribute('muted', '');
-  vid.style.cssText = 'width:100%;display:block;border-radius:18px';
+  vid.style.cssText = 'width:100%;display:block;border-radius:18px 18px 0 0';
+  var status = document.createElement('div');
+  status.style.cssText = 'background:#1a1a1a;color:#aaa;font-size:13px;text-align:center;padding:6px;border-radius:0 0 18px 18px';
+  status.textContent = '相機啟動中…';
   var cvs = document.createElement('canvas');
   cvs.style.display = 'none';
   readerEl.innerHTML = '';
   readerEl.appendChild(vid);
+  readerEl.appendChild(status);
   readerEl.appendChild(cvs);
 
-  navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment', width: {ideal: 1280}, height: {ideal: 720}}})
+  navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment', width: {ideal: 1920}, height: {ideal: 1080}}})
     .then(function(stream) {
       scanStream = stream;
       vid.srcObject = stream;
       vid.play();
-
-      if (window.BarcodeDetector) {
-        var det = new BarcodeDetector({formats: ['qr_code']});
-        scanTimer = setInterval(function() {
-          if (vid.readyState < 2) { return; }
-          det.detect(vid).then(function(codes) {
-            if (!codes.length) { return; }
-            var text = (codes[0].rawValue || '').trim();
-            if (!text || busy) { return; }
-            var now = Date.now();
-            if (text === lastCode && now - lastAt < 3000) { return; }
-            lastCode = text; lastAt = now;
-            doCheckIn(text);
-          }).catch(function() {});
-        }, 100);
-      } else {
-        var ctx = cvs.getContext('2d');
-        scanTimer = setInterval(function() {
-          if (vid.readyState < 2) { return; }
-          cvs.width = vid.videoWidth;
-          cvs.height = vid.videoHeight;
-          ctx.drawImage(vid, 0, 0);
-          var img = ctx.getImageData(0, 0, cvs.width, cvs.height);
-          var code = jsQR(img.data, img.width, img.height, {inversionAttempts: 'dontInvert'});
-          if (!code) { return; }
-          var text = (code.data || '').trim();
-          if (!text || busy) { return; }
-          var now = Date.now();
-          if (text === lastCode && now - lastAt < 3000) { return; }
-          lastCode = text; lastAt = now;
-          doCheckIn(text);
-        }, 80);
-      }
+      var ctx = cvs.getContext('2d');
+      var frameN = 0;
+      scanTimer = setInterval(function() {
+        if (vid.readyState < 2 || !vid.videoWidth) { return; }
+        frameN++;
+        cvs.width = vid.videoWidth;
+        cvs.height = vid.videoHeight;
+        ctx.filter = 'contrast(180%) brightness(110%)';
+        ctx.drawImage(vid, 0, 0);
+        ctx.filter = 'none';
+        var img = ctx.getImageData(0, 0, cvs.width, cvs.height);
+        var code = jsQR(img.data, img.width, img.height, {inversionAttempts: 'attemptBoth'});
+        if (!code || !code.data) {
+          if (frameN % 5 === 0) { status.textContent = '掃描中 #' + frameN + ' — 請對準 QR Code'; }
+          return;
+        }
+        var text = code.data.trim();
+        if (!text) { return; }
+        status.textContent = '讀到: ' + text;
+        if (busy) { return; }
+        var now = Date.now();
+        if (text === lastCode && now - lastAt < 3000) { return; }
+        lastCode = text; lastAt = now;
+        doCheckIn(text);
+      }, 80);
     })
     .catch(function() {
       readerEl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;font-size:16px;line-height:1.8">無法開啟相機<br><span style="font-size:13px;opacity:.7">請允許相機權限後重新整理</span><br><br><button onclick="location.reload()" style="font-family:inherit;font-size:15px;font-weight:700;color:#fff;padding:10px 24px;border:none;border-radius:10px;cursor:pointer;background:rgba(169,135,79,.8)">重新整理</button></div>';
