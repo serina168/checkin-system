@@ -199,6 +199,8 @@ function onQR(text) {
   if (text === lastCode && now - lastAt < 3000) { return; }
   lastCode = text;
   lastAt = now;
+  // Show raw QR content for debugging
+  alert('QR 內容：[' + text + ']');
   doCheckIn(text.trim());
 }
 
