@@ -6,7 +6,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>現場報到 — 海德堡讀書會</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
 <style>
 :root{--gold:#a8874f;--gold-lt:#c9a86a;--cream:#faf6ef;--ink:#3d3226;--muted:#8a7a63;--ok:#4a7c59;--warn:#c08a3e;--err:#b5544b}
@@ -23,9 +22,6 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--i
 .stat.left .n{color:var(--gold)}
 .sec-label{font-size:16px;font-weight:700;color:var(--gold);margin:6px 2px 10px;display:flex;align-items:center;gap:8px}
 .sec-label::before{content:'';width:20px;height:2px;background:var(--gold-lt);border-radius:2px}
-#reader{border-radius:18px;overflow:hidden;border:1px solid rgba(200,170,110,.35);background:#000;box-shadow:0 8px 30px rgba(140,110,60,.14);min-height:300px}
-#reader video{width:100%!important;display:block}
-.scanhint{text-align:center;color:var(--muted);font-size:15px;margin:10px 0 4px}
 .or{display:flex;align-items:center;gap:14px;margin:24px 2px 18px;color:var(--muted);font-size:15px}
 .or::before,.or::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(200,170,110,.5),transparent)}
 input[type=search]{width:100%;font-family:inherit;font-size:20px;color:var(--ink);padding:16px 18px;border:1.5px solid rgba(180,150,100,.4);border-radius:14px;background:rgba(255,255,255,.85)}
@@ -70,13 +66,13 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
     </div>
   </div>
   <div class="sec-label">掃描 QR Code 報到</div>
-  <div id="reader"></div>
-  <p class="scanhint">出示手機上的會員 QR Code 對準鏡頭</p>
-  <div style="text-align:center;margin:10px 0 4px">
-    <label style="display:inline-block;font-family:inherit;font-size:17px;font-weight:700;color:#fff;padding:13px 30px;border-radius:13px;cursor:pointer;background:linear-gradient(135deg,var(--gold-lt),var(--gold))">
-      📷 拍照掃描 QR Code
+  <div style="background:#111;border-radius:18px;padding:36px 20px;text-align:center;margin-bottom:6px">
+    <div style="font-size:52px;margin-bottom:16px">📷</div>
+    <label style="display:inline-block;font-family:inherit;font-size:19px;font-weight:700;color:#fff;padding:16px 36px;border-radius:13px;cursor:pointer;background:linear-gradient(135deg,var(--gold-lt),var(--gold))">
+      拍照掃描 QR Code
       <input type="file" id="qr-photo" accept="image/*" capture="environment" style="display:none" onchange="photoScan(this)">
     </label>
+    <div style="color:rgba(255,255,255,.45);font-size:13px;margin-top:12px">對準 QR Code 後拍照即可報到</div>
   </div>
   <div class="or">沒帶 QR？用姓名搜尋</div>
   <input type="search" id="q" placeholder="輸入姓名或電話…" oninput="doSearch()" autocomplete="off">
@@ -94,7 +90,7 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbx8wYkMnToVxSSwK0YxC-Ki99-h-W3_VVKhHwbpUgpLVcIyjD_RJ-SYAW85hd1e_8-J0g/exec';
 function $(id) { return document.getElementById(id); }
-var scanner = null, busy = false, lastCode = '', lastAt = 0;
+var busy = false, lastCode = '', lastAt = 0;
 
 fetch(API + '?action=info', {redirect:'follow'})
   .then(function(r){return r.json();})
@@ -104,30 +100,6 @@ fetch(API + '?action=info', {redirect:'follow'})
     }
   }).catch(function(){});
 
-function startScan() {
-  if (scanner) { return; }
-  scanner = new Html5Qrcode('reader');
-  var boxSize = Math.min(Math.floor(window.innerWidth * 0.72), 300);
-  scanner.start(
-    {facingMode: 'environment'},
-    {fps: 15, qrbox: {width: boxSize, height: boxSize}},
-    onScan,
-    function() {}
-  ).catch(function() {
-    $('reader').innerHTML = '<div style="padding:44px 20px;text-align:center;color:#fff;font-size:16px;line-height:1.8">無法開啟相機<br><span style="font-size:14px;opacity:.75">請允許相機權限後重新整理</span><br><br><button onclick="location.reload()" style="font-family:inherit;font-size:15px;font-weight:700;color:#fff;padding:10px 24px;border:none;border-radius:10px;cursor:pointer;background:rgba(169,135,79,.8)">重新整理</button></div>';
-  });
-}
-
-function onScan(text) {
-  var clean = (text || '').trim();
-  if (!clean) { return; }
-  var now = Date.now();
-  if (busy) { return; }
-  if (clean === lastCode && now - lastAt < 3000) { return; }
-  lastCode = clean;
-  lastAt = now;
-  doCheckIn(clean);
-}
 
 function doCheckIn(id) {
   busy = true;
@@ -236,7 +208,6 @@ function photoScan(input) {
   img.src = URL.createObjectURL(file);
 }
 
-startScan();
 refreshStats();
 setInterval(refreshStats, 20000);
 </script>
