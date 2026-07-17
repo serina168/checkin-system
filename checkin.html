@@ -194,20 +194,20 @@ function startScanLoop() {
 }
 
 function onQR(text) {
+  var clean = (text || '').trim();
+  if (!clean) { return; } // ignore empty decode
   var now = Date.now();
   if (busy) { return; }
-  if (text === lastCode && now - lastAt < 3000) { return; }
-  lastCode = text;
+  if (clean === lastCode && now - lastAt < 3000) { return; }
+  lastCode = clean;
   lastAt = now;
-  // Show raw QR content for debugging
-  alert('QR 內容：[' + text + ']');
-  doCheckIn(text.trim());
+  doCheckIn(clean);
 }
 
 // ── Check-in ──────────────────────────────────────────────
 function doCheckIn(id) {
   busy = true;
-  fetch(API + '?action=event_checkin&phone=' + encodeURIComponent(id))
+  fetch(API + '?action=event_checkin&phone=' + encodeURIComponent(id), {redirect:'follow'})
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (d.ok) {
