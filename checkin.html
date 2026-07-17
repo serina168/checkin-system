@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>現場報到 — 海德堡讀書會</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
 <style>
 :root{--gold:#a8874f;--gold-lt:#c9a86a;--cream:#faf6ef;--ink:#3d3226;--muted:#8a7a63;--ok:#4a7c59;--warn:#c08a3e;--err:#b5544b}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -95,7 +95,7 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbx8wYkMnToVxSSwK0YxC-Ki99-h-W3_VVKhHwbpUgpLVcIyjD_RJ-SYAW85hd1e_8-J0g/exec';
 function getEl(id) { return document.getElementById(id); }
-var busy = false, lastCode = '', lastAt = 0, scanner = null, scanControls = null;
+var busy = false, lastCode = '', lastAt = 0, scanStream = null, scanTimer = null;
 
 fetch(API + '?action=info', {redirect:'follow'})
   .then(function(r){return r.json();})
@@ -107,26 +107,63 @@ fetch(API + '?action=info', {redirect:'follow'})
 
 function startScan() {
   getEl('cam-start').style.display = 'none';
-  getEl('reader').style.display = 'block';
-  if (scanner) { return; }
-  scanner = new Html5Qrcode('reader');
-  scanner.start(
-    {facingMode: 'environment'},
-    {fps: 25},
-    function(text) {
-      var clean = (text || '').trim();
-      if (!clean) { return; }
-      var now = Date.now();
-      if (busy) { return; }
-      if (clean === lastCode && now - lastAt < 3000) { return; }
-      lastCode = clean;
-      lastAt = now;
-      doCheckIn(clean);
-    },
-    function() {}
-  ).catch(function(err) {
-    getEl('reader').innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;font-size:16px;line-height:1.8">無法開啟相機<br><span style="font-size:13px;opacity:.7">請允許相機權限後重新整理</span><br><br><button onclick="location.reload()" style="font-family:inherit;font-size:15px;font-weight:700;color:#fff;padding:10px 24px;border:none;border-radius:10px;cursor:pointer;background:rgba(169,135,79,.8)">重新整理</button></div>';
-  });
+  var readerEl = getEl('reader');
+  readerEl.style.display = 'block';
+  if (scanStream) { return; }
+
+  var vid = document.createElement('video');
+  vid.setAttribute('playsinline', '');
+  vid.setAttribute('autoplay', '');
+  vid.setAttribute('muted', '');
+  vid.style.cssText = 'width:100%;display:block;border-radius:18px';
+  var cvs = document.createElement('canvas');
+  cvs.style.display = 'none';
+  readerEl.innerHTML = '';
+  readerEl.appendChild(vid);
+  readerEl.appendChild(cvs);
+
+  navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment', width: {ideal: 1280}, height: {ideal: 720}}})
+    .then(function(stream) {
+      scanStream = stream;
+      vid.srcObject = stream;
+      vid.play();
+
+      if (window.BarcodeDetector) {
+        var det = new BarcodeDetector({formats: ['qr_code']});
+        scanTimer = setInterval(function() {
+          if (vid.readyState < 2) { return; }
+          det.detect(vid).then(function(codes) {
+            if (!codes.length) { return; }
+            var text = (codes[0].rawValue || '').trim();
+            if (!text || busy) { return; }
+            var now = Date.now();
+            if (text === lastCode && now - lastAt < 3000) { return; }
+            lastCode = text; lastAt = now;
+            doCheckIn(text);
+          }).catch(function() {});
+        }, 100);
+      } else {
+        var ctx = cvs.getContext('2d');
+        scanTimer = setInterval(function() {
+          if (vid.readyState < 2) { return; }
+          cvs.width = vid.videoWidth;
+          cvs.height = vid.videoHeight;
+          ctx.drawImage(vid, 0, 0);
+          var img = ctx.getImageData(0, 0, cvs.width, cvs.height);
+          var code = jsQR(img.data, img.width, img.height, {inversionAttempts: 'dontInvert'});
+          if (!code) { return; }
+          var text = (code.data || '').trim();
+          if (!text || busy) { return; }
+          var now = Date.now();
+          if (text === lastCode && now - lastAt < 3000) { return; }
+          lastCode = text; lastAt = now;
+          doCheckIn(text);
+        }, 80);
+      }
+    })
+    .catch(function() {
+      readerEl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;font-size:16px;line-height:1.8">無法開啟相機<br><span style="font-size:13px;opacity:.7">請允許相機權限後重新整理</span><br><br><button onclick="location.reload()" style="font-family:inherit;font-size:15px;font-weight:700;color:#fff;padding:10px 24px;border:none;border-radius:10px;cursor:pointer;background:rgba(169,135,79,.8)">重新整理</button></div>';
+    });
 }
 
 function doCheckIn(id) {
