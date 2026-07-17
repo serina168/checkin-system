@@ -7,6 +7,7 @@
 <title>現場報到 — 海德堡讀書會</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
 <style>
 :root{--gold:#a8874f;--gold-lt:#c9a86a;--cream:#faf6ef;--ink:#3d3226;--muted:#8a7a63;--ok:#4a7c59;--warn:#c08a3e;--err:#b5544b}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -71,6 +72,12 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
   <div class="sec-label">掃描 QR Code 報到</div>
   <div id="reader"></div>
   <p class="scanhint">出示手機上的會員 QR Code 對準鏡頭</p>
+  <div style="text-align:center;margin:10px 0 4px">
+    <label style="display:inline-block;font-family:inherit;font-size:17px;font-weight:700;color:#fff;padding:13px 30px;border-radius:13px;cursor:pointer;background:linear-gradient(135deg,var(--gold-lt),var(--gold))">
+      📷 拍照掃描 QR Code
+      <input type="file" id="qr-photo" accept="image/*" capture="environment" style="display:none" onchange="photoScan(this)">
+    </label>
+  </div>
   <div class="or">沒帶 QR？用姓名搜尋</div>
   <input type="search" id="q" placeholder="輸入姓名或電話…" oninput="doSearch()" autocomplete="off">
   <div class="list" id="list"><div class="empty">輸入姓名或電話搜尋</div></div>
@@ -205,6 +212,29 @@ function escHtml(s) {
 }
 function escAttr(s) { return String(s).replace(/'/g,'&#39;'); }
 function maskPhone(p) { return p.length > 6 ? p.slice(0,4) + '***' + p.slice(-3) : p; }
+
+function photoScan(input) {
+  var file = input.files[0];
+  input.value = '';
+  if (!file) { return; }
+  var img = new Image();
+  img.onload = function() {
+    var cvs = document.createElement('canvas');
+    cvs.width = img.width;
+    cvs.height = img.height;
+    var ctx = cvs.getContext('2d', {willReadFrequently: true});
+    ctx.drawImage(img, 0, 0);
+    var imageData = ctx.getImageData(0, 0, cvs.width, cvs.height);
+    var code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts: 'attemptBoth'});
+    URL.revokeObjectURL(img.src);
+    if (code && code.data && code.data.trim()) {
+      doCheckIn(code.data.trim());
+    } else {
+      showPop('no', '✕', '讀取失敗', '請重新拍照，確保 QR Code 清晰完整', '');
+    }
+  };
+  img.src = URL.createObjectURL(file);
+}
 
 startScan();
 refreshStats();
