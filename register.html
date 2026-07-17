@@ -209,6 +209,7 @@ textarea{resize:vertical;min-height:78px}
             <button class="btn-lookup" onclick="loadBatch()">載入</button>
           </div>
         </div>
+        <div id="batch-status" style="margin-top:10px;padding:10px 14px;border-radius:10px;font-size:15px;display:none"></div>
       </div>
       <div id="batch-result" class="hidden">
         <button class="btn" id="btn-batch-print" onclick="window.print()">🖨️ 列印所有名牌</button>
@@ -390,16 +391,18 @@ function loadBatch(){
       grid.innerHTML='';
       members.forEach(function(m){
         if(!m.phone)return;
+        var phone=String(m.phone).trim();
+        if(!phone)return;
         var div=document.createElement('div');
         div.className='badge-card';
-        var qid='bqr-'+m.phone.replace(/\D/g,'');
+        var qid='bqr-'+phone.replace(/\D/g,'');
         div.innerHTML='<div class="badge-name">'+escHtml(m.name||'')+'</div>'
           +'<div class="badge-qr" id="'+qid+'"></div>'
-          +'<div class="badge-phone">'+escHtml(m.phone)+'</div>'
+          +'<div class="badge-phone">'+escHtml(phone)+'</div>'
           +'<div class="badge-org">臺中市海德堡讀書會</div>';
         grid.appendChild(div);
         new QRCode(document.getElementById(qid),{
-          text:window.location.origin+'/checkin.html?p='+encodeURIComponent(m.phone),
+          text:window.location.origin+'/checkin.html?p='+encodeURIComponent(phone),
           width:160,height:160,colorDark:'#3a2e1e',colorLight:'#fff',
           correctLevel:QRCode.CorrectLevel.M
         });
