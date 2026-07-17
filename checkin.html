@@ -118,10 +118,18 @@ function showCamMsg(html){
   camStream=null;
 }
 
+function dbg(msg){
+  var el=$('dbg-log');
+  if(el) el.textContent+='\n'+msg;
+}
 function startScan(){
   if(camStream) return;
   $('cam-msg').style.display='';
-  $('cam-msg').innerHTML='<div style="font-size:28px;margin-bottom:10px">📷</div>正在啟動相機…';
+  $('cam-msg').innerHTML='<div style="font-size:28px;margin-bottom:10px">📷</div>正在啟動相機…<div id="dbg-log" style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.7);text-align:left;white-space:pre;line-height:1.5;max-height:120px;overflow:auto"></div>';
+  dbg('1. 按鈕已觸發');
+  dbg('2. mediaDevices: '+(typeof navigator.mediaDevices));
+  dbg('3. getUserMedia: '+(navigator.mediaDevices?typeof navigator.mediaDevices.getUserMedia:'N/A'));
+  dbg('4. protocol: '+location.protocol);
   if(typeof navigator.mediaDevices==='undefined'||typeof navigator.mediaDevices.getUserMedia==='undefined'){
     showCamMsg('<div style="font-size:28px;margin-bottom:10px">⚠️</div>此瀏覽器不支援相機<br><span style="font-size:13px;opacity:.8">請用 <b>Chrome</b> 開啟此頁面</span>');
     return;
@@ -151,12 +159,15 @@ function openCamera(){
       width:{ideal:1280}, height:{ideal:720}
     }
   };
+  dbg('5. 呼叫 getUserMedia...');
   var camTimeout=setTimeout(function(){
+    dbg('逾時！6秒內無回應');
     showCamMsg('<div style="font-size:28px;margin-bottom:10px">⚠️</div>相機啟動逾時<br><span style="font-size:13px;opacity:.8">請用 <b>Chrome 瀏覽器</b>直接開啟<br>（勿在 LINE / FB 等 App 內開啟）</span>');
   }, 6000);
   navigator.mediaDevices.getUserMedia(constraints)
     .then(function(stream){
       clearTimeout(camTimeout);
+      dbg('6. getUserMedia 成功');
       camStream=stream;
       // Create video element inside cam-wrap
       var wrap=$('cam-wrap');
@@ -175,6 +186,7 @@ function openCamera(){
     })
     .catch(function(err){
       clearTimeout(camTimeout);
+      dbg('錯誤: '+err.name+' '+err.message);
       var msg='相機無法開啟';
       if(err.name==='NotAllowedError') msg='未授權相機權限<br><span style="font-size:13px;opacity:.7">請在瀏覽器設定中允許相機</span>';
       else if(err.name==='NotFoundError') msg='找不到相機裝置';
