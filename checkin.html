@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>現場報到 — 海德堡讀書會</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
 :root{--gold:#a8874f;--gold-lt:#c9a86a;--cream:#faf6ef;--ink:#3d3226;--muted:#8a7a63;--ok:#4a7c59;--warn:#c08a3e;--err:#b5544b}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -22,11 +22,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--i
 .stat.left .n{color:var(--gold)}
 .sec-label{font-size:16px;font-weight:700;color:var(--gold);margin:6px 2px 10px;display:flex;align-items:center;gap:8px}
 .sec-label::before{content:'';width:20px;height:2px;background:var(--gold-lt);border-radius:2px}
-#cam-start{border-radius:18px;border:1px solid rgba(200,170,110,.35);background:#111;box-shadow:0 8px 30px rgba(140,110,60,.14);min-height:200px;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px}
-#reader{border-radius:18px;overflow:hidden;border:1px solid rgba(200,170,110,.35);background:#000;box-shadow:0 8px 30px rgba(140,110,60,.14);display:none}
+#reader{border-radius:18px;overflow:hidden;border:1px solid rgba(200,170,110,.35);background:#000;box-shadow:0 8px 30px rgba(140,110,60,.14);min-height:300px}
 #reader video{width:100%!important;display:block}
-.btn-gold{font-family:inherit;font-size:18px;font-weight:700;color:#fff;padding:14px 34px;border:none;border-radius:13px;cursor:pointer;background:linear-gradient(135deg,var(--gold-lt),var(--gold))}
-.cam-note{font-size:12px;color:rgba(255,255,255,.5);margin-top:10px}
 .scanhint{text-align:center;color:var(--muted);font-size:15px;margin:10px 0 4px}
 .or{display:flex;align-items:center;gap:14px;margin:24px 2px 18px;color:var(--muted);font-size:15px}
 .or::before,.or::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(200,170,110,.5),transparent)}
@@ -72,11 +69,6 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
     </div>
   </div>
   <div class="sec-label">掃描 QR Code 報到</div>
-  <div id="cam-start">
-    <div style="font-size:44px;margin-bottom:14px">&#128247;</div>
-    <button class="btn-gold" onclick="startScan()">開啟相機掃描</button>
-    <div class="cam-note">請使用 Chrome 瀏覽器開啟</div>
-  </div>
   <div id="reader"></div>
   <p class="scanhint">出示手機上的會員 QR Code 對準鏡頭</p>
   <div class="or">沒帶 QR？用姓名搜尋</div>
@@ -94,70 +86,40 @@ input[type=search]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
 </div>
 <script>
 var API = 'https://script.google.com/macros/s/AKfycbx8wYkMnToVxSSwK0YxC-Ki99-h-W3_VVKhHwbpUgpLVcIyjD_RJ-SYAW85hd1e_8-J0g/exec';
-function getEl(id) { return document.getElementById(id); }
-var busy = false, lastCode = '', lastAt = 0, scanStream = null, scanTimer = null;
+function $(id) { return document.getElementById(id); }
+var scanner = null, busy = false, lastCode = '', lastAt = 0;
 
 fetch(API + '?action=info', {redirect:'follow'})
   .then(function(r){return r.json();})
   .then(function(d){
     if (d.ok && d.config && d.config.eventName) {
-      getEl('evtTitle').textContent = d.config.eventName + ' 報到';
+      $('evtTitle').textContent = d.config.eventName + ' 報到';
     }
   }).catch(function(){});
 
 function startScan() {
-  getEl('cam-start').style.display = 'none';
-  var readerEl = getEl('reader');
-  readerEl.style.display = 'block';
-  if (scanStream) { return; }
+  if (scanner) { return; }
+  scanner = new Html5Qrcode('reader');
+  var boxSize = Math.min(Math.floor(window.innerWidth * 0.72), 300);
+  scanner.start(
+    {facingMode: 'environment'},
+    {fps: 15, qrbox: {width: boxSize, height: boxSize}},
+    onScan,
+    function() {}
+  ).catch(function() {
+    $('reader').innerHTML = '<div style="padding:44px 20px;text-align:center;color:#fff;font-size:16px;line-height:1.8">無法開啟相機<br><span style="font-size:14px;opacity:.75">請允許相機權限後重新整理</span><br><br><button onclick="location.reload()" style="font-family:inherit;font-size:15px;font-weight:700;color:#fff;padding:10px 24px;border:none;border-radius:10px;cursor:pointer;background:rgba(169,135,79,.8)">重新整理</button></div>';
+  });
+}
 
-  var vid = document.createElement('video');
-  vid.setAttribute('playsinline', '');
-  vid.setAttribute('autoplay', '');
-  vid.setAttribute('muted', '');
-  vid.style.cssText = 'width:100%;display:block;border-radius:18px 18px 0 0';
-  var status = document.createElement('div');
-  status.style.cssText = 'background:#1a1a1a;color:#aaa;font-size:13px;text-align:center;padding:6px;border-radius:0 0 18px 18px';
-  status.textContent = '相機啟動中…';
-  var cvs = document.createElement('canvas');
-  cvs.style.display = 'none';
-  readerEl.innerHTML = '';
-  readerEl.appendChild(vid);
-  readerEl.appendChild(status);
-  readerEl.appendChild(cvs);
-
-  navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment'}})
-    .then(function(stream) {
-      scanStream = stream;
-      vid.srcObject = stream;
-      vid.play();
-      var ctx = cvs.getContext('2d');
-      var frameN = 0;
-      scanTimer = setInterval(function() {
-        if (vid.readyState < 2 || !vid.videoWidth) { return; }
-        frameN++;
-        cvs.width = vid.videoWidth;
-        cvs.height = vid.videoHeight;
-        ctx.drawImage(vid, 0, 0);
-        var img = ctx.getImageData(0, 0, cvs.width, cvs.height);
-        var code = jsQR(img.data, img.width, img.height, {inversionAttempts: 'attemptBoth'});
-        if (!code || !code.data) {
-          if (frameN % 5 === 0) { status.textContent = '掃描中 #' + frameN + ' — 請對準 QR Code'; }
-          return;
-        }
-        var text = code.data.trim();
-        if (!text) { return; }
-        status.textContent = '讀到: ' + text;
-        if (busy) { return; }
-        var now = Date.now();
-        if (text === lastCode && now - lastAt < 3000) { return; }
-        lastCode = text; lastAt = now;
-        doCheckIn(text);
-      }, 80);
-    })
-    .catch(function() {
-      readerEl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#fff;font-size:16px;line-height:1.8">無法開啟相機<br><span style="font-size:13px;opacity:.7">請允許相機權限後重新整理</span><br><br><button onclick="location.reload()" style="font-family:inherit;font-size:15px;font-weight:700;color:#fff;padding:10px 24px;border:none;border-radius:10px;cursor:pointer;background:rgba(169,135,79,.8)">重新整理</button></div>';
-    });
+function onScan(text) {
+  var clean = (text || '').trim();
+  if (!clean) { return; }
+  var now = Date.now();
+  if (busy) { return; }
+  if (clean === lastCode && now - lastAt < 3000) { return; }
+  lastCode = clean;
+  lastAt = now;
+  doCheckIn(clean);
 }
 
 function doCheckIn(id) {
@@ -193,16 +155,16 @@ function doSearch() {
 }
 
 function runSearch() {
-  var q = getEl('q').value.trim();
-  if (!q) { getEl('list').innerHTML = '<div class="empty">輸入姓名或電話搜尋</div>'; return; }
+  var q = $('q').value.trim();
+  if (!q) { $('list').innerHTML = '<div class="empty">輸入姓名或電話搜尋</div>'; return; }
   fetch(API + '?action=event_search&q=' + encodeURIComponent(q), {redirect:'follow'})
     .then(function(r){return r.json();})
     .then(function(d){renderList(d.results || []);})
-    .catch(function(){getEl('list').innerHTML = '<div class="empty">連線失敗</div>';});
+    .catch(function(){$('list').innerHTML = '<div class="empty">連線失敗</div>';});
 }
 
 function renderList(rows) {
-  if (!rows.length) { getEl('list').innerHTML = '<div class="empty">查無此人</div>'; return; }
+  if (!rows.length) { $('list').innerHTML = '<div class="empty">查無此人</div>'; return; }
   var html = '';
   for (var i = 0; i < rows.length; i++) {
     var r = rows[i];
@@ -215,7 +177,7 @@ function renderList(rows) {
       html += '<div class="row"><div class="info"><div class="nm">' + escHtml(r.name) + '</div><div class="meta">' + ph + (meta ? ' ・ ' + meta : '') + '</div></div><button onclick="manualCheckin(\'' + escAttr(String(r.phone||'')) + '\')">報到</button></div>';
     }
   }
-  getEl('list').innerHTML = html;
+  $('list').innerHTML = html;
 }
 
 function manualCheckin(id) { doCheckIn(id); setTimeout(runSearch, 800); }
@@ -224,19 +186,19 @@ function refreshStats() {
   fetch(API + '?action=event_stats', {redirect:'follow'})
     .then(function(r){return r.json();})
     .then(function(d){
-      if (d.ok) { getEl('s-in').textContent = d.checked; getEl('s-left').textContent = d.unchecked; }
+      if (d.ok) { $('s-in').textContent = d.checked; $('s-left').textContent = d.unchecked; }
     }).catch(function(){});
 }
 
 function showPop(cls, ico, nm, msg, badges) {
-  getEl('popCard').className = 'pop-card ' + cls;
-  getEl('popIco').textContent = ico;
-  getEl('popNm').innerHTML = nm;
-  getEl('popMsg').innerHTML = msg;
-  getEl('popBadges').innerHTML = badges || '';
-  getEl('pop').classList.add('on');
+  $('popCard').className = 'pop-card ' + cls;
+  $('popIco').textContent = ico;
+  $('popNm').innerHTML = nm;
+  $('popMsg').innerHTML = msg;
+  $('popBadges').innerHTML = badges || '';
+  $('pop').classList.add('on');
 }
-function closePop() { getEl('pop').classList.remove('on'); }
+function closePop() { $('pop').classList.remove('on'); }
 function buzz(p) { if (navigator.vibrate) { navigator.vibrate(p); } }
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -244,6 +206,7 @@ function escHtml(s) {
 function escAttr(s) { return String(s).replace(/'/g,'&#39;'); }
 function maskPhone(p) { return p.length > 6 ? p.slice(0,4) + '***' + p.slice(-3) : p; }
 
+startScan();
 refreshStats();
 setInterval(refreshStats, 20000);
 </script>
