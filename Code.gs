@@ -361,9 +361,16 @@ function adminMigrate(pass, sheetName) {
       var name  = String(row[nameCol]||'').trim();
       var phone = String(row[phoneCol]||'').trim();
       if (!name || !phone) return;
-      if (findMemberByPhone(phone)) { skipped++; return; }
       var birthday   = birthdayCol   >= 0 ? String(row[birthdayCol]||'').trim()   : '';
       var memberType = memberTypeCol >= 0 ? String(row[memberTypeCol]||'').trim() || '會員' : '會員';
+      var existingMember = findMemberByPhone(phone);
+      if (existingMember) {
+        // Update birthday if source has one and member record is currently empty
+        if (birthday && !existingMember.birthday) {
+          getMemberSheet().getRange(existingMember.row, 3).setValue(birthday);
+        }
+        skipped++; return;
+      }
       mSh.appendRow([name, phone, birthday, memberType, today, '已從'+sheetName+'匯入']);
       added++;
     });
