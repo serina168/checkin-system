@@ -356,14 +356,20 @@ function adminCreateEvent(p) {
   return {ok:true, msg:'活動「'+p.eventName+'」已建立/更新'};
 }
 
+function isEventSheet(name) {
+  if ([MEMBER_SHEET, CONFIG_SHEET].indexOf(name) >= 0) return false;
+  if (/^表單回[覆复]/.test(name)) return false;
+  if (/^Form Responses/i.test(name)) return false;
+  return true;
+}
+
 function adminListEvents(pass) {
   if (!checkAuth(pass)) return {ok:false, msg:'密碼錯誤'};
-  var skip = [MEMBER_SHEET, CONFIG_SHEET];
   var currentEvent = getConfig()['currentEvent'] || '';
   var events = getSpreadsheet().getSheets()
-    .filter(function(sh){ return skip.indexOf(sh.getName()) < 0; })
+    .filter(function(sh){ return isEventSheet(sh.getName()); })
     .map(function(sh){ return sh.getName(); })
-    .reverse(); // most recent sheet last → reverse gives newest first
+    .reverse();
   return {ok:true, events:events, current:currentEvent};
 }
 
@@ -414,7 +420,7 @@ function adminAttendanceStats(pass) {
 
   ss.getSheets().forEach(function(sh) {
     var shName = sh.getName();
-    if (skipSheets.indexOf(shName) >= 0) return;
+    if (!isEventSheet(shName)) return;
     if (sh.getLastRow() < 2) return;
     eventNames.push(shName);
     var old = isOldFormat(sh);
