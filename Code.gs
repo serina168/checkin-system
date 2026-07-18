@@ -225,19 +225,21 @@ function eventCheckin(phone) {
       var member = findMemberByPhone(phone);
       if (!member) return {ok: false, msg: '查無此 QR Code，請改用姓名搜尋'};
       evSh.appendRow([member.name, member.phone, '出席', '', '0', '現場報到', now]);
-      return {ok: true, name: member.name, meal: '', lunchbox: '0'};
+      return {ok: true, name: member.name, meal: '', lunchbox: '0', birthday: member.birthday||''};
     }
 
     var d = row.data;
+    var memberForBday = findMemberByPhone(phone);
+    var bday = memberForBday ? (memberForBday.birthday||'') : '';
     if (old) {
       // old: A=timestamp B=姓名 C=電話 D=生日 E=加購便當 F=身份 G=出席/請假 H=用餐 I=備註 J=報到時間
       if (d[9]) return {ok: false, msg: d[1] + ' 已於 ' + d[9] + ' 報到', dup: true};
       evSh.getRange(row.row, 10).setValue(now);
-      return {ok: true, name: d[1], meal: String(d[7]||''), lunchbox: String(d[4]||'0')};
+      return {ok: true, name: d[1], meal: String(d[7]||''), lunchbox: String(d[4]||'0'), birthday: bday};
     } else {
       if (d[6]) return {ok: false, msg: d[0] + ' 已於 ' + d[6] + ' 報到', dup: true};
       evSh.getRange(row.row, 7).setValue(now);
-      return {ok: true, name: d[0], meal: d[3]||'', lunchbox: String(d[4]||'0')};
+      return {ok: true, name: d[0], meal: d[3]||'', lunchbox: String(d[4]||'0'), birthday: bday};
     }
   } finally { lock.releaseLock(); }
 }

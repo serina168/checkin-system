@@ -214,11 +214,18 @@ function doCheckIn(id) {
     .then(function(d){
       if (d.ok) {
         buzz([40,60,40]);
+        var isBday = false;
+        if (d.birthday) {
+          var m = String(d.birthday).match(/(\d+)月/);
+          if (m && parseInt(m[1]) === new Date().getMonth()+1) isBday = true;
+        }
         var badges = '';
+        if (isBday) badges += '<span class="badge" style="background:#e6a817;color:#fff">🎂 本月壽星</span>';
         if (d.meal && d.meal !== '不用餐') badges += '<span class="badge badge-meal">' + escHtml(d.meal) + '</span>';
         if (d.lunchbox && d.lunchbox !== '0') badges += '<span class="badge badge-lb">🍱 ×' + escHtml(String(d.lunchbox)) + '</span>';
-        showPop('ok', '✓', escHtml(d.name), '報到完成！', badges);
-        setTimeout(function() { closePop(); clearSearch(); $('q').focus(); }, 2500);
+        var subMsg = isBday ? '🎉 生日快樂！報到完成！' : '報到完成！';
+        showPop('ok', isBday ? '🎂' : '✓', escHtml(d.name), subMsg, badges);
+        setTimeout(function() { closePop(); clearSearch(); $('q').focus(); }, isBday ? 4000 : 2500);
       } else {
         buzz([200]);
         showPop('no', '✕', escHtml(d.msg || '查無此人'), '請確認姓名或電話', '');
