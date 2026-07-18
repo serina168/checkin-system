@@ -33,6 +33,8 @@ function doGet(e) {
       case 'admin_list_events':       result = adminListEvents(p.pass); break;
       case 'admin_event_guests_by':   result = adminEventGuestsBySheet(p.pass, p.sheetName); break;
       case 'admin_manual_checkin':    result = adminManualCheckin(p.pass, p.phone, p.sheetName); break;
+      case 'admin_update_member':     result = adminUpdateMember(p); break;
+      case 'admin_set_status':        result = adminSetMemberStatus(p); break;
       default: result = {ok: false, msg: 'Unknown action: ' + action};
     }
   } catch (err) {
@@ -305,11 +307,35 @@ function adminMembers(pass) {
   if (!checkAuth(pass)) return {ok:false, msg:'密碼錯誤'};
   var sh = getMemberSheet();
   if (!sh || sh.getLastRow() < 2) return {ok:true, members:[]};
-  var data = sh.getRange(2, 1, sh.getLastRow()-1, 6).getValues();
+  var data = sh.getRange(2, 1, sh.getLastRow()-1, 7).getValues();
   var members = data.map(function(r) {
-    return {name:r[0], phone:r[1], birthday:r[2], memberType:r[3], joinDate:r[4], note:r[5]};
+    return {name:r[0], phone:r[1], birthday:String(r[2]||''), memberType:r[3], joinDate:r[4], note:r[5], status:String(r[6]||'')};
   });
   return {ok:true, members:members};
+}
+
+function adminUpdateMember(p) {
+  if (!checkAuth(p.pass)) return {ok:false, msg:'密碼錯誤'};
+  if (!p.phone) return {ok:false, msg:'缺少電話'};
+  var member = findMemberByPhone(p.phone);
+  if (!member) return {ok:false, msg:'找不到會員'};
+  var sh = getMemberSheet();
+  sh.getRange(member.row, 1, 1, 4).setValues([[
+    p.name || member.name,
+    p.newPhone || member.phone,
+    p.birthday !== undefined ? p.birthday : (member.birthday||''),
+    p.memberType !== undefined ? p.memberType : (member.memberType||'')
+  ]]);
+  return {ok:true, msg:'會員資料已更新'};
+}
+
+function adminSetMemberStatus(p) {
+  if (!checkAuth(p.pass)) return {ok:false, msg:'密碼錯誤'};
+  if (!p.phone) return {ok:false, msg:'缺少電話'};
+  var member = findMemberByPhone(p.phone);
+  if (!member) return {ok:false, msg:'找不到會員'};
+  getMemberSheet().getRange(member.row, 7).setValue(p.status || '');
+  return {ok:true};
 }
 
 function adminCreateEvent(p) {

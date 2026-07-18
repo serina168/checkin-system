@@ -50,6 +50,7 @@ input:focus,select:focus{border-color:#a8874f}
 .stat{background:#f5f0e8;border:1px solid #ddd0b8;border-radius:10px;padding:10px}
 .stat .n{font-size:26px;font-weight:700}
 .stat .l{font-size:12px;color:#8a7a63}
+.btn-act{background:none;border:none;cursor:pointer;font-size:17px;padding:2px 4px;line-height:1}
 .tbl{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
 th{background:#f5ece0;color:#a8874f;font-weight:700;padding:8px;text-align:left;border-bottom:2px solid #c8aa80}
@@ -109,6 +110,7 @@ td{padding:8px;border-bottom:1px solid #e8ddd0}
         <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-sm btn-outline" onclick="loadGuests()">重新整理</button>
           <button class="btn btn-sm btn-outline" onclick="exportGuestsCSV()">📥 匯出 CSV</button>
+          <button class="btn btn-sm btn-outline" onclick="printAttendanceSheet()">🖨️ 列印簽到表</button>
         </div>
         <div class="tbl">
           <table id="event-table">
@@ -130,13 +132,20 @@ td{padding:8px;border-bottom:1px solid #e8ddd0}
       </div>
       <div class="box">
         <div class="box-title">會員名冊</div>
-        <div style="margin-bottom:10px">
+        <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <button class="btn btn-sm btn-outline" onclick="loadMembers()">重新整理</button>
-          <button class="btn btn-sm btn-outline" onclick="exportMembersCSV()">匯出 CSV</button>
+          <button class="btn btn-sm btn-outline" onclick="exportMembersCSV()">📥 匯出 CSV</button>
+          <input type="text" id="member-search" placeholder="搜尋姓名或電話…" oninput="filterMembers()" style="flex:1;min-width:130px;padding:7px 10px;font-size:14px;border:1.5px solid #c8aa80;border-radius:8px;margin-top:0">
+        </div>
+        <div style="margin-bottom:8px;display:flex;align-items:center;gap:10px">
+          <label style="margin:0;font-size:13px;font-weight:400;display:flex;align-items:center;gap:4px;cursor:pointer">
+            <input type="checkbox" id="show-inactive" onchange="filterMembers()"> 顯示已停用會員
+          </label>
+          <span id="member-count" style="font-size:13px;color:#8a7a63"></span>
         </div>
         <div class="tbl">
           <table id="members-table">
-            <tr><th>姓名</th><th>電話</th><th>出生年月日</th><th>身份</th><th>加入日期</th></tr>
+            <tr><th>姓名</th><th>電話</th><th>身份</th><th>生日</th><th>狀態</th><th>操作</th></tr>
           </table>
         </div>
       </div>
@@ -204,6 +213,29 @@ td{padding:8px;border-bottom:1px solid #e8ddd0}
         <button class="btn" onclick="doSaveEvent()">建立 / 更新活動</button>
         <div class="msg" id="setup-msg"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- 編輯會員 Modal -->
+<div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;overflow-y:auto;padding:20px">
+  <div style="background:#fff;border-radius:16px;max-width:480px;margin:0 auto;padding:24px 20px">
+    <div style="font-size:17px;font-weight:700;color:#a8874f;margin-bottom:18px">✏️ 編輯會員資料</div>
+    <input type="hidden" id="edit-orig-phone">
+    <label style="display:block;font-size:14px;font-weight:700;margin:10px 0 4px">姓名</label>
+    <input type="text" id="edit-name" style="width:100%;box-sizing:border-box;font-size:16px;padding:10px 12px;border:1.5px solid #c8aa80;border-radius:8px">
+    <label style="display:block;font-size:14px;font-weight:700;margin:10px 0 4px">電話</label>
+    <input type="text" id="edit-phone" style="width:100%;box-sizing:border-box;font-size:16px;padding:10px 12px;border:1.5px solid #c8aa80;border-radius:8px">
+    <label style="display:block;font-size:14px;font-weight:700;margin:10px 0 4px">出生年月日</label>
+    <input type="text" id="edit-birthday" placeholder="例：民國60年5月3日" style="width:100%;box-sizing:border-box;font-size:16px;padding:10px 12px;border:1.5px solid #c8aa80;border-radius:8px">
+    <label style="display:block;font-size:14px;font-weight:700;margin:10px 0 4px">身份</label>
+    <select id="edit-type" style="width:100%;box-sizing:border-box;font-size:16px;padding:10px 12px;border:1.5px solid #c8aa80;border-radius:8px;background:#fff">
+      <option>會員</option><option>來賓</option><option>榮譽會員</option>
+    </select>
+    <div id="edit-msg" style="margin-top:10px;font-size:14px;color:#b5544b"></div>
+    <div style="display:flex;gap:10px;margin-top:18px">
+      <button class="btn" style="flex:1" onclick="saveEdit()">儲存</button>
+      <button class="btn" style="flex:1;background:#fff;color:#a8874f;border:1.5px solid #a8874f" onclick="closeEdit()">取消</button>
     </div>
   </div>
 </div>
@@ -434,24 +466,122 @@ function exportGuestsCSV(){
 }
 
 function loadMembers(){
-  document.getElementById('members-table').innerHTML='<tr><th>姓名</th><th>電話</th><th>出生年月日</th><th>身份</th><th>加入日期</th></tr><tr><td colspan="5" style="text-align:center;padding:20px;color:#8a7a63">載入中…</td></tr>';
+  document.getElementById('members-table').innerHTML='<tr><th>姓名</th><th>電話</th><th>身份</th><th>生日</th><th>狀態</th><th>操作</th></tr><tr><td colspan="6" style="text-align:center;padding:20px;color:#8a7a63">載入中…</td></tr>';
   apiFetch(API+'?action=admin_members&pass='+encodeURIComponent(PASS))
     .then(function(d){
       if(!d.ok){alert(d.msg||'載入失敗');return;}
       _members=d.members||[];
-      var rows=_members.map(function(m){
-        var jd=m.joinDate?String(m.joinDate).replace(/T.*/,'').replace(/-/g,'/'):'';
-        return '<tr><td>'+esc(m.name)+'</td><td>'+esc(m.phone)+'</td><td>'+(m.birthday||'')+'</td><td>'+(m.memberType||'')+'</td><td>'+jd+'</td></tr>';
-      }).join('');
-      document.getElementById('members-table').innerHTML='<tr><th>姓名</th><th>電話</th><th>出生年月日</th><th>身份</th><th>加入日期</th></tr>'+(rows||'<tr><td colspan="5" style="text-align:center;padding:20px;color:#8a7a63">尚無資料</td></tr>');
+      filterMembers();
     }).catch(function(){alert('連線失敗');});
+}
+
+function filterMembers(){
+  var q=(document.getElementById('member-search').value||'').trim();
+  var showInactive=document.getElementById('show-inactive').checked;
+  var filtered=_members.filter(function(m){
+    if(!showInactive&&m.status==='停用')return false;
+    if(!q)return true;
+    return m.name.indexOf(q)>=0||String(m.phone).indexOf(q)>=0;
+  });
+  renderMembersTable(filtered);
+  document.getElementById('member-count').textContent='顯示 '+filtered.length+' / 共 '+_members.length+' 位';
+}
+
+function renderMembersTable(data){
+  var HCOLS=6;
+  var rows=data.map(function(m){
+    var inactive=m.status==='停用';
+    var style=inactive?'style="opacity:.45"':'';
+    var statusBadge=inactive?'<span style="background:#e0e0e0;color:#666;font-size:11px;padding:2px 7px;border-radius:20px">停用</span>':'<span style="background:#e8f4ec;color:#4a7c59;font-size:11px;padding:2px 7px;border-radius:20px">有效</span>';
+    var actions='<button class="btn-act" onclick="openEdit(\''+escH(m.phone)+'\')" title="編輯">✏️</button>'
+      +(inactive
+        ?'<button class="btn-act" onclick="setStatus(\''+escH(m.phone)+'\',\'\')" title="恢復" style="color:#4a7c59">✅</button>'
+        :'<button class="btn-act" onclick="setStatus(\''+escH(m.phone)+'\',\'停用\')" title="停用" style="color:#b5544b">🚫</button>');
+    return '<tr '+style+'><td>'+escH(m.name)+'</td><td style="font-size:12px;color:#8a7a63">'+escH(m.phone)+'</td><td>'+(m.memberType||'')+'</td><td style="font-size:12px">'+(m.birthday||'')+'</td><td>'+statusBadge+'</td><td style="white-space:nowrap">'+actions+'</td></tr>';
+  }).join('');
+  document.getElementById('members-table').innerHTML='<tr><th>姓名</th><th>電話</th><th>身份</th><th>生日</th><th>狀態</th><th>操作</th></tr>'+(rows||'<tr><td colspan="6" style="text-align:center;padding:20px;color:#8a7a63">尚無資料</td></tr>');
+}
+
+function openEdit(phone){
+  var m=_members.find(function(x){return String(x.phone)===String(phone);});
+  if(!m)return;
+  document.getElementById('edit-orig-phone').value=m.phone;
+  document.getElementById('edit-name').value=m.name||'';
+  document.getElementById('edit-phone').value=m.phone||'';
+  document.getElementById('edit-birthday').value=m.birthday||'';
+  document.getElementById('edit-type').value=m.memberType||'會員';
+  document.getElementById('edit-msg').textContent='';
+  document.getElementById('edit-modal').style.display='block';
+}
+
+function closeEdit(){ document.getElementById('edit-modal').style.display='none'; }
+
+function saveEdit(){
+  var origPhone=document.getElementById('edit-orig-phone').value;
+  var newName=document.getElementById('edit-name').value.trim();
+  var newPhone=document.getElementById('edit-phone').value.trim();
+  var newBday=document.getElementById('edit-birthday').value.trim();
+  var newType=document.getElementById('edit-type').value;
+  if(!newName){document.getElementById('edit-msg').textContent='姓名不能空白';return;}
+  var url=API+'?action=admin_update_member&pass='+encodeURIComponent(PASS)
+    +'&phone='+encodeURIComponent(origPhone)
+    +'&name='+encodeURIComponent(newName)
+    +'&newPhone='+encodeURIComponent(newPhone)
+    +'&birthday='+encodeURIComponent(newBday)
+    +'&memberType='+encodeURIComponent(newType);
+  document.getElementById('edit-msg').textContent='儲存中…';
+  apiFetch(url).then(function(d){
+    if(d.ok){
+      closeEdit();
+      loadMembers();
+    } else {
+      document.getElementById('edit-msg').textContent=d.msg||'儲存失敗';
+    }
+  }).catch(function(){document.getElementById('edit-msg').textContent='連線失敗';});
+}
+
+function setStatus(phone,status){
+  var label=status?'確定停用此會員？':'確定恢復此會員？';
+  if(!confirm(label))return;
+  apiFetch(API+'?action=admin_set_status&pass='+encodeURIComponent(PASS)+'&phone='+encodeURIComponent(phone)+'&status='+encodeURIComponent(status))
+    .then(function(d){if(d.ok)loadMembers();else alert(d.msg||'操作失敗');})
+    .catch(function(){alert('連線失敗');});
 }
 
 function exportMembersCSV(){
   if(!_members.length){alert('尚無資料');return;}
-  var rows=[['姓名','電話','出生年月日','身份','加入日期']];
-  _members.forEach(function(m){rows.push([m.name,'="'+m.phone+'"',m.birthday||'',m.memberType||'',m.joinDate||'']);});
+  var rows=[['姓名','電話','出生年月日','身份','加入日期','狀態']];
+  _members.forEach(function(m){rows.push([m.name,'="'+m.phone+'"',m.birthday||'',m.memberType||'',m.joinDate||'',m.status||'有效']);});
   dlCSV(rows,'會員名冊.csv');
+}
+
+function printAttendanceSheet(){
+  if(!_guests.length){alert('尚無活動名單');return;}
+  var eventName=_currentSheet||'活動名單';
+  var attending=_guests.filter(function(g){return g.attendance==='出席';});
+  var rows=attending.map(function(g,i){
+    return '<tr><td>'+(i+1)+'</td><td style="font-size:15px;font-weight:700">'+escH(g.name)+'</td><td style="font-size:13px;color:#555">'+escH(g.phone)+'</td><td>'+(g.meal||'')+(g.lunchbox&&g.lunchbox!=='0'?' +'+g.lunchbox:'')+'</td><td style="border-bottom:1px solid #999;height:36px"></td></tr>';
+  }).join('');
+  var html='<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8">'
+    +'<title>'+escH(eventName)+' 簽到表</title>'
+    +'<style>body{font-family:sans-serif;padding:12mm;font-size:14px}'
+    +'h2{text-align:center;font-size:18px;margin-bottom:4px}'
+    +'.sub{text-align:center;font-size:12px;color:#666;margin-bottom:12px}'
+    +'table{width:100%;border-collapse:collapse}'
+    +'th{background:#f5ece0;padding:8px;border:1px solid #c8aa80;font-size:13px}'
+    +'td{padding:6px 8px;border:1px solid #ddd;vertical-align:middle}'
+    +'tr:nth-child(even){background:#faf6ef}'
+    +'@media print{@page{size:A4 portrait;margin:12mm}}'
+    +'</style></head><body>'
+    +'<h2>臺中市海德堡讀書會</h2>'
+    +'<div class="sub">'+escH(eventName)+' 出席簽到表　共 '+attending.length+' 人</div>'
+    +'<table><tr><th style="width:36px">#</th><th>姓名</th><th>電話</th><th>用餐</th><th style="width:80px">簽名</th></tr>'
+    +rows+'</table></body></html>';
+  var w=window.open('','_blank','width=800,height=900');
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(function(){w.print();},400);
 }
 
 function doMigrate(){
