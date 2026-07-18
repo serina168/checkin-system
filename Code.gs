@@ -29,7 +29,10 @@ function doGet(e) {
       case 'admin_members':      result = adminMembers(p.pass); break;
       case 'admin_create_event': result = adminCreateEvent(p); break;
       case 'admin_migrate':      result = adminMigrate(p.pass, p.sheetName); break;
-      case 'admin_attendance':   result = adminAttendanceStats(p.pass); break;
+      case 'admin_attendance':        result = adminAttendanceStats(p.pass); break;
+      case 'admin_list_events':       result = adminListEvents(p.pass); break;
+      case 'admin_event_guests_by':   result = adminEventGuestsBySheet(p.pass, p.sheetName); break;
+      case 'admin_manual_checkin':    result = adminManualCheckin(p.pass, p.phone, p.sheetName); break;
       default: result = {ok: false, msg: 'Unknown action: ' + action};
     }
   } catch (err) {
@@ -325,6 +328,55 @@ function adminCreateEvent(p) {
     evSh.setFrozenRows(1);
   }
   return {ok:true, msg:'活動「'+p.eventName+'」已建立/更新'};
+}
+
+function adminListEvents(pass) {
+  if (!checkAuth(pass)) return {ok:false, msg:'密碼錯誤'};
+  var skip = [MEMBER_SHEET, CONFIG_SHEET];
+  var currentEvent = getConfig()['currentEvent'] || '';
+  var events = getSpreadsheet().getSheets()
+    .filter(function(sh){ return skip.indexOf(sh.getName()) < 0; })
+    .map(function(sh){ return sh.getName(); })
+    .reverse(); // most recent sheet last → reverse gives newest first
+  return {ok:true, events:events, current:currentEvent};
+}
+
+function adminEventGuestsBySheet(pass, sheetName) {
+  if (!checkAuth(pass)) return {ok:false, msg:'密碼錯誤'};
+  if (!sheetName) return {ok:false, msg:'請提供分頁名稱'};
+  var sh = getSpreadsheet().getSheetByName(sheetName);
+  if (!sh) return {ok:false, msg:'找不到分頁：'+sheetName};
+  if (sh.getLastRow() < 2) return {ok:true, guests:[], sheetName:sheetName};
+  var old = isOldFormat(sh);
+  var cols = old ? 10 : 7;
+  var data = sh.getRange(2, 1, sh.getLastRow()-1, cols).getValues();
+  var guests = data.map(function(r) {
+    if (old) return {name:r[1], phone:r[2], attendance:r[6]||'出席', meal:r[7]||'', lunchbox:String(r[4]||'0'), note:String(r[8]||''), checkinTime:r[9]?String(r[9]):'', checkedIn:!!r[9]};
+    return {name:r[0], phone:r[1], attendance:r[2], meal:r[3], lunchbox:String(r[4]||'0'), note:r[5], checkinTime:r[6]?String(r[6]):'', checkedIn:!!r[6]};
+  });
+  return {ok:true, guests:guests, sheetName:sheetName};
+}
+
+function adminManualCheckin(pass, phone, sheetName) {
+  if (!checkAuth(pass)) return {ok:false, msg:'密碼錯誤'};
+  if (!phone) return {ok:false, msg:'缺少電話'};
+  var lock = LockService.getScriptLock();
+  lock.waitLock(8000);
+  try {
+    var ss = getSpreadsheet();
+    var sh = sheetName ? ss.getSheetByName(sheetName) : getEventSheet();
+    if (!sh) return {ok:false, msg:'找不到活動分頁'};
+    var old = isOldFormat(sh);
+    var now = Utilities.formatDate(new Date(), 'Asia/Taipei', 'HH:mm:ss');
+    var row = findInEventSheet(sh, phone);
+    if (!row) return {ok:false, msg:'此電話不在名單中'};
+    var d = row.data;
+    var timeCol = old ? 10 : 7; // 1-indexed column for check-in time
+    var existingTime = old ? d[9] : d[6];
+    if (existingTime) return {ok:false, msg:(old?d[1]:d[0])+' 已於 '+existingTime+' 報到', dup:true};
+    sh.getRange(row.row, timeCol).setValue(now);
+    return {ok:true, name: old?d[1]:d[0], time:now};
+  } finally { lock.releaseLock(); }
 }
 
 function adminAttendanceStats(pass) {
