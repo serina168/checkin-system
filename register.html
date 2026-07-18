@@ -94,9 +94,16 @@ textarea{resize:vertical;min-height:78px}
 
 /* ── Success ── */
 #success-section{text-align:center}
-.success-icon{font-size:54px;margin-bottom:10px}
-.success-title{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;margin-bottom:4px}
-.success-sub{color:var(--muted);font-size:15px;margin-bottom:20px}
+.success-icon{font-size:64px;margin-bottom:14px}
+.success-title{font-family:'Noto Serif TC',serif;font-size:36px;font-weight:700;margin-bottom:8px;color:var(--ok)}
+.success-sub{color:var(--muted);font-size:17px;margin-bottom:20px}
+/* full-screen flash overlay */
+#success-flash{position:fixed;inset:0;background:#4a7c59;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;opacity:0;pointer-events:none;transition:opacity .3s}
+#success-flash.show{opacity:1;pointer-events:auto}
+#success-flash.hide{opacity:0;pointer-events:none}
+.flash-icon{font-size:90px;margin-bottom:16px;animation:pop .4s ease}
+.flash-text{font-family:'Noto Serif TC',serif;font-size:52px;font-weight:700;color:#fff;letter-spacing:.08em}
+@keyframes pop{0%{transform:scale(.5)}70%{transform:scale(1.1)}100%{transform:scale(1)}}
 .qr-wrap{background:#fff;border-radius:20px;padding:26px 24px 20px;display:inline-block;box-shadow:0 6px 28px rgba(140,110,60,.15);margin-bottom:14px;border:1.5px solid rgba(200,170,110,.25)}
 #qrcode,#qrcode-lookup{margin:0 auto}
 .qr-name{font-family:'Noto Serif TC',serif;font-size:26px;font-weight:700;color:var(--ink);margin-bottom:14px;letter-spacing:.05em}
@@ -550,6 +557,17 @@ function showSuccess(name,phone,updated){
   var el=document.getElementById('qrcode');el.innerHTML='';
   new QRCode(el,{text:window.location.origin+'/checkin.html?p='+phone,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
   document.getElementById('success-section').classList.remove('hidden');
+  // show full-screen flash for 3 seconds
+  var flash=document.getElementById('success-flash');
+  document.getElementById('flash-icon').textContent=updated?'✅':'🎉';
+  document.getElementById('flash-text').textContent=updated?'更新成功！':'報名成功！';
+  flash.style.background=updated?'#7a5500':'#4a7c59';
+  flash.classList.add('show');
+  setTimeout(function(){
+    flash.classList.add('hide');
+    setTimeout(function(){flash.classList.remove('show','hide');},300);
+    window.scrollTo({top:0,behavior:'smooth'});
+  },3000);
 }
 
 function resetForm(){
@@ -561,5 +579,10 @@ function resetForm(){
   document.getElementById('tab-reg').click();
 }
 </script>
+<!-- full-screen success flash -->
+<div id="success-flash">
+  <div class="flash-icon" id="flash-icon">🎉</div>
+  <div class="flash-text" id="flash-text">報名成功！</div>
+</div>
 </body>
 </html>
