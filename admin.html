@@ -330,18 +330,20 @@ function fixOldFormatGuests(guests){
 function loadEventList(){
   apiFetch(API+'?action=admin_list_events&pass='+encodeURIComponent(PASS))
     .then(function(d){
-      if(!d.ok)return;
-      var sel=document.getElementById('event-select');
-      sel.innerHTML='';
-      (d.events||[]).forEach(function(name){
-        var opt=document.createElement('option');
-        opt.value=name;opt.textContent=name;
-        if(name===d.current)opt.selected=true;
-        sel.appendChild(opt);
-      });
-      _currentSheet=d.current||'';
-      loadGuests();
-    }).catch(function(){loadGuests();});
+      if(d.ok){
+        var sel=document.getElementById('event-select');
+        sel.innerHTML='';
+        (d.events||[]).forEach(function(name){
+          var opt=document.createElement('option');
+          opt.value=name;opt.textContent=name;
+          if(name===d.current)opt.selected=true;
+          sel.appendChild(opt);
+        });
+        _currentSheet=d.current||'';
+      }
+    })
+    .catch(function(){})
+    .then(function(){ loadGuests(); }); // always run after, success or fail
 }
 
 function switchEvent(sheetName){
