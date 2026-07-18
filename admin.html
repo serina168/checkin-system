@@ -417,9 +417,12 @@ function loadBirthdays(){
       var box=document.getElementById('birthday-box');
       if(!bdays.length){box.style.display='none';return;}
       box.style.display='block';
-      document.getElementById('birthday-list').innerHTML=bdays.map(function(m){
-        return '🎂 <strong>'+escH(m.name)+'</strong>';
-      }).join('　　');
+      var html='';
+      bdays.forEach(function(m,i){
+        html+='<span style="white-space:nowrap;display:inline-block;margin-right:16px">🎂 <strong>'+escH(m.name)+'</strong></span>';
+        if((i+1)%7===0&&i+1<bdays.length)html+='<br>';
+      });
+      document.getElementById('birthday-list').innerHTML=html;
     }).catch(function(){});
 }
 
