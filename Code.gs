@@ -29,6 +29,7 @@ function doGet(e) {
       case 'admin_members':      result = adminMembers(p.pass); break;
       case 'admin_create_event': result = adminCreateEvent(p); break;
       case 'admin_migrate':      result = adminMigrate(p.pass, p.sheetName); break;
+      case 'admin_attendance':   result = adminAttendanceStats(p.pass); break;
       default: result = {ok: false, msg: 'Unknown action: ' + action};
     }
   } catch (err) {
@@ -324,6 +325,44 @@ function adminCreateEvent(p) {
     evSh.setFrozenRows(1);
   }
   return {ok:true, msg:'活動「'+p.eventName+'」已建立/更新'};
+}
+
+function adminAttendanceStats(pass) {
+  if (!checkAuth(pass)) return {ok:false, msg:'密碼錯誤'};
+  var ss = getSpreadsheet();
+  var skipSheets = [MEMBER_SHEET, CONFIG_SHEET];
+  var stats = {}; // phone -> {name, total, attend, absent, checkedIn}
+  var eventNames = [];
+
+  ss.getSheets().forEach(function(sh) {
+    var shName = sh.getName();
+    if (skipSheets.indexOf(shName) >= 0) return;
+    if (sh.getLastRow() < 2) return;
+    eventNames.push(shName);
+    var old = isOldFormat(sh);
+    var cols = old ? 10 : 7;
+    var data = sh.getRange(2, 1, sh.getLastRow()-1, cols).getValues();
+    data.forEach(function(r) {
+      var name       = old ? r[1] : r[0];
+      var phone      = normalizePhone(old ? r[2] : r[1]);
+      var attendance = String(old ? r[6] : r[2]);
+      var checkedIn  = old ? !!r[9] : !!r[6];
+      if (!phone) return;
+      if (!stats[phone]) stats[phone] = {name: String(name), total:0, attend:0, absent:0, checkedIn:0};
+      stats[phone].total++;
+      if (attendance === '出席') stats[phone].attend++;
+      if (attendance === '請假') stats[phone].absent++;
+      if (checkedIn) stats[phone].checkedIn++;
+    });
+  });
+
+  var result = Object.keys(stats).map(function(phone) {
+    var s = stats[phone];
+    var rate = s.attend > 0 ? Math.round(s.checkedIn / s.attend * 100) : 0;
+    return {name:s.name, phone:phone, total:s.total, attend:s.attend, absent:s.absent, checkedIn:s.checkedIn, rate:rate};
+  }).sort(function(a,b){ return b.checkedIn - a.checkedIn; });
+
+  return {ok:true, stats:result, eventCount:eventNames.length};
 }
 
 function adminMigrate(pass, sheetName) {

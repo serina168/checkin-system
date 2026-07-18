@@ -82,6 +82,7 @@ td{padding:8px;border-bottom:1px solid #e8ddd0}
       <div class="tab active" onclick="switchTab('event')">📋 本次活動</div>
       <div class="tab" onclick="switchTab('members')">👥 會員名冊</div>
       <div class="tab" onclick="switchTab('setup')">⚙️ 活動管理</div>
+      <div class="tab" onclick="switchTab('stats')">📊 出席統計</div>
       <div class="tab" onclick="switchTab('print')">🖨️ 批次列印</div>
     </div>
 
@@ -131,6 +132,24 @@ td{padding:8px;border-bottom:1px solid #e8ddd0}
         <div class="tbl">
           <table id="members-table">
             <tr><th>姓名</th><th>電話</th><th>出生年月日</th><th>身份</th><th>加入日期</th></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 出席統計 -->
+    <div id="tab-stats" style="display:none">
+      <div class="box">
+        <div class="box-title">會員出席率統計</div>
+        <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-sm btn-outline" onclick="loadAttendanceStats()">重新整理</button>
+          <button class="btn btn-sm btn-outline" onclick="exportStatsCSV()">匯出 CSV</button>
+          <input type="text" id="stats-search" placeholder="搜尋姓名…" oninput="filterStats()" style="width:120px;padding:7px 10px;font-size:14px;border:1.5px solid #c8aa80;border-radius:8px;margin-top:0">
+        </div>
+        <div id="stats-summary" style="font-size:13px;color:#8a7a63;margin-bottom:8px"></div>
+        <div class="tbl">
+          <table id="stats-table">
+            <tr><th>#</th><th>姓名</th><th>電話</th><th>總活動</th><th>出席</th><th>請假</th><th>實際報到</th><th>報到率</th></tr>
           </table>
         </div>
       </div>
@@ -187,7 +206,7 @@ td{padding:8px;border-bottom:1px solid #e8ddd0}
 <script>
 var API='https://script.google.com/macros/s/AKfycbx8wYkMnToVxSSwK0YxC-Ki99-h-W3_VVKhHwbpUgpLVcIyjD_RJ-SYAW85hd1e_8-J0g/exec';
 var PASS='';
-var _guests=[],_members=[];
+var _guests=[],_members=[],_statsData=[];
 
 function apiFetch(url){
   return fetch(url,{redirect:'follow'}).then(function(r){return r.json();});
@@ -232,13 +251,14 @@ function loadEventInfo(){
 }
 
 function switchTab(name){
-  ['event','members','setup','print'].forEach(function(t){
+  ['event','members','stats','setup','print'].forEach(function(t){
     document.getElementById('tab-'+t).style.display=(t===name?'block':'none');
   });
   document.querySelectorAll('.tab').forEach(function(el,i){
-    el.classList.toggle('active',['event','members','setup','print'][i]===name);
+    el.classList.toggle('active',['event','members','stats','setup','print'][i]===name);
   });
   if(name==='members'&&!_members.length)loadMembers();
+  if(name==='stats'&&!_statsData.length)loadAttendanceStats();
   if(name==='print'&&!document.getElementById('badge-grid').children.length)loadBatchPrint();
 }
 
@@ -401,6 +421,52 @@ function doSaveEvent(){
       if(d.ok){showMsg('setup-msg',d.msg||'活動已建立',true);loadEventInfo();}
       else showMsg('setup-msg',d.msg||'失敗',false);
     }).catch(function(){showMsg('setup-msg','連線失敗',false);});
+}
+
+function loadAttendanceStats(){
+  var tbl=document.getElementById('stats-table');
+  tbl.innerHTML='<tr><th>#</th><th>姓名</th><th>電話</th><th>總活動</th><th>出席</th><th>請假</th><th>實際報到</th><th>報到率</th></tr><tr><td colspan="8" style="text-align:center;padding:20px;color:#8a7a63">統計中，請稍候…</td></tr>';
+  document.getElementById('stats-summary').textContent='';
+  apiFetch(API+'?action=admin_attendance&pass='+encodeURIComponent(PASS))
+    .then(function(d){
+      if(!d.ok){alert(d.msg||'載入失敗');return;}
+      _statsData=d.stats||[];
+      document.getElementById('stats-summary').textContent='共 '+_statsData.length+' 位會員・涵蓋 '+d.eventCount+' 場活動';
+      renderStats(_statsData);
+    }).catch(function(){alert('連線失敗');});
+}
+
+function renderStats(data){
+  var rows=data.map(function(s,i){
+    var bar=Math.round(s.rate/10);
+    var color=s.rate>=80?'#4a7c59':s.rate>=50?'#a8874f':'#b5544b';
+    var blocks='█'.repeat(bar)+'░'.repeat(10-bar);
+    return '<tr>'
+      +'<td>'+(i+1)+'</td>'
+      +'<td>'+escH(s.name)+'</td>'
+      +'<td style="font-size:12px;color:#8a7a63">'+escH(s.phone)+'</td>'
+      +'<td style="text-align:center">'+s.total+'</td>'
+      +'<td style="text-align:center;color:#4a7c59;font-weight:700">'+s.attend+'</td>'
+      +'<td style="text-align:center;color:#8a7a63">'+s.absent+'</td>'
+      +'<td style="text-align:center;color:#4a7c59;font-weight:700">'+s.checkedIn+'</td>'
+      +'<td style="white-space:nowrap"><span style="color:'+color+';font-weight:700">'+s.rate+'%</span> <span style="font-size:11px;color:#ccc;letter-spacing:-1px">'+blocks+'</span></td>'
+      +'</tr>';
+  }).join('');
+  document.getElementById('stats-table').innerHTML='<tr><th>#</th><th>姓名</th><th>電話</th><th>總活動</th><th>出席</th><th>請假</th><th>實際報到</th><th>報到率</th></tr>'+(rows||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#8a7a63">尚無資料</td></tr>');
+}
+
+function filterStats(){
+  var q=document.getElementById('stats-search').value.trim();
+  if(!q){renderStats(_statsData);return;}
+  var filtered=_statsData.filter(function(s){return s.name.indexOf(q)>=0||String(s.phone).indexOf(q)>=0;});
+  renderStats(filtered);
+}
+
+function exportStatsCSV(){
+  if(!_statsData.length){alert('尚無資料');return;}
+  var rows=[['姓名','電話','總活動場次','登記出席','請假','實際報到','報到率(%)']];
+  _statsData.forEach(function(s){rows.push([s.name,'="'+s.phone+'"',s.total,s.attend,s.absent,s.checkedIn,s.rate]);});
+  dlCSV(rows,'會員出席統計.csv');
 }
 
 function dlCSV(rows,filename){
