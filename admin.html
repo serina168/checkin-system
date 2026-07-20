@@ -655,7 +655,8 @@ function makeCell(g,i){
     +'<td style="font-size:11px;color:#888">'+escH(g.phone)+'</td>'
     +'<td style="font-weight:700;font-size:12px;'+mealColor+'">'+mealTxt+(extraTxt?'<br><span style="font-size:10px;color:#7a5000">'+extraTxt+'</span>':'')+'</td>'
     +'<td style="text-align:center;font-size:16px">□</td>'
-    +'<td style="text-align:center;font-size:16px">□</td>';
+    +'<td style="text-align:center;font-size:16px">□</td>'
+    +'<td></td>';
 }
 
 function buildAttendanceHTML(){
@@ -688,19 +689,21 @@ function buildAttendanceHTML(){
 
   var thStyle='background:#f0e8d8;padding:6px 4px;border:1px solid #c8aa80;font-size:11px;text-align:center';
   var thead='<tr>'
-    +'<th style="'+thStyle+';width:28px">#</th>'
+    +'<th style="'+thStyle+';width:24px">#</th>'
     +'<th style="'+thStyle+';text-align:left">姓名</th>'
     +'<th style="'+thStyle+'">電話</th>'
-    +'<th style="'+thStyle+';width:52px">用餐</th>'
-    +'<th style="'+thStyle+';width:38px">領取<br>材料</th>'
-    +'<th style="'+thStyle+';width:38px">現場<br>簽到</th>'
+    +'<th style="'+thStyle+';width:46px">用餐</th>'
+    +'<th style="'+thStyle+';width:36px">領取<br>材料</th>'
+    +'<th style="'+thStyle+';width:36px">現場<br>簽到</th>'
+    +'<th style="'+thStyle+';width:60px">備註</th>'
     +'<th style="'+thStyle+';width:6px;border-left:2px solid #c8aa80"></th>'
-    +'<th style="'+thStyle+';width:28px">#</th>'
+    +'<th style="'+thStyle+';width:24px">#</th>'
     +'<th style="'+thStyle+';text-align:left">姓名</th>'
     +'<th style="'+thStyle+'">電話</th>'
-    +'<th style="'+thStyle+';width:52px">用餐</th>'
-    +'<th style="'+thStyle+';width:38px">領取<br>材料</th>'
-    +'<th style="'+thStyle+';width:38px">現場<br>簽到</th>'
+    +'<th style="'+thStyle+';width:46px">用餐</th>'
+    +'<th style="'+thStyle+';width:36px">領取<br>材料</th>'
+    +'<th style="'+thStyle+';width:36px">現場<br>簽到</th>'
+    +'<th style="'+thStyle+';width:60px">備註</th>'
     +'</tr>';
 
   return {
