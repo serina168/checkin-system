@@ -640,35 +640,37 @@ function printAttendanceSheet(){
   }
 }
 
+var _bdayPhones={};
+function makeCell(g,i){
+  if(!g) return '<td colspan="6" style="border:none;background:transparent"></td>';
+  var isBday=_bdayPhones[g.phone];
+  var nameCell=(isBday?'🎂 ':'')+'<strong>'+escH(g.name)+'</strong>';
+  var mealTxt=g.meal||'';
+  if(mealTxt==='用餐')mealTxt='葷食';
+  var mealColor=mealTxt==='素食'?'color:#4a7c59':mealTxt==='葷食'?'color:#a8874f':'color:#aaa';
+  var extra=parseInt(g.lunchbox||0);
+  var extraTxt=extra>0?'+'+extra:'';
+  return '<td style="text-align:center;color:#aaa;font-size:11px">'+(i+1)+'</td>'
+    +'<td style="font-size:13px'+(isBday?';color:#b5460f':'')+'">'+nameCell+'</td>'
+    +'<td style="font-size:11px;color:#888">'+escH(g.phone)+'</td>'
+    +'<td style="font-weight:700;font-size:12px;'+mealColor+'">'+mealTxt+(extraTxt?'<br><span style="font-size:10px;color:#7a5000">'+extraTxt+'</span>':'')+'</td>'
+    +'<td style="text-align:center;font-size:16px">□</td>'
+    +'<td style="text-align:center;font-size:16px">□</td>';
+}
+
 function buildAttendanceHTML(){
   var eventName=_currentSheet||'活動名單';
   var attending=_guests.filter(function(g){return g.attendance==='出席';});
   var thisMonth=new Date().getMonth()+1;
-  var bdayPhones={};
+  _bdayPhones={};
   (_members||[]).forEach(function(m){
     var match=String(m.birthday||'').match(/(\d+)月/);
-    if(match&&parseInt(match[1])===thisMonth) bdayPhones[m.phone]=true;
+    if(match&&parseInt(match[1])===thisMonth) _bdayPhones[m.phone]=true;
   });
   var rouCount=attending.filter(function(g){return g.meal==='葷食'||g.meal==='用餐';}).length;
   var vegCount=attending.filter(function(g){return g.meal==='素食';}).length;
   var noMeal=attending.filter(function(g){return g.meal==='不用餐'||!g.meal;}).length;
   var lunchExtra=attending.reduce(function(s,g){return s+parseInt(g.lunchbox||0);},0);
-  function makeCell(g,i){
-    if(!g) return '<td colspan="6" style="border:none;background:transparent"></td>';
-    var isBday=bdayPhones[g.phone];
-    var nameCell=(isBday?'🎂 ':'')+'<strong>'+escH(g.name)+'</strong>';
-    var mealTxt=g.meal||'';
-    if(mealTxt==='用餐')mealTxt='葷食';
-    var mealColor=mealTxt==='素食'?'color:#4a7c59':mealTxt==='葷食'?'color:#a8874f':'color:#aaa';
-    var extra=parseInt(g.lunchbox||0);
-    var extraTxt=extra>0?'+'+extra:'';
-    return '<td style="text-align:center;color:#aaa;font-size:11px">'+(i+1)+'</td>'
-      +'<td style="font-size:13px'+(isBday?';color:#b5460f':'')+'">'+nameCell+'</td>'
-      +'<td style="font-size:11px;color:#888">'+escH(g.phone)+'</td>'
-      +'<td style="font-weight:700;font-size:12px;'+mealColor+'">'+mealTxt+(extraTxt?'<br><span style="font-size:10px;color:#7a5000">'+extraTxt+'</span>':'')+'</td>'
-      +'<td style="text-align:center;font-size:16px">□</td>'
-      +'<td style="text-align:center;font-size:16px">□</td>';
-  }
 
   // 雙欄：每列放兩人
   var rows='';
