@@ -628,6 +628,18 @@ function exportMembersCSV(){
 
 function printAttendanceSheet(){
   if(!_guests.length){alert('尚無活動名單');return;}
+  if(!_members.length){
+    apiFetch(API+'?action=admin_members&pass='+encodeURIComponent(PASS))
+      .then(function(d){
+        if(d.ok)_members=d.members||[];
+        doPrint();
+      }).catch(function(){doPrint();});
+  } else {
+    doPrint();
+  }
+}
+
+function doPrint(){
   var eventName=_currentSheet||'活動名單';
   var attending=_guests.filter(function(g){return g.attendance==='出席';});
 
@@ -647,7 +659,7 @@ function printAttendanceSheet(){
 
   var rows=attending.map(function(g,i){
     var isBday=bdayPhones[g.phone];
-    var nameCell=(isBday?'★ ':'')+'<strong>'+escH(g.name)+'</strong>';
+    var nameCell=(isBday?'🎂 ':'')+'<strong>'+escH(g.name)+'</strong>';
     var mealTxt=g.meal||'';
     if(mealTxt==='用餐')mealTxt='葷食'; // 舊資料相容
     var mealColor=mealTxt==='素食'?'color:#4a7c59':mealTxt==='葷食'?'color:#a8874f':'color:#999';
@@ -691,7 +703,7 @@ function printAttendanceSheet(){
     +'<tr><th style="width:32px">#</th><th style="text-align:left">姓名</th><th>電話</th><th style="width:70px">用餐</th><th style="width:44px">領取<br>材料</th><th style="width:44px">現場<br>簽到</th><th>備註</th></tr>'
     +rows
     +'</table>'
-    +(Object.keys(bdayPhones).length?'<div class="bday-note">★ 標示為本月壽星</div>':'')
+    +(Object.keys(bdayPhones).length?'<div class="bday-note">🎂 標示為本月壽星</div>':'')
     +'</body></html>';
 
   var w=window.open('','_blank','width=820,height=960');
