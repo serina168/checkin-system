@@ -243,12 +243,19 @@ textarea{resize:vertical;min-height:78px}
         <div class="form-group">
           <label>是否用餐 *</label>
           <div class="toggle-row">
+            <input type="radio" name="ex-meal-yn" id="ex-meal-yn-yes" value="用餐" onchange="toggleMealType('ex')">
+            <label for="ex-meal-yn-yes">🍱 用餐</label>
+            <input type="radio" name="ex-meal-yn" id="ex-meal-yn-no" value="不用餐" onchange="toggleMealType('ex')">
+            <label for="ex-meal-yn-no">✕ 不用餐</label>
+          </div>
+        </div>
+        <div id="ex-meal-type" class="form-group hidden">
+          <label>餐點類型 *</label>
+          <div class="toggle-row">
             <input type="radio" name="ex-meal" id="ex-meal-rou" value="葷食">
-            <label for="ex-meal-rou">🍱 葷食便當</label>
+            <label for="ex-meal-rou">🍖 葷食</label>
             <input type="radio" name="ex-meal" id="ex-meal-veg" value="素食">
-            <label for="ex-meal-veg">🥗 素食便當</label>
-            <input type="radio" name="ex-meal" id="ex-meal-no" value="不用餐">
-            <label for="ex-meal-no">✕ 不用餐</label>
+            <label for="ex-meal-veg">🥗 素食</label>
           </div>
         </div>
       </div>
@@ -313,12 +320,19 @@ textarea{resize:vertical;min-height:78px}
         <div class="form-group">
           <label>是否用餐 *</label>
           <div class="toggle-row">
+            <input type="radio" name="new-meal-yn" id="new-meal-yn-yes" value="用餐" onchange="toggleMealType('new')">
+            <label for="new-meal-yn-yes">🍱 用餐</label>
+            <input type="radio" name="new-meal-yn" id="new-meal-yn-no" value="不用餐" onchange="toggleMealType('new')">
+            <label for="new-meal-yn-no">✕ 不用餐</label>
+          </div>
+        </div>
+        <div id="new-meal-type" class="form-group hidden">
+          <label>餐點類型 *</label>
+          <div class="toggle-row">
             <input type="radio" name="new-meal" id="new-meal-rou" value="葷食">
-            <label for="new-meal-rou">🍱 葷食便當</label>
+            <label for="new-meal-rou">🍖 葷食</label>
             <input type="radio" name="new-meal" id="new-meal-veg" value="素食">
-            <label for="new-meal-veg">🥗 素食便當</label>
-            <input type="radio" name="new-meal" id="new-meal-no" value="不用餐">
-            <label for="new-meal-no">✕ 不用餐</label>
+            <label for="new-meal-veg">🥗 素食</label>
           </div>
         </div>
       </div>
@@ -386,10 +400,27 @@ function resetQR(){
 ['ex','new'].forEach(function(p){
   document.querySelectorAll('input[name="'+p+'-att"]').forEach(function(r){
     r.addEventListener('change',function(){
-      document.getElementById(p+'-meal-wrap').classList.toggle('hidden',this.value!=='出席');
+      var show=this.value==='出席';
+      document.getElementById(p+'-meal-wrap').classList.toggle('hidden',!show);
+      if(!show){
+        document.querySelectorAll('input[name="'+p+'-meal-yn"]').forEach(function(x){x.checked=false;});
+        document.querySelectorAll('input[name="'+p+'-meal"]').forEach(function(x){x.checked=false;});
+        document.getElementById(p+'-meal-type').classList.add('hidden');
+      }
     });
   });
 });
+
+function toggleMealType(p){
+  var yn=document.querySelector('input[name="'+p+'-meal-yn"]:checked');
+  var typeDiv=document.getElementById(p+'-meal-type');
+  if(yn&&yn.value==='用餐'){
+    typeDiv.classList.remove('hidden');
+  }else{
+    typeDiv.classList.add('hidden');
+    document.querySelectorAll('input[name="'+p+'-meal"]').forEach(function(x){x.checked=false;});
+  }
+}
 
 var _tt;
 function toast(msg,err){
@@ -508,14 +539,17 @@ function show(id){
 
 function submitExisting(){
   var att=document.querySelector('input[name="ex-att"]:checked');
-  var meal=document.querySelector('input[name="ex-meal"]:checked');
+  var mealYn=document.querySelector('input[name="ex-meal-yn"]:checked');
+  var mealType=document.querySelector('input[name="ex-meal"]:checked');
   if(!att)return toast('請選擇出席或請假',true);
-  if(att.value==='出席'&&!meal)return toast('請選擇是否用餐',true);
+  if(att.value==='出席'&&!mealYn)return toast('請選擇是否用餐',true);
+  if(mealYn&&mealYn.value==='用餐'&&!mealType)return toast('請選擇葷食或素食',true);
+  var meal=att.value==='出席'?(mealYn&&mealYn.value==='用餐'?(mealType?mealType.value:'葷食'):'不用餐'):'';
   var lunchbox=document.getElementById('ex-lunchbox').value||'0';
   var note=document.getElementById('ex-note').value.trim();
   var btn=document.getElementById('ex-btn');
   btn.disabled=true;btn.textContent='送出中…';
-  var p=new URLSearchParams({action:'event_register',phone:curPhone,attendance:att.value,meal:att.value==='出席'?(meal?meal.value:''):'',lunchbox:lunchbox,note:note});
+  var p=new URLSearchParams({action:'event_register',phone:curPhone,attendance:att.value,meal:meal,lunchbox:lunchbox,note:note});
   apiFetch(API+'?'+p).then(function(d){
     if(!d.ok)throw new Error(d.msg||'報名失敗');
     showSuccess(d.name,d.phone,d.updated);
@@ -528,6 +562,7 @@ function submitNew(){
   var phone=document.getElementById('new-phone').value.trim();
   var typeEl=document.querySelector('input[name="new-type"]:checked');
   var attEl=document.querySelector('input[name="new-att"]:checked');
+  var mealYnEl=document.querySelector('input[name="new-meal-yn"]:checked');
   var mealEl=document.querySelector('input[name="new-meal"]:checked');
   var lunchbox=document.getElementById('new-lunchbox').value||'0';
   var note=document.getElementById('new-note').value.trim();
@@ -538,10 +573,12 @@ function submitNew(){
   if(!validPhone(phone))return toast('電話格式不正確，請輸入數字',true);
   if(!typeEl)return toast('請選擇身份',true);
   if(!attEl)return toast('請選擇出席或請假',true);
-  if(attEl.value==='出席'&&!mealEl)return toast('請選擇是否用餐',true);
+  if(attEl.value==='出席'&&!mealYnEl)return toast('請選擇是否用餐',true);
+  if(mealYnEl&&mealYnEl.value==='用餐'&&!mealEl)return toast('請選擇葷食或素食',true);
+  var meal=attEl.value==='出席'?(mealYnEl&&mealYnEl.value==='用餐'?(mealEl?mealEl.value:'葷食'):'不用餐'):'';
   var btn=document.getElementById('new-btn');
   btn.disabled=true;btn.textContent='送出中…';
-  var p=new URLSearchParams({action:'event_register',name:name,phone:phone,birthday:birthday,memberType:typeEl.value,attendance:attEl.value,meal:attEl.value==='出席'?(mealEl?mealEl.value:''):'',lunchbox:lunchbox,note:note});
+  var p=new URLSearchParams({action:'event_register',name:name,phone:phone,birthday:birthday,memberType:typeEl.value,attendance:attEl.value,meal:meal,lunchbox:lunchbox,note:note});
   apiFetch(API+'?'+p).then(function(d){
     if(!d.ok)throw new Error(d.msg||'報名失敗');
     showSuccess(d.name,d.phone,d.updated);

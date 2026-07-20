@@ -102,6 +102,7 @@ td{padding:8px;border-bottom:1px solid #e8ddd0}
           <div class="stat"><div class="n" id="st-absent" style="color:#8a7a63">0</div><div class="l">請假人數</div></div>
           <div class="stat"><div class="n" id="st-meal-rou" style="color:#a8874f">0</div><div class="l">葷食便當</div></div>
           <div class="stat"><div class="n" id="st-meal-veg" style="color:#4a7c59">0</div><div class="l">素食便當</div></div>
+          <div class="stat"><div class="n" id="st-lunchbox" style="color:#7a5500">0</div><div class="l">加購便當</div></div>
           <div class="stat"><div class="n" id="st-checked" style="color:#4a7c59">0</div><div class="l">當天出席人數</div></div>
         </div>
         <div id="birthday-box" style="display:none;background:#fff8e6;border:1.5px solid #e6a817;border-radius:10px;padding:12px 16px;margin-bottom:12px">
@@ -407,8 +408,9 @@ function loadGuests(){
       var rouCount=_guests.filter(function(g){return g.meal==='葷食'||g.meal==='用餐';}).length;
       var vegCount=_guests.filter(function(g){return g.meal==='素食';}).length;
       var lunchTotal=_guests.reduce(function(s,g){return s+parseInt(g.lunchbox||0);},0);
-      document.getElementById('st-meal-rou').textContent=(rouCount+lunchTotal)+'份';
+      document.getElementById('st-meal-rou').textContent=rouCount+'份';
       document.getElementById('st-meal-veg').textContent=vegCount+'份';
+      document.getElementById('st-lunchbox').textContent=lunchTotal+'份';
       document.getElementById('st-checked').textContent=_guests.filter(function(g){return g.checkedIn;}).length;
       renderAbsentList(_guests);
       loadBirthdays();
