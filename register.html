@@ -194,15 +194,17 @@ textarea{resize:vertical;min-height:78px}
 
     <!-- Step 1: Phone lookup -->
     <div id="step1" class="card">
-      <div class="card-title">輸入手機號碼查詢</div>
-      <p class="field-hint">已有報名記錄者輸入手機號碼即可快速報名；首次使用請點下方按鈕填寫資料。</p>
+      <div class="card-title">查詢會員資料</div>
+      <p class="field-hint">輸入手機號碼或姓名皆可查詢；首次使用請點下方按鈕填寫資料。</p>
       <div class="form-group">
-        <label>手機號碼</label>
+        <label>手機號碼 或 姓名</label>
         <div class="lookup-row">
-          <input type="tel" id="lookup-phone" placeholder="請輸入手機號碼" inputmode="tel" onkeydown="if(event.key==='Enter')lookupMember()">
+          <input type="text" id="lookup-phone" placeholder="手機號碼 或 姓名" inputmode="text" onkeydown="if(event.key==='Enter')lookupMember()">
           <button class="btn-lookup" onclick="lookupMember()">查詢</button>
         </div>
       </div>
+      <!-- 姓名搜尋結果清單 -->
+      <div id="name-results" class="hidden" style="margin-top:10px;border:1.5px solid var(--border);border-radius:12px;overflow:hidden"></div>
       <div class="divider">沒有記錄？</div>
       <button class="btn btn-ghost" onclick="showNewForm()">首次參加 / 填寫會員資料</button>
     </div>
@@ -506,26 +508,74 @@ apiFetch(API+'?action=info').then(function(d){
 function validPhone(p){return /^[0-9]{8,10}$/.test(p.replace(/[-\s]/g,''));}
 
 function lookupMember(){
-  var phone=document.getElementById('lookup-phone').value.trim();
-  if(!phone){toast('請輸入電話號碼',true);return;}
-  if(!validPhone(phone)){toast('電話格式不正確，請輸入數字',true);return;}
+  var q=document.getElementById('lookup-phone').value.trim();
+  if(!q){toast('請輸入手機號碼或姓名',true);return;}
+  document.getElementById('name-results').classList.add('hidden');
+  var isPhone=/^[0-9\-\s]{7,}$/.test(q);
+  if(isPhone){
+    // 電話查詢
+    var phone=q.replace(/[-\s]/g,'');
+    toast('查詢中…');
+    apiFetch(API+'?action=member_lookup&phone='+encodeURIComponent(phone))
+      .then(function(d){
+        if(!d.ok){toast(d.msg||'查詢失敗',true);return;}
+        if(!d.found){
+          document.getElementById('new-phone').value=phone;
+          showNewForm();
+          toast('查無記錄，請填寫完整資料');
+          return;
+        }
+        selectMember(d.member,d.alreadyRegistered);
+      })
+      .catch(function(){toast('網路錯誤，請重試',true);});
+  } else {
+    // 姓名查詢
+    toast('查詢中…');
+    apiFetch(API+'?action=member_search&q='+encodeURIComponent(q))
+      .then(function(d){
+        if(!d.ok){toast(d.msg||'查詢失敗',true);return;}
+        var results=d.results||[];
+        if(!results.length){toast('查無「'+q+'」，請確認姓名或改用電話查詢',true);return;}
+        if(results.length===1){
+          // 只有一筆直接帶入
+          apiFetch(API+'?action=member_lookup&phone='+encodeURIComponent(results[0].phone))
+            .then(function(d2){
+              if(d2.ok&&d2.found) selectMember(d2.member,d2.alreadyRegistered);
+              else toast('查詢失敗',true);
+            });
+          return;
+        }
+        // 多筆 → 顯示選單
+        var box=document.getElementById('name-results');
+        box.innerHTML=results.map(function(r){
+          return '<div style="padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;font-size:16px;display:flex;justify-content:space-between;align-items:center" onclick="pickMember(\''+r.phone+'\')">'
+            +'<strong>'+r.name+'</strong>'
+            +'<span style="color:var(--muted);font-size:14px">'+r.phone+'</span>'
+            +'</div>';
+        }).join('');
+        box.classList.remove('hidden');
+        toast('找到 '+results.length+' 筆，請點選');
+      })
+      .catch(function(){toast('網路錯誤，請重試',true);});
+  }
+}
+
+function pickMember(phone){
+  document.getElementById('name-results').classList.add('hidden');
   toast('查詢中…');
   apiFetch(API+'?action=member_lookup&phone='+encodeURIComponent(phone))
     .then(function(d){
-      if(!d.ok){toast(d.msg||'查詢失敗',true);return;}
-      if(!d.found){
-        document.getElementById('new-phone').value=phone;
-        showNewForm();
-        toast('查無記錄，請填寫完整資料');
-        return;
-      }
-      curPhone=d.member.phone;curName=d.member.name;
-      document.getElementById('welcome-name').textContent=d.member.name;
-      document.getElementById('welcome-sub').textContent=d.member.phone+(d.member.memberType?' ・ '+d.member.memberType:'');
-      document.getElementById('already-banner').classList.toggle('hidden',!d.alreadyRegistered);
-      show('step-existing');
-    })
-    .catch(function(){toast('網路錯誤，請重試',true);});
+      if(d.ok&&d.found) selectMember(d.member,d.alreadyRegistered);
+      else toast('查詢失敗',true);
+    }).catch(function(){toast('網路錯誤，請重試',true);});
+}
+
+function selectMember(member,alreadyRegistered){
+  curPhone=member.phone;curName=member.name;
+  document.getElementById('welcome-name').textContent=member.name;
+  document.getElementById('welcome-sub').textContent=member.phone+(member.memberType?' ・ '+member.memberType:'');
+  document.getElementById('already-banner').classList.toggle('hidden',!alreadyRegistered);
+  show('step-existing');
 }
 
 function showNewForm(){show('step-new');}

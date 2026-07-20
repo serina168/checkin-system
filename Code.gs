@@ -36,6 +36,7 @@ function doGet(e) {
       case 'admin_update_member':     result = adminUpdateMember(p); break;
       case 'admin_set_status':           result = adminSetMemberStatus(p); break;
       case 'admin_update_guest_meal':    result = adminUpdateGuestMeal(p); break;
+      case 'member_search':              result = memberSearch(p.q); break;
       default: result = {ok: false, msg: 'Unknown action: ' + action};
     }
   } catch (err) {
@@ -137,6 +138,18 @@ function memberLookup(phone) {
   var evSh = getEventSheet();
   var alreadyRegistered = evSh ? !!findInEventSheet(evSh, phone) : false;
   return {ok: true, found: true, member: member, alreadyRegistered: alreadyRegistered};
+}
+
+function memberSearch(q) {
+  if (!q) return {ok: true, results: []};
+  var ss = getSpreadsheet();
+  var sh = ss.getSheetByName(MEMBER_SHEET);
+  if (!sh || sh.getLastRow() < 2) return {ok: true, results: []};
+  var data = sh.getRange(2, 1, sh.getLastRow() - 1, 2).getValues();
+  var results = data
+    .filter(function(r) { return String(r[0]).indexOf(q) >= 0 && String(r[1]).trim() !== ''; })
+    .map(function(r) { return {name: String(r[0]), phone: String(r[1])}; });
+  return {ok: true, results: results};
 }
 
 function memberQR(phone) {
