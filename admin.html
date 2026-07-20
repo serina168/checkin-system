@@ -117,6 +117,7 @@ td{padding:8px;border-bottom:1px solid #e8ddd0}
           <button class="btn btn-sm btn-outline" onclick="loadGuests()">重新整理</button>
           <button class="btn btn-sm btn-outline" onclick="exportGuestsCSV()">📥 匯出 CSV</button>
           <button class="btn btn-sm btn-outline" onclick="printAttendanceSheet()">🖨️ 列印簽到表</button>
+          <button class="btn btn-sm btn-outline" onclick="downloadAttendanceSheet()">📥 儲存名單</button>
         </div>
         <div class="tbl">
           <table id="event-table">
@@ -639,29 +640,24 @@ function printAttendanceSheet(){
   }
 }
 
-function doPrint(){
+function buildAttendanceHTML(){
   var eventName=_currentSheet||'活動名單';
   var attending=_guests.filter(function(g){return g.attendance==='出席';});
-
-  // 本月壽星電話集合
   var thisMonth=new Date().getMonth()+1;
   var bdayPhones={};
   (_members||[]).forEach(function(m){
     var match=String(m.birthday||'').match(/(\d+)月/);
     if(match&&parseInt(match[1])===thisMonth) bdayPhones[m.phone]=true;
   });
-
-  // 統計摘要
   var rouCount=attending.filter(function(g){return g.meal==='葷食'||g.meal==='用餐';}).length;
   var vegCount=attending.filter(function(g){return g.meal==='素食';}).length;
   var noMeal=attending.filter(function(g){return g.meal==='不用餐'||!g.meal;}).length;
   var lunchExtra=attending.reduce(function(s,g){return s+parseInt(g.lunchbox||0);},0);
-
   var rows=attending.map(function(g,i){
     var isBday=bdayPhones[g.phone];
     var nameCell=(isBday?'🎂 ':'')+'<strong>'+escH(g.name)+'</strong>';
     var mealTxt=g.meal||'';
-    if(mealTxt==='用餐')mealTxt='葷食'; // 舊資料相容
+    if(mealTxt==='用餐')mealTxt='葷食';
     var mealColor=mealTxt==='素食'?'color:#4a7c59':mealTxt==='葷食'?'color:#a8874f':'color:#999';
     var extra=parseInt(g.lunchbox||0);
     var extraTxt=extra>0?'<span style="font-size:11px;color:#7a5000">+'+extra+'</span>':'';
@@ -676,41 +672,67 @@ function doPrint(){
       +'<td></td>'
       +'</tr>';
   }).join('');
+  return {
+    eventName: eventName,
+    attending: attending,
+    html: '<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8">'
+      +'<title>'+escH(eventName)+' 簽到表</title>'
+      +'<style>'
+      +'body{font-family:"Noto Sans TC",sans-serif;padding:10mm 12mm;font-size:13px;color:#222}'
+      +'h2{text-align:center;font-size:20px;margin:0 0 4px;letter-spacing:.1em}'
+      +'.sub{text-align:center;font-size:13px;color:#555;margin-bottom:6px}'
+      +'.summary{display:flex;gap:20px;justify-content:center;margin-bottom:10px;font-size:13px;color:#555;flex-wrap:wrap}'
+      +'.summary span{background:#f5ece0;border:1px solid #c8aa80;border-radius:6px;padding:3px 12px}'
+      +'table{width:100%;border-collapse:collapse}'
+      +'th{background:#f0e8d8;padding:7px 6px;border:1px solid #c8aa80;font-size:12px;text-align:center}'
+      +'td{padding:5px 6px;border:1px solid #ddd;vertical-align:middle}'
+      +'.bday-note{text-align:center;font-size:11px;color:#b5460f;margin-top:6px}'
+      +'@media print{@page{size:A4 portrait;margin:10mm}}'
+      +'</style></head><body>'
+      +'<h2>臺中市海德堡讀書會</h2>'
+      +'<div class="sub">'+escH(eventName)+'　出席名單　共 '+attending.length+' 人</div>'
+      +'<div class="summary">'
+      +'<span>🍖 葷食 <strong>'+rouCount+'</strong> 份</span>'
+      +'<span>🥗 素食 <strong>'+vegCount+'</strong> 份</span>'
+      +(lunchExtra>0?'<span>📦 加購 <strong>'+lunchExtra+'</strong> 份</span>':'')
+      +'<span>✕ 不用餐 <strong>'+noMeal+'</strong> 人</span>'
+      +'</div>'
+      +'<table>'
+      +'<tr><th style="width:32px">#</th><th style="text-align:left">姓名</th><th>電話</th><th style="width:70px">用餐</th><th style="width:44px">領取<br>材料</th><th style="width:44px">現場<br>簽到</th><th>備註</th></tr>'
+      +rows+'</table>'
+      +(Object.keys(bdayPhones).length?'<div class="bday-note">🎂 標示為本月壽星</div>':'')
+      +'</body></html>'
+  };
+}
 
-  var html='<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8">'
-    +'<title>'+escH(eventName)+' 簽到表</title>'
-    +'<style>'
-    +'body{font-family:"Noto Sans TC",sans-serif;padding:10mm 12mm;font-size:13px;color:#222}'
-    +'h2{text-align:center;font-size:20px;margin:0 0 4px;letter-spacing:.1em}'
-    +'.sub{text-align:center;font-size:13px;color:#555;margin-bottom:6px}'
-    +'.summary{display:flex;gap:20px;justify-content:center;margin-bottom:10px;font-size:13px;color:#555;flex-wrap:wrap}'
-    +'.summary span{background:#f5ece0;border:1px solid #c8aa80;border-radius:6px;padding:3px 12px}'
-    +'table{width:100%;border-collapse:collapse}'
-    +'th{background:#f0e8d8;padding:7px 6px;border:1px solid #c8aa80;font-size:12px;text-align:center}'
-    +'td{padding:5px 6px;border:1px solid #ddd;vertical-align:middle}'
-    +'.bday-note{text-align:center;font-size:11px;color:#b5460f;margin-top:6px}'
-    +'@media print{@page{size:A4 portrait;margin:10mm}button{display:none}}'
-    +'</style></head><body>'
-    +'<h2>臺中市海德堡讀書會</h2>'
-    +'<div class="sub">'+escH(eventName)+'　出席名單　共 '+attending.length+' 人</div>'
-    +'<div class="summary">'
-    +'<span>🍖 葷食 <strong>'+rouCount+'</strong> 份</span>'
-    +'<span>🥗 素食 <strong>'+vegCount+'</strong> 份</span>'
-    +(lunchExtra>0?'<span>📦 加購 <strong>'+lunchExtra+'</strong> 份</span>':'')
-    +'<span>✕ 不用餐 <strong>'+noMeal+'</strong> 人</span>'
-    +'</div>'
-    +'<table>'
-    +'<tr><th style="width:32px">#</th><th style="text-align:left">姓名</th><th>電話</th><th style="width:70px">用餐</th><th style="width:44px">領取<br>材料</th><th style="width:44px">現場<br>簽到</th><th>備註</th></tr>'
-    +rows
-    +'</table>'
-    +(Object.keys(bdayPhones).length?'<div class="bday-note">🎂 標示為本月壽星</div>':'')
-    +'</body></html>';
-
+function doPrint(){
+  var result=buildAttendanceHTML();
   var w=window.open('','_blank','width=820,height=960');
-  w.document.write(html);
+  w.document.write(result.html);
   w.document.close();
   w.focus();
   setTimeout(function(){w.print();},400);
+}
+
+function downloadAttendanceSheet(){
+  if(!_guests.length){alert('尚無活動名單');return;}
+  if(!_members.length){
+    apiFetch(API+'?action=admin_members&pass='+encodeURIComponent(PASS))
+      .then(function(d){if(d.ok)_members=d.members||[];doDownload();})
+      .catch(function(){doDownload();});
+  } else {doDownload();}
+}
+
+function doDownload(){
+  var result=buildAttendanceHTML();
+  var blob=new Blob([result.html],{type:'text/html;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download=result.eventName+'_出席名單.html';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
 }
 
 function doMigrate(){
