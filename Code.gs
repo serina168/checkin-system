@@ -34,7 +34,8 @@ function doGet(e) {
       case 'admin_event_guests_by':   result = adminEventGuestsBySheet(p.pass, p.sheetName); break;
       case 'admin_manual_checkin':    result = adminManualCheckin(p.pass, p.phone, p.sheetName); break;
       case 'admin_update_member':     result = adminUpdateMember(p); break;
-      case 'admin_set_status':        result = adminSetMemberStatus(p); break;
+      case 'admin_set_status':           result = adminSetMemberStatus(p); break;
+      case 'admin_update_guest_meal':    result = adminUpdateGuestMeal(p); break;
       default: result = {ok: false, msg: 'Unknown action: ' + action};
     }
   } catch (err) {
@@ -408,6 +409,24 @@ function adminManualCheckin(pass, phone, sheetName) {
     if (existingTime) return {ok:false, msg:(old?d[1]:d[0])+' 已於 '+existingTime+' 報到', dup:true};
     sh.getRange(row.row, timeCol).setValue(now);
     return {ok:true, name: old?d[1]:d[0], time:now};
+  } finally { lock.releaseLock(); }
+}
+
+function adminUpdateGuestMeal(p) {
+  if (!checkAuth(p.pass)) return {ok:false, msg:'密碼錯誤'};
+  if (!p.phone) return {ok:false, msg:'缺少電話'};
+  var lock = LockService.getScriptLock();
+  lock.waitLock(8000);
+  try {
+    var ss = getSpreadsheet();
+    var sh = p.sheetName ? ss.getSheetByName(p.sheetName) : getEventSheet();
+    if (!sh) return {ok:false, msg:'找不到活動分頁'};
+    var old = isOldFormat(sh);
+    var row = findInEventSheet(sh, p.phone);
+    if (!row) return {ok:false, msg:'此電話不在名單中'};
+    var mealCol = old ? 5 : 4; // 1-indexed: old format col E=5, new format col D=4
+    sh.getRange(row.row, mealCol).setValue(p.meal || '');
+    return {ok:true};
   } finally { lock.releaseLock(); }
 }
 

@@ -462,9 +462,36 @@ function renderGuests(guests){
     } else {
       ci='<span class="no">未到</span>';
     }
-    return '<tr><td>'+(i+1)+'</td><td>'+esc(g.name)+'</td><td style="font-size:12px;color:#8a7a63">'+esc(g.phone)+'</td><td>'+(g.attendance||'')+'</td><td>'+(g.meal||'')+'</td><td>'+(g.lunchbox||'0')+'</td><td>'+esc(g.note||'')+'</td><td>'+ci+'</td></tr>';
+    var mealVal=g.meal||'';
+    var mealCell='<span style="cursor:pointer;border-bottom:1px dashed #a8874f;color:#7a5000" onclick="editGuestMeal(\''+escH(g.phone)+'\',\''+escH(mealVal)+'\')" title="點擊修改">'+( mealVal||'—')+'</span>';
+    return '<tr><td>'+(i+1)+'</td><td>'+esc(g.name)+'</td><td style="font-size:12px;color:#8a7a63">'+esc(g.phone)+'</td><td>'+(g.attendance||'')+'</td><td>'+mealCell+'</td><td>'+(g.lunchbox||'0')+'</td><td>'+esc(g.note||'')+'</td><td>'+ci+'</td></tr>';
   }).join('');
   document.getElementById('event-table').innerHTML='<tr><th>#</th><th>姓名</th><th>電話</th><th>出席</th><th>用餐</th><th>加購</th><th>備註</th><th>報到</th></tr>'+(rows||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#8a7a63">尚無資料</td></tr>');
+}
+
+function editGuestMeal(phone,current){
+  var opts=['葷食','素食','不用餐',''];
+  var labels=['🍖 葷食','🥗 素食','✕ 不用餐','（清空）'];
+  var msg='修改用餐選項（目前：'+(current||'無')+'）\n\n請輸入數字：\n1. 葷食\n2. 素食\n3. 不用餐\n4. 清空';
+  var choice=prompt(msg);
+  if(choice===null)return;
+  var idx=parseInt(choice)-1;
+  if(idx<0||idx>3){alert('無效選項');return;}
+  var newMeal=opts[idx];
+  var sheetName=_currentSheet||(document.getElementById('event-select').value||'');
+  var url=API+'?action=admin_update_guest_meal&pass='+encodeURIComponent(PASS)+'&phone='+encodeURIComponent(phone)+'&meal='+encodeURIComponent(newMeal)+'&sheetName='+encodeURIComponent(sheetName);
+  apiFetch(url).then(function(d){
+    if(d.ok){
+      var g=_guests.find(function(x){return x.phone===phone;});
+      if(g)g.meal=newMeal;
+      renderGuests(_guests);
+      // 重新計算統計
+      var rouCount=_guests.filter(function(g){return g.meal==='葷食'||g.meal==='用餐';}).length;
+      var vegCount=_guests.filter(function(g){return g.meal==='素食';}).length;
+      document.getElementById('st-meal-rou').textContent=rouCount+'份';
+      document.getElementById('st-meal-veg').textContent=vegCount+'份';
+    } else {alert(d.msg||'修改失敗');}
+  }).catch(function(){alert('連線失敗');});
 }
 
 function manualCheckin(phone,btn){
