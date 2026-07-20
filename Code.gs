@@ -310,9 +310,9 @@ function adminEventGuests(pass) {
   var guests = data.map(function(r) {
     if (old) {
       // A=timestamp B=姓名 C=電話 D=生日 E=加購便當 F=身份 G=出席/請假 H=用餐 I=備註 J=報到時間
-      return {name:r[1], phone:r[2], attendance:r[6]||'出席', meal:r[7]||'', lunchbox:String(r[4]||'0'), note:String(r[8]||''), checkinTime:r[9]?String(r[9]):'', checkedIn:!!r[9]};
+      return {name:String(r[1]).trim(), phone:String(r[2]).trim(), attendance:String(r[6]||'出席').trim(), meal:String(r[7]||'').trim(), lunchbox:String(r[4]||'0'), note:String(r[8]||''), checkinTime:r[9]?String(r[9]):'', checkedIn:!!r[9]};
     }
-    return {name:r[0], phone:r[1], attendance:r[2], meal:r[3], lunchbox:String(r[4]||'0'), note:r[5], checkinTime:r[6]?String(r[6]):'', checkedIn:!!r[6]};
+    return {name:String(r[0]).trim(), phone:String(r[1]).trim(), attendance:String(r[2]||'').trim(), meal:String(r[3]||'').trim(), lunchbox:String(r[4]||'0'), note:String(r[5]||''), checkinTime:r[6]?String(r[6]):'', checkedIn:!!r[6]};
   });
   return {ok:true, guests:guests};
 }
@@ -397,8 +397,8 @@ function adminEventGuestsBySheet(pass, sheetName) {
   var cols = old ? 10 : 7;
   var data = sh.getRange(2, 1, sh.getLastRow()-1, cols).getValues();
   var guests = data.map(function(r) {
-    if (old) return {name:r[1], phone:r[2], attendance:r[6]||'出席', meal:r[7]||'', lunchbox:String(r[4]||'0'), note:String(r[8]||''), checkinTime:r[9]?String(r[9]):'', checkedIn:!!r[9]};
-    return {name:r[0], phone:r[1], attendance:r[2], meal:r[3], lunchbox:String(r[4]||'0'), note:r[5], checkinTime:r[6]?String(r[6]):'', checkedIn:!!r[6]};
+    if (old) return {name:String(r[1]).trim(), phone:String(r[2]).trim(), attendance:String(r[6]||'出席').trim(), meal:String(r[7]||'').trim(), lunchbox:String(r[4]||'0'), note:String(r[8]||''), checkinTime:r[9]?String(r[9]):'', checkedIn:!!r[9]};
+    return {name:String(r[0]).trim(), phone:String(r[1]).trim(), attendance:String(r[2]||'').trim(), meal:String(r[3]||'').trim(), lunchbox:String(r[4]||'0'), note:String(r[5]||''), checkinTime:r[6]?String(r[6]):'', checkedIn:!!r[6]};
   });
   return {ok:true, guests:guests, sheetName:sheetName};
 }
