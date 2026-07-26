@@ -520,9 +520,9 @@ function manualCheckin(phone,btn){
 
 function exportGuestsCSV(){
   if(!_guests.length){alert('尚無資料');return;}
-  var fname=(_currentSheet||'活動名單')+'.csv';
+  var fname=(_currentSheet||'活動名單')+'_報名名單.csv';
   var rows=[['編號','姓名','電話','出席狀況','用餐','加購便當','備註','報到狀態','報到時間']];
-  _guests.forEach(function(g,i){rows.push([i+1,g.name,'="'+g.phone+'"',g.attendance||'',g.meal||'',g.lunchbox||'0',g.note||'',g.checkedIn?'已報到':'未到',g.checkinTime||'']);});
+  _guests.forEach(function(g,i){rows.push([i+1,g.name,g.phone,g.attendance||'',g.meal||'',g.lunchbox||'0',g.note||'',g.checkedIn?'已報到':'未到',g.checkinTime||'']);});
   dlCSV(rows,fname);
 }
 
@@ -736,7 +736,7 @@ function buildAttendanceHTML(){
       +'<span>✕ 不用餐 <strong>'+noMeal+'</strong> 人</span>'
       +'</div>'
       +'<table>'+thead+rows+'</table>'
-      +(Object.keys(bdayPhones).length?'<div class="bday-note">🎂 標示為本月壽星</div>':'')
+      +(Object.keys(_bdayPhones).length?'<div class="bday-note">🎂 標示為本月壽星</div>':'')
       +'</body></html>'
   };
 }
@@ -852,10 +852,13 @@ function exportStatsCSV(){
 }
 
 function dlCSV(rows,filename){
-  var csv='﻿'+rows.map(function(r){return r.map(function(c){return '"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
+  var csv=rows.map(function(r){return r.map(function(c){return '"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
+  var bom='﻿';
+  var blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8'});
   var a=document.createElement('a');
-  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.href=URL.createObjectURL(blob);
   a.download=filename;a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
 }
 function esc(s){return String(s||'').replace(/[<>&"]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];});}
 </script>
