@@ -677,17 +677,17 @@ function buildAttendanceHTML(){
     var mealColor=mealTxt==='素食'?'color:#4a7c59':mealTxt==='葷食'?'color:#a8874f':'color:#999';
     var rowBg=(i%2===0)?'':'background:#faf6ef';
     rows+='<tr style="'+rowBg+'">'
-      +'<td style="text-align:center;color:#888;font-size:13px;width:36px">'+(i+1)+'</td>'
-      +'<td style="font-size:16px;font-weight:700'+(isBday?';color:#b5460f':'')+'"> '+(isBday?'🎂 ':'')+escH(g.name)+'</td>'
-      +'<td style="font-size:14px;color:#888;text-align:center">'+escH(g.phone)+'</td>'
-      +'<td style="font-size:14px;font-weight:700;text-align:center;'+mealColor+'">'+mealTxt+'</td>'
-      +'<td style="text-align:center;font-size:20px;width:60px">□</td>'
-      +'<td style="text-align:center;font-size:20px;width:60px">□</td>'
-      +'<td style="width:100px"></td>'
+      +'<td style="text-align:center;color:#888;font-size:15px;width:40px">'+(i+1)+'</td>'
+      +'<td style="font-size:19px;font-weight:700'+(isBday?';color:#b5460f':'')+'"> '+(isBday?'🎂 ':'')+escH(g.name)+'</td>'
+      +'<td style="font-size:16px;color:#888;text-align:center">'+escH(g.phone)+'</td>'
+      +'<td style="font-size:17px;font-weight:700;text-align:center;'+mealColor+'">'+mealTxt+'</td>'
+      +'<td style="text-align:center;font-size:24px;width:64px">□</td>'
+      +'<td style="text-align:center;font-size:24px;width:64px">□</td>'
+      +'<td style="width:110px"></td>'
       +'</tr>';
   }
 
-  var thStyle='background:#f0e8d8;padding:8px 6px;border:1px solid #c8aa80;font-size:13px;text-align:center';
+  var thStyle='background:#f0e8d8;padding:10px 8px;border:1px solid #c8aa80;font-size:15px;text-align:center';
   var thead='<tr>'
     +'<th style="'+thStyle+';width:36px">#</th>'
     +'<th style="'+thStyle+';text-align:left">姓名</th>'
@@ -704,14 +704,14 @@ function buildAttendanceHTML(){
     html: '<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8">'
       +'<title>'+escH(eventName)+' 簽到表</title>'
       +'<style>'
-      +'body{font-family:"Noto Sans TC",sans-serif;padding:10mm 12mm;font-size:14px;color:#222}'
-      +'h2{text-align:center;font-size:22px;margin:0 0 4px;letter-spacing:.1em}'
-      +'.sub{text-align:center;font-size:14px;color:#555;margin-bottom:6px}'
-      +'.summary{display:flex;gap:12px;justify-content:center;margin-bottom:10px;font-size:14px;color:#555;flex-wrap:wrap}'
-      +'.summary span{background:#f5ece0;border:1px solid #c8aa80;border-radius:6px;padding:3px 12px}'
+      +'body{font-family:"Noto Sans TC",sans-serif;padding:10mm 12mm;font-size:16px;color:#222}'
+      +'h2{text-align:center;font-size:26px;margin:0 0 5px;letter-spacing:.1em}'
+      +'.sub{text-align:center;font-size:17px;color:#555;margin-bottom:8px}'
+      +'.summary{display:flex;gap:14px;justify-content:center;margin-bottom:12px;font-size:16px;color:#555;flex-wrap:wrap}'
+      +'.summary span{background:#f5ece0;border:1px solid #c8aa80;border-radius:6px;padding:4px 14px}'
       +'table{width:100%;border-collapse:collapse}'
-      +'td{padding:7px 8px;border:1px solid #ddd;vertical-align:middle}'
-      +'.bday-note{text-align:center;font-size:13px;color:#b5460f;margin-top:6px}'
+      +'td{padding:9px 10px;border:1px solid #ddd;vertical-align:middle}'
+      +'.bday-note{text-align:center;font-size:15px;color:#b5460f;margin-top:8px}'
       +'@media print{@page{size:A4 portrait;margin:10mm}}'
       +'</style></head><body>'
       +'<h2>臺中市海德堡讀書會</h2>'
