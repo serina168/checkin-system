@@ -634,15 +634,19 @@ function exportMembersCSV(){
 
 function printAttendanceSheet(){
   if(!_guests.length){alert('尚無活動名單');return;}
+  var w=window.open('','_blank','width=820,height=960');
+  if(!w){alert('瀏覽器封鎖了彈出視窗，請允許此網站的彈出視窗後再試');return;}
+  w.document.write('<html><body style="font-family:sans-serif;padding:40px;color:#888;text-align:center">載入中…</body></html>');
+  function render(){
+    var result=buildAttendanceHTML();
+    w.document.open();w.document.write(result.html);w.document.close();
+    w.focus();setTimeout(function(){w.print();},500);
+  }
   if(!_members.length){
     apiFetch(API+'?action=admin_members&pass='+encodeURIComponent(PASS))
-      .then(function(d){
-        if(d.ok)_members=d.members||[];
-        doPrint();
-      }).catch(function(){doPrint();});
-  } else {
-    doPrint();
-  }
+      .then(function(d){if(d.ok)_members=d.members||[];render();})
+      .catch(function(){render();});
+  } else {render();}
 }
 
 var _bdayPhones={};
@@ -741,38 +745,28 @@ function buildAttendanceHTML(){
   };
 }
 
-function doPrint(){
-  var result=buildAttendanceHTML();
-  var w=window.open('','_blank','width=820,height=960');
-  w.document.write(result.html);
-  w.document.close();
-  w.focus();
-  setTimeout(function(){w.print();},400);
-}
 
 function downloadAttendanceSheet(){
   if(!_guests.length){alert('尚無活動名單');return;}
+  var w=window.open('','_blank','width=820,height=960');
+  if(!w){alert('瀏覽器封鎖了彈出視窗，請允許此網站的彈出視窗後再試');return;}
+  w.document.write('<html><body style="font-family:sans-serif;padding:40px;color:#888;text-align:center">載入中…</body></html>');
+  function render(){
+    var result=buildAttendanceHTML();
+    var pdfBar='<div style="position:fixed;top:0;left:0;right:0;background:#1a73e8;color:#fff;padding:10px 16px;font-size:14px;display:flex;align-items:center;gap:16px;z-index:999;font-family:sans-serif">'
+      +'<span>💡 儲存為 PDF：按下方「<strong>列印</strong>」按鈕 → 目的地選「<strong>另存為 PDF</strong>」→ 儲存</span>'
+      +'<button onclick="window.print()" style="background:#fff;color:#1a73e8;border:none;border-radius:6px;padding:6px 16px;font-weight:700;cursor:pointer;font-size:14px">🖨️ 列印 / 存PDF</button>'
+      +'<button onclick="this.parentNode.style.display=\'none\'" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">✕ 關閉提示</button>'
+      +'</div><div style="height:50px"></div>';
+    var htmlWithBar=result.html.replace('<body>','<body>'+pdfBar);
+    w.document.open();w.document.write(htmlWithBar);w.document.close();
+    w.focus();
+  }
   if(!_members.length){
     apiFetch(API+'?action=admin_members&pass='+encodeURIComponent(PASS))
-      .then(function(d){if(d.ok)_members=d.members||[];doDownload();})
-      .catch(function(){doDownload();});
-  } else {doDownload();}
-}
-
-function doDownload(){
-  var result=buildAttendanceHTML();
-  // 在 HTML 頂部插入 PDF 提示列
-  var pdfBar='<div style="position:fixed;top:0;left:0;right:0;background:#1a73e8;color:#fff;padding:10px 16px;font-size:14px;display:flex;align-items:center;gap:16px;z-index:999;font-family:sans-serif">'
-    +'<span>💡 儲存為 PDF：按下方「<strong>列印</strong>」按鈕 → 目的地選「<strong>另存為 PDF</strong>」→ 儲存</span>'
-    +'<button onclick="window.print()" style="background:#fff;color:#1a73e8;border:none;border-radius:6px;padding:6px 16px;font-weight:700;cursor:pointer;font-size:14px">🖨️ 列印 / 存PDF</button>'
-    +'<button onclick="this.parentNode.style.display=\'none\'" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px">✕ 關閉提示</button>'
-    +'</div>'
-    +'<div style="height:50px"></div>';
-  var htmlWithBar=result.html.replace('<body>','<body>'+pdfBar);
-  var w=window.open('','_blank','width=820,height=960');
-  w.document.write(htmlWithBar);
-  w.document.close();
-  w.focus();
+      .then(function(d){if(d.ok)_members=d.members||[];render();})
+      .catch(function(){render();});
+  } else {render();}
 }
 
 function doMigrate(){
