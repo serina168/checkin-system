@@ -445,7 +445,7 @@ function driveUrl(url){
   var m=url.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
   if(m)id=m[1];
   else{var m2=url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);if(m2)id=m2[1];}
-  return id?'https://lh3.googleusercontent.com/d/'+id:url;
+  return id?'https://drive.google.com/thumbnail?id='+id+'&sz=w1200':url;
 }
 
 function formatDate(s){
