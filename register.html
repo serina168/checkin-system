@@ -134,11 +134,6 @@ textarea{resize:vertical;min-height:78px}
       <div id="ev-fee-banner" class="ev-fee-banner hidden"></div>
     </div>
 
-    <!-- ── Mode tabs ── -->
-    <div class="mode-tabs" id="mode-tabs">
-      <button class="mode-tab active" id="tab-reg" onclick="switchMode('reg')">📝 活動報名</button>
-      <button class="mode-tab" id="tab-qr" onclick="switchMode('qr')">🔖 取得 QR Code</button>
-    </div>
 
     <!-- ── Success screen (below tabs so tabs always visible) ── -->
     <div id="success-section" class="card hidden">
@@ -157,34 +152,6 @@ textarea{resize:vertical;min-height:78px}
       </div>
       <div style="display:flex;gap:10px;margin-top:20px">
         <button class="btn" style="flex:1;background:rgba(168,135,79,.15);color:var(--gold);border:1.5px solid var(--border)" onclick="resetForm()">繼續報名（其他人）</button>
-      </div>
-    </div>
-
-    <!-- ── QR Lookup panel (shown when tab-qr active) ── -->
-    <div id="mode-qr" class="hidden">
-      <div class="card">
-        <div class="card-title">查詢我的 QR Code</div>
-        <p class="field-hint" style="margin-bottom:14px">輸入您的手機號碼，取得專屬 QR Code，截圖保存後下次活動直接掃描報到。</p>
-        <div class="form-group">
-          <label>手機號碼</label>
-          <div class="lookup-row">
-            <input type="tel" id="qr-phone" placeholder="請輸入手機號碼" inputmode="tel" onkeydown="if(event.key==='Enter')lookupQR()">
-            <button class="btn-lookup" onclick="lookupQR()">查詢</button>
-          </div>
-        </div>
-        <div id="qr-result" class="hidden" style="text-align:center;margin-top:16px">
-          <div class="qr-wrap">
-            <div class="qr-name" id="qr-lookup-name"></div>
-            <div id="qrcode-lookup"></div>
-            <div class="qr-phone" id="qr-lookup-phone"></div>
-            <div class="qr-org">臺中市海德堡讀書會</div>
-          </div>
-          <div class="qr-hint">
-            <strong>📌 請截圖保存這張 QR Code</strong><br>
-            下次活動直接出示掃描即可報到，無需重新填寫資料。
-          </div>
-          <button class="btn btn-ghost" onclick="resetQR()">重新查詢</button>
-        </div>
       </div>
     </div>
 
@@ -358,13 +325,6 @@ textarea{resize:vertical;min-height:78px}
 var API='https://script.google.com/macros/s/AKfycbzsxOwcP6GPBZQnPzIhAysEHGXNoBDlPKfiTCYRgiXQoKGIx85ZmO3bQwSHoesOl_huDw/exec';
 var curPhone='',curName='';
 
-function switchMode(mode){
-  document.getElementById('mode-qr').classList.toggle('hidden',mode!=='qr');
-  document.getElementById('reg-form-area').classList.toggle('hidden',mode!=='reg');
-  document.getElementById('tab-reg').classList.toggle('active',mode==='reg');
-  document.getElementById('tab-qr').classList.toggle('active',mode==='qr');
-  scrollTop();
-}
 
 function lookupQR(){
   var phone=document.getElementById('qr-phone').value.trim();
