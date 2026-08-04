@@ -42,6 +42,17 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--i
 .fee-val{font-size:18px;font-weight:800}
 .fee-sep{opacity:.6;font-size:20px}
 
+/* ── Inline roster ── */
+.roster-section{background:#fff;border:1px solid var(--border);border-radius:18px;padding:16px;box-shadow:0 4px 16px rgba(140,110,60,.08);margin-bottom:18px}
+.roster-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.roster-title{font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;color:var(--gold-dk)}
+.roster-count{background:linear-gradient(135deg,var(--gold-lt),var(--gold));color:#fff;border-radius:20px;padding:3px 12px;font-size:14px;font-weight:700}
+.roster-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.roster-chip{background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:7px 6px;font-size:13px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:4px;min-width:0}
+.roster-chip .rn{font-size:11px;color:var(--muted);font-weight:400;flex-shrink:0;min-width:14px}
+.roster-chip .rname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.roster-updated{font-size:11px;color:var(--muted);text-align:right;margin-top:8px}
+
 /* ── Form section divider ── */
 .form-section-title{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--ink);margin-bottom:18px;display:flex;align-items:center;gap:10px}
 .form-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
@@ -138,10 +149,15 @@ textarea{resize:vertical;min-height:78px}
     </div>
 
 
-    <!-- ── Roster link ── -->
-    <a id="roster-link" href="roster.html" style="display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(168,135,79,.10);border:1.5px solid var(--border);border-radius:14px;padding:13px 16px;margin-bottom:18px;font-size:16px;font-weight:700;color:var(--gold-dk);text-decoration:none">
-      👥 查看目前報名名單
-    </a>
+    <!-- ── Inline roster ── -->
+    <div class="roster-section" id="roster-section" style="display:none">
+      <div class="roster-header">
+        <div class="roster-title">👥 已報名出席</div>
+        <div class="roster-count" id="roster-count">0 人</div>
+      </div>
+      <div class="roster-grid" id="roster-grid"></div>
+      <div class="roster-updated" id="roster-updated"></div>
+    </div>
 
     <!-- ── Success screen (below tabs so tabs always visible) ── -->
     <div id="success-section" class="card hidden">
@@ -428,6 +444,31 @@ function formatDate(s){
   return s;
 }
 
+function loadRoster(){
+  apiFetch(API+'?action=public_roster').then(function(d){
+    if(!d||!d.ok)return;
+    var list=d.attending||[];
+    document.getElementById('roster-count').textContent=list.length+' 人';
+    var grid=document.getElementById('roster-grid');
+    grid.innerHTML='';
+    if(!list.length){
+      grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--muted);font-size:14px;padding:10px 0">尚無人報名，快來第一個！</div>';
+    } else {
+      list.forEach(function(m,i){
+        var chip=document.createElement('div');
+        chip.className='roster-chip';
+        chip.innerHTML='<span class="rn">'+(i+1)+'</span><span class="rname">'+escH(m.name)+'</span>';
+        grid.appendChild(chip);
+      });
+    }
+    var now=new Date();
+    document.getElementById('roster-updated').textContent='更新：'+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+    document.getElementById('roster-section').style.display='';
+  }).catch(function(){});
+}
+
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
 function loadEventInfo(){
   apiFetch(API+'?action=info').then(function(d){
     if(!d||!d.ok||!d.config){console.error('info failed',d);return;}
@@ -490,6 +531,8 @@ function loadEventInfo(){
   }).catch(function(err){console.error('info fetch error',err);});
 }
 loadEventInfo();
+loadRoster();
+setInterval(loadRoster, 60000);
 
 function validPhone(p){return /^[0-9]{8,10}$/.test(p.replace(/[-\s]/g,''));}
 
@@ -623,6 +666,7 @@ function submitNew(){
 }
 
 function showSuccess(name,phone,updated){
+  setTimeout(loadRoster, 1500);
   ['step1','step-existing','step-new'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
   document.getElementById('form-section-hd').classList.add('hidden');
   document.getElementById('success-icon').textContent=updated?'✅':'🎉';
