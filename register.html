@@ -20,10 +20,6 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--i
 .brand{font-size:12px;letter-spacing:.5em;color:var(--gold);text-indent:.5em;margin-bottom:4px;font-weight:500}
 .page-title{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;color:var(--ink)}
 
-/* ── Mode tabs ── */
-.mode-tabs{display:flex;gap:8px;margin-bottom:18px}
-.mode-tab{flex:1;font-family:inherit;font-size:14px;font-weight:700;padding:10px 6px;border-radius:12px;border:1.5px solid var(--border);cursor:pointer;transition:all .2s;background:rgba(255,255,255,.5);color:var(--muted)}
-.mode-tab.active{background:linear-gradient(135deg,var(--gold-lt),var(--gold));color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(168,135,79,.3)}
 
 /* ── Event info section ── */
 #event-banner{margin-bottom:4px}
@@ -388,31 +384,6 @@ var API='https://script.google.com/macros/s/AKfycbxYsFDij-NEhv_v6q19b6qF92Ew3tWj
 var curPhone='',curName='';
 
 
-function lookupQR(){
-  var phone=document.getElementById('qr-phone').value.trim();
-  if(!phone){toast('請輸入電話號碼',true);return;}
-  if(!validPhone(phone)){toast('電話格式不正確，請輸入數字',true);return;}
-  toast('查詢中…');
-  apiFetch(API+'?action=member_qr&phone='+encodeURIComponent(phone))
-    .then(function(d){
-      if(!d.ok){toast(d.msg||'查無此電話，請先完成活動報名',true);return;}
-      document.getElementById('qr-lookup-name').textContent=d.name;
-      document.getElementById('qr-lookup-phone').textContent=d.phone;
-      var el=document.getElementById('qrcode-lookup');el.innerHTML='';
-      new QRCode(el,{text:window.location.origin+'/checkin.html?p='+d.phone,width:200,height:200,colorDark:'#3a2e1e',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
-      document.getElementById('qr-result').classList.remove('hidden');
-      toast('找到了！請截圖保存');
-      scrollTop();
-    })
-    .catch(function(){toast('網路錯誤，請重試',true);});
-}
-
-function resetQR(){
-  document.getElementById('qr-result').classList.add('hidden');
-  document.getElementById('qr-phone').value='';
-  document.getElementById('qrcode-lookup').innerHTML='';
-  scrollTop();
-}
 
 (function(){
   var by=document.getElementById('new-by'),bm=document.getElementById('new-bm'),bd=document.getElementById('new-bd');
@@ -746,8 +717,8 @@ function resetForm(){
   document.getElementById('form-section-hd').classList.remove('hidden');
   ['step-existing','step-new'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
   document.getElementById('step1').classList.remove('hidden');
-  document.getElementById('phone').value='';
-  document.getElementById('tab-reg').click();
+  document.getElementById('lookup-phone').value='';
+  curPhone='';curName='';
 }
 </script>
 <!-- full-screen success flash -->
