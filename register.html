@@ -420,55 +420,68 @@ function formatDate(s){
   return s;
 }
 
-apiFetch(API+'?action=info').then(function(d){
-  if(!d.ok||!d.config)return;
-  var c=d.config;
-  var hasContent=false;
+function loadEventInfo(){
+  apiFetch(API+'?action=info').then(function(d){
+    if(!d||!d.ok||!d.config){console.error('info failed',d);return;}
+    var c=d.config;
 
-  if(c.posterUrl){
-    var img=document.getElementById('ev-poster');
-    img.src=driveUrl(c.posterUrl);
-    img.onerror=function(){this.style.display='none';};
-    img.classList.remove('hidden');
-    hasContent=true;
-  }
+    // 顯示活動名稱於頁面標題
+    var evName=c.eventName||c.currentEvent||'';
+    if(evName){
+      document.getElementById('page-title').textContent=evName;
+      document.title=evName+' — 海德堡讀書會';
+    }
 
-  var listEl=document.getElementById('ev-info-list');
-  var rows=[];
-  if(c.eventDate||c.eventTime){
-    var dt=(c.eventDate?formatDate(c.eventDate):'')+(c.eventTime?' '+c.eventTime:'');
-    rows.push({label:'時間',val:dt.trim()});
-  }
-  if(c.location)rows.push({label:'地點',val:c.location});
-  if(c.topic)rows.push({label:'主題',val:c.topic});
-  if(c.speaker)rows.push({label:'主講者',val:c.speaker});
-  rows.forEach(function(r){
-    var li=document.createElement('li');
-    li.innerHTML='<span class="ev-info-label">• '+r.label+'</span><span class="ev-info-val">'+r.val+'</span>';
-    listEl.appendChild(li);
-    hasContent=true;
-  });
+    var hasContent=false;
 
-  if(c.desc){
-    var box=document.getElementById('ev-desc-box');
-    var txt=document.getElementById('ev-desc-text');
-    c.desc.split(/\n\n+/).forEach(function(para){
-      var p=document.createElement('p');p.textContent=para.trim();txt.appendChild(p);
+    if(c.posterUrl){
+      var img=document.getElementById('ev-poster');
+      img.src=driveUrl(c.posterUrl);
+      img.onerror=function(){this.style.display='none';};
+      img.classList.remove('hidden');
+      hasContent=true;
+    }
+
+    var listEl=document.getElementById('ev-info-list');
+    listEl.innerHTML='';
+    var rows=[];
+    if(c.eventDate||c.eventTime){
+      var dt=(c.eventDate?formatDate(String(c.eventDate)):'')+(c.eventTime?' '+c.eventTime:'');
+      if(dt.trim())rows.push({label:'時間',val:dt.trim()});
+    }
+    if(c.location)rows.push({label:'地點',val:c.location});
+    if(c.topic)rows.push({label:'主題',val:c.topic});
+    if(c.speaker)rows.push({label:'主講者',val:c.speaker});
+    rows.forEach(function(r){
+      var li=document.createElement('li');
+      li.innerHTML='<span class="ev-info-label">• '+r.label+'</span><span class="ev-info-val">'+r.val+'</span>';
+      listEl.appendChild(li);
+      hasContent=true;
     });
-    box.classList.remove('hidden');
-    hasContent=true;
-  }
 
-  if(c.guestFee){
-    var fee=document.getElementById('ev-fee-banner');
-    var mf=c.memberFee||'免費';
-    fee.innerHTML='<span class="fee-item"><span class="fee-label">會員</span><span class="fee-val">'+mf+'</span></span><span class="fee-sep">　|　</span><span class="fee-item"><span class="fee-label">來賓</span><span class="fee-val">'+c.guestFee+'</span></span>';
-    fee.classList.remove('hidden');
-    hasContent=true;
-  }
+    if(c.desc){
+      var box=document.getElementById('ev-desc-box');
+      var txt=document.getElementById('ev-desc-text');
+      txt.innerHTML='';
+      c.desc.split(/\n\n+/).forEach(function(para){
+        var p=document.createElement('p');p.textContent=para.trim();txt.appendChild(p);
+      });
+      box.classList.remove('hidden');
+      hasContent=true;
+    }
 
-  if(hasContent)document.getElementById('event-banner').classList.remove('hidden');
-}).catch(function(){});
+    if(c.guestFee){
+      var fee=document.getElementById('ev-fee-banner');
+      var mf=c.memberFee||'免費';
+      fee.innerHTML='<span class="fee-item"><span class="fee-label">會員</span><span class="fee-val">'+mf+'</span></span><span class="fee-sep">　|　</span><span class="fee-item"><span class="fee-label">來賓</span><span class="fee-val">'+c.guestFee+'</span></span>';
+      fee.classList.remove('hidden');
+      hasContent=true;
+    }
+
+    if(hasContent)document.getElementById('event-banner').classList.remove('hidden');
+  }).catch(function(err){console.error('info fetch error',err);});
+}
+loadEventInfo();
 
 function validPhone(p){return /^[0-9]{8,10}$/.test(p.replace(/[-\s]/g,''));}
 
