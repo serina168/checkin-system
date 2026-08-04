@@ -138,6 +138,10 @@ textarea{resize:vertical;min-height:78px}
 </style>
 </head>
 <body>
+<!-- LINE in-app browser banner -->
+<div id="line-banner" style="display:none;background:#06C755;color:#fff;padding:14px 16px;text-align:center;font-size:15px;font-weight:700;position:sticky;top:0;z-index:100;line-height:1.5">
+  ⚠️ 請點右上角 <strong>···</strong> 選「<strong>用瀏覽器開啟</strong>」<br>以查看完整活動資訊與海報
+</div>
 <div class="wrap">
   <div class="page-header">
     <div class="brand">臺中市海德堡讀書會</div>
@@ -368,6 +372,18 @@ textarea{resize:vertical;min-height:78px}
 <div id="toast"></div>
 
 <script>
+// LINE in-app browser detection and redirect
+(function(){
+  if(/Line\//i.test(navigator.userAgent)){
+    if(!/openExternalBrowser=1/.test(location.search)){
+      var sep=location.search?'&':'?';
+      location.href=location.href.split('?')[0]+location.search+sep+'openExternalBrowser=1';
+    } else {
+      document.getElementById('line-banner').style.display='block';
+    }
+  }
+})();
+
 var API='https://script.google.com/macros/s/AKfycbxYsFDij-NEhv_v6q19b6qF92Ew3tWji2lSYUcYCijgMaifSb9B03fjNRtg6RUnine4hA/exec';
 var curPhone='',curName='';
 
@@ -440,9 +456,17 @@ function toast(msg,err){
 function scrollTop(){}
 
 function apiFetch(url){
-  var ctrl=new AbortController();
-  setTimeout(function(){ctrl.abort();},12000);
-  return fetch(url,{redirect:'follow',signal:ctrl.signal}).then(function(r){return r.json();});
+  return new Promise(function(resolve,reject){
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET',url,true);
+    xhr.timeout=12000;
+    xhr.onload=function(){
+      try{resolve(JSON.parse(xhr.responseText));}catch(e){reject(e);}
+    };
+    xhr.onerror=function(){reject(new Error('network'));};
+    xhr.ontimeout=function(){reject(new Error('timeout'));};
+    xhr.send();
+  });
 }
 
 function driveUrl(url){
