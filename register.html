@@ -456,17 +456,9 @@ function toast(msg,err){
 function scrollTop(){}
 
 function apiFetch(url){
-  return new Promise(function(resolve,reject){
-    var xhr=new XMLHttpRequest();
-    xhr.open('GET',url,true);
-    xhr.timeout=12000;
-    xhr.onload=function(){
-      try{resolve(JSON.parse(xhr.responseText));}catch(e){reject(e);}
-    };
-    xhr.onerror=function(){reject(new Error('network'));};
-    xhr.ontimeout=function(){reject(new Error('timeout'));};
-    xhr.send();
-  });
+  var ctrl=new AbortController();
+  setTimeout(function(){ctrl.abort();},12000);
+  return fetch(url,{redirect:'follow',signal:ctrl.signal}).then(function(r){return r.json();});
 }
 
 function driveUrl(url){

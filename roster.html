@@ -100,17 +100,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--i
 var API='https://script.google.com/macros/s/AKfycbxYsFDij-NEhv_v6q19b6qF92Ew3tWji2lSYUcYCijgMaifSb9B03fjNRtg6RUnine4hA/exec';
 
 function apiFetch(url){
-  return new Promise(function(resolve,reject){
-    var xhr=new XMLHttpRequest();
-    xhr.open('GET',url,true);
-    xhr.timeout=12000;
-    xhr.onload=function(){
-      try{resolve(JSON.parse(xhr.responseText));}catch(e){reject(e);}
-    };
-    xhr.onerror=function(){reject(new Error('network'));};
-    xhr.ontimeout=function(){reject(new Error('timeout'));};
-    xhr.send();
-  });
+  return fetch(url,{redirect:'follow'}).then(function(r){return r.json();});
 }
 
 function formatDate(s){
