@@ -53,6 +53,15 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--i
 .roster-chip .rname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .roster-updated{font-size:11px;color:var(--muted);text-align:right;margin-top:8px}
 
+/* ── Invite box ── */
+.invite-box{background:#fff;border:1.5px solid var(--border);border-radius:18px;padding:20px 18px;margin-bottom:18px;text-align:center}
+.invite-icon{font-size:28px;margin-bottom:8px}
+.invite-title{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:var(--gold-dk);margin-bottom:8px}
+.invite-text{font-size:14px;color:var(--muted);line-height:1.9}
+.invite-text strong{color:var(--ink)}
+.invite-share-btn{margin-top:16px;width:100%;font-family:inherit;font-size:15px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--gold-lt),var(--gold));border:none;border-radius:12px;padding:13px;cursor:pointer;box-shadow:0 3px 12px rgba(168,135,79,.28);letter-spacing:.04em}
+.invite-share-btn:active{opacity:.85}
+
 /* ── Form section divider ── */
 .form-section-title{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--ink);margin-bottom:18px;display:flex;align-items:center;gap:10px}
 .form-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
@@ -157,6 +166,19 @@ textarea{resize:vertical;min-height:78px}
       </div>
       <div class="roster-grid" id="roster-grid"></div>
       <div class="roster-updated" id="roster-updated"></div>
+    </div>
+
+    <!-- ── Invite box ── -->
+    <div class="invite-box" id="invite-box" style="display:none">
+      <div class="invite-icon">🌸</div>
+      <div class="invite-title">還在等什麼？快來加入我們！</div>
+      <div class="invite-text">
+        每一位姊妹的出現，都讓這個圓圈更溫暖。<br>
+        <strong>把這個名單分享給還沒報名的姊妹</strong>，<br>
+        一起來聆聽、共學、相聚。<br><br>
+        ✨ 期待在活動現場見到妳的笑容 ✨
+      </div>
+      <button class="invite-share-btn" onclick="shareRoster()">📣 分享名單，召喚更多姊妹！</button>
     </div>
 
     <!-- ── Success screen (below tabs so tabs always visible) ── -->
@@ -464,7 +486,19 @@ function loadRoster(){
     var now=new Date();
     document.getElementById('roster-updated').textContent='更新：'+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
     document.getElementById('roster-section').style.display='';
+    document.getElementById('invite-box').style.display='';
   }).catch(function(){});
+}
+
+function shareRoster(){
+  var url=window.location.href.split('?')[0];
+  if(navigator.share){
+    navigator.share({title:'海德堡讀書會報名名單',text:'姊妹快來！這次已經這麼多人報名了 👉 '+url,url:url}).catch(function(){});
+  } else if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(function(){toast('連結已複製，快傳給姊妹！');}).catch(function(){prompt('請複製此連結：',url);});
+  } else {
+    prompt('請複製此連結：',url);
+  }
 }
 
 function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
