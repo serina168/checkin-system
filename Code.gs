@@ -37,6 +37,7 @@ function doGet(e) {
       case 'admin_set_status':           result = adminSetMemberStatus(p); break;
       case 'admin_update_guest_meal':    result = adminUpdateGuestMeal(p); break;
       case 'member_search':              result = memberSearch(p.q); break;
+      case 'public_roster':              result = publicRoster(); break;
       default: result = {ok: false, msg: 'Unknown action: ' + action};
     }
   } catch (err) {
@@ -479,6 +480,21 @@ function adminAttendanceStats(pass) {
   }).sort(function(a,b){ return b.checkedIn - a.checkedIn; });
 
   return {ok:true, stats:result, eventCount:eventNames.length};
+}
+
+function publicRoster() {
+  var evSh = getEventSheet();
+  var cfg = getConfig();
+  var eventName = cfg['eventName'] || cfg['currentEvent'] || '';
+  var eventDate = cfg['eventDate'] || '';
+  if (!evSh || evSh.getLastRow() < 2) return {ok:true, eventName:eventName, eventDate:eventDate, attending:[], total:0};
+  var old = isOldFormat(evSh);
+  var cols = old ? 10 : 7;
+  var data = evSh.getRange(2, 1, evSh.getLastRow()-1, cols).getValues();
+  var attending = data
+    .filter(function(r){ return String(old ? r[6] : r[2]).trim() === '出席'; })
+    .map(function(r){ return {name: String(old ? r[1] : r[0]).trim()}; });
+  return {ok:true, eventName:eventName, eventDate:eventDate, attending:attending, total:data.length};
 }
 
 function adminMigrate(pass, sheetName) {
